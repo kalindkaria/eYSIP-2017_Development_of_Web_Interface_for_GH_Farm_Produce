@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `Crop`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Crop` (
-  `crop_id` int(11) NOT NULL,
+  `crop_id` varchar(255) NOT NULL,
   `weight` int(11) DEFAULT NULL,
   PRIMARY KEY (`crop_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -35,6 +35,7 @@ CREATE TABLE `Crop` (
 
 LOCK TABLES `Crop` WRITE;
 /*!40000 ALTER TABLE `Crop` DISABLE KEYS */;
+INSERT INTO `Crop` VALUES ('Potato',200);
 /*!40000 ALTER TABLE `Crop` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -58,6 +59,7 @@ CREATE TABLE `User` (
 
 LOCK TABLES `User` WRITE;
 /*!40000 ALTER TABLE `User` DISABLE KEYS */;
+INSERT INTO `User` VALUES ('machine1','random');
 /*!40000 ALTER TABLE `User` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -70,4 +72,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-24 17:16:06
+-- Dump completed on 2017-05-25 10:38:10

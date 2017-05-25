@@ -1,4 +1,3 @@
-#!usr/bin/python3
 import socketserver
 import threading
 import json
@@ -17,7 +16,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 			#image = 
 			crop = str(self.request.recv(1024).strip(), "utf-8")
 			crop = json.loads(crop)
-			insert="INSERT INTO Crop(crop_id,weight) VALUES ('%d','%d')" % (crop['crop_id'],crop['weight'])
+			insert="INSERT INTO Crop(crop_id,weight) VALUES ('%s',%s)" % (crop['crop_id'],crop['weight'])
 			cursor.execute(insert)
 			db.commit()
 
