@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS `Crop`;
 CREATE TABLE `Crop` (
   `crop_id` varchar(255) NOT NULL,
   `weight` int(11) DEFAULT NULL,
+  `time` datetime DEFAULT NULL,
   PRIMARY KEY (`crop_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -35,7 +36,7 @@ CREATE TABLE `Crop` (
 
 LOCK TABLES `Crop` WRITE;
 /*!40000 ALTER TABLE `Crop` DISABLE KEYS */;
-INSERT INTO `Crop` VALUES ('Potato',200);
+INSERT INTO `Crop` VALUES ('Carrot',150,'2017-05-25 12:19:48'),('Potato',200,NULL),('Tomato',20,'2017-05-25 12:15:28');
 /*!40000 ALTER TABLE `Crop` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -59,7 +60,7 @@ CREATE TABLE `User` (
 
 LOCK TABLES `User` WRITE;
 /*!40000 ALTER TABLE `User` DISABLE KEYS */;
-INSERT INTO `User` VALUES ('machine1','random');
+INSERT INTO `User` VALUES ('machine_1','random');
 /*!40000 ALTER TABLE `User` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -72,4 +73,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-05-25 10:38:10
+-- Dump completed on 2017-05-25 12:25:22

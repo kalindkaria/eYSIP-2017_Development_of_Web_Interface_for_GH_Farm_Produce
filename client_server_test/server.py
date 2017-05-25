@@ -2,6 +2,7 @@ import socketserver
 import threading
 import json
 import MySQLdb
+from datetime import datetime
 
 db = MySQLdb.connect("localhost","root","12345","Farm" )
 cursor = db.cursor()
@@ -16,8 +17,13 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 			#image = 
 			crop = str(self.request.recv(1024).strip(), "utf-8")
 			crop = json.loads(crop)
-			insert="INSERT INTO Crop(crop_id,weight) VALUES ('%s',%s)" % (crop['crop_id'],crop['weight'])
-			cursor.execute(insert)
+			time = datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
+			print (time)
+			time = time.isoformat()
+			print (time)
+			insert="INSERT INTO Crop(crop_id,weight,time) VALUES ('%s',%s,'%s')" % (crop['crop_id'],crop['weight'],time)
+			if cursor.execute(insert):
+				self.request.sendall(bytes("Done", "utf-8"))
 			db.commit()
 
 		elif auth==-1:
