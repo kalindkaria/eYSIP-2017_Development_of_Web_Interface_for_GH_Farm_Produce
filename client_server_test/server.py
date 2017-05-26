@@ -9,22 +9,34 @@ cursor = db.cursor()
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 	def handle(self):
+		
+		self.request.settimeout(100)
 		data = str(self.request.recv(1024).strip(), "utf-8")
 		data = json.loads(data)
 		auth=auth_user(data)
 		if auth==0:
 			self.request.sendall(bytes("Authenticated", "utf-8"))
-			#image = 
-			crop = str(self.request.recv(1024).strip(), "utf-8")
-			crop = json.loads(crop)
-			time = datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
-			print (time)
-			time = time.isoformat()
-			print (time)
-			insert="INSERT INTO Crop(crop_id,weight,time) VALUES ('%s',%s,'%s')" % (crop['crop_id'],crop['weight'],time)
-			if cursor.execute(insert):
-				self.request.sendall(bytes("Done", "utf-8"))
-			db.commit()
+			while True:
+				crop = str(self.request.recv(1024).strip(), "utf-8")
+				crop = json.loads(crop)
+				print(crop)
+				time = datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
+				time = time.isoformat()
+				
+				insert="INSERT INTO Crop(crop_id,weight,time) VALUES ('%s',%s,'%s')" % (crop['crop_id'],crop['weight'],time)
+				if cursor.execute(insert):
+					db.commit()
+					self.request.sendall(bytes("Done", "utf-8"))
+					loop = str(self.request.recv(1024), "utf-8")
+					print(loop)					
+					if loop == "break":
+						break
+					elif loop == "continue":
+						self.request.sendall(bytes("send", "utf-8"))
+				else:
+					db.rollback()
+					self.request.sendall(bytes("Rejected", "utf-8"))
+				
 
 		elif auth==-1:
 			self.request.sendall(bytes("Invalid Password", "utf-8"))
@@ -54,7 +66,7 @@ def auth_user(data):
 
 if __name__ == "__main__":
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = "0.0.0.0", 1152
+    HOST, PORT = "localhost", 1152
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address
@@ -63,3 +75,5 @@ if __name__ == "__main__":
     server_thread.start()
     print("Server loop running in thread:", server_thread.name)
     server.serve_forever()
+    # while True:
+    # 	server.handle_request()
