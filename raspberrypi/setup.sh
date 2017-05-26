@@ -5,6 +5,10 @@ cat manage.py >> /home/pi/ghfarm/manage.py
 chmod +x /home/pi/ghfarm/client.py
 chmod +x /home/pi/ghfarm/manage.py
 sudo apt-get install -y python3 python3-rpi.gpio
-echo '@reboot /home/pi/ghfarm/client.py' | sudo tee -a /etc/crontab
-echo 'Done with the Setup!'
-## Add tasks to crontab
+crontab -l >> mycron
+echo '@reboot /home/pi/ghfarm/manage.py'>> mycron
+echo '@reboot /home/pi/ghfarm/client.py'>> mycron
+echo '@hourly /home/pi/ghfarm/client.py'>> mycron
+crontab mycron
+rm mycron
+echo "Done with the setup"
