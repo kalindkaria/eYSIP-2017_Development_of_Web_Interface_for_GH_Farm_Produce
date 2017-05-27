@@ -73,7 +73,7 @@ def read_cell_value() :
 '''
 def base_value():
 	"to calculate initial base value with moving average method"
-	sample = 50	#define number of samples to take
+	sample = 25	#define number of samples to take
 	count = 0
 	tval = 0	#variable to sotre the final moving average value
 

@@ -15,7 +15,7 @@ LINE_2 = 0xC0
 LINE_3 = 0x94
 LINE_4 = 0xD4
 
-
+#Global Variables
 min_weight = 10
 baseValue = 0	#variable to store the base value of load cell
 taredWeight = 0	#variable to store tared weight
@@ -84,12 +84,16 @@ def takePicture():
 		
 
 def storeData(data):
-	lcd.string("Storing data...", LINE_3)
+	lcd.string("Storing data...", LINE_1)
+	lcd.string("Weight: "+str(data['weight']), LINE_2)
+	lcd.string("CropID: "+str(data['cropid']), LINE_3)
+	lcd.string("TroughID: "+str(data['troughid']), LINE_4)
 	f = open('/home/pi/ghfarm/details.txt','a')
-	time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	crops = {'weight':data['weight'],'crop_id':data['cropid'],'time': time, 'imagepath':data['imagepath'], 'troughid':data['troughid']}
+	t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	crops = {'weight':data['weight'],'crop_id':data['cropid'],'time': t, 'imagepath':data['imagepath'], 'troughid':data['troughid']}
 	crop_details = json.dumps(crops)
 	f.write(crop_details +'\n')
+	time.sleep(3)
 
 def validateCropID():
 	return True
@@ -236,7 +240,7 @@ def init():
 	lcd.string(" from the platform.", LINE_3)
 	time.sleep(2)
 	lcd.clear()
-	lcd.string("      Welcome", LINE_1)
+	lcd.string("    Calibrating", LINE_1)
 	lcd.string("   Please wait...", LINE_2)
 	baseValue = lc.base_value()
 
