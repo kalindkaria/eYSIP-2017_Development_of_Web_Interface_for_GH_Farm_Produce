@@ -1,6 +1,6 @@
-#!usr/bin/python3
 import socket
 import json
+import math
 import datetime
 
 data = {'username': "machine_1",'password': "random"}
@@ -27,27 +27,35 @@ try:
 		print(crop_details)
 		for details in crop_details:
 			sock.send(bytes(details, "utf-8"))
+
+			img = open("sent.png",'rb')
+			content = img.read()
+			img_size = str(math.ceil(len(content)/1024))
+			sendSize = str(sock.recv(1024), "utf-8")
+			sock.send(bytes(img_size , "utf-8"))
+			img_response = str(sock.recv(1024), "utf-8")
+			sock.sendall(content)
+			img.close()	
 			response = str(sock.recv(1024), "utf-8")
 			print (response)
 			if(response != 'Done'):
 				pending.append(details)
 				print (response)
-				print(crop_details)
 			if(details!=last):
 				sock.sendall(bytes("continue", "utf-8"))
 			else:
 				sock.sendall(bytes("break", "utf-8"))
 			send = str(sock.recv(1024), "utf-8")
 
-
-
 		f = open('details.txt','w')
 		for details in pending:
 			f.write(details)
 		f.close()
 
-except:
-	print("Connection Refused")
+
+
+except Exception as e:
+	print(e)
 
 finally:
     sock.close()
