@@ -19,10 +19,25 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 			while True:
 				crop = str(self.request.recv(1024).strip(), "utf-8")
 				crop = json.loads(crop)
-				print(crop)
+				# print(crop)
 				time = datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
 				time = time.isoformat()
+				self.request.sendall(bytes("imageResponse", "utf-8"))
+				file_size = int(str(self.request.recv(1024),"utf-8"))
+				self.request.sendall(bytes("sendImgSize", "utf-8"))
 				
+				received_len = 0
+
+				fp = open("received.png",'wb')
+				while received_len != file_size:
+					print(received_len)
+					strng = self.request.recv(1024)
+					if not strng:
+						break
+					fp.write(strng)
+					received_len = received_len + 1
+				fp.close()
+
 				insert="INSERT INTO Crop(crop_id,weight,time) VALUES ('%s',%s,'%s')" % (crop['crop_id'],crop['weight'],time)
 				if cursor.execute(insert):
 					db.commit()
@@ -36,7 +51,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 				else:
 					db.rollback()
 					self.request.sendall(bytes("Rejected", "utf-8"))
-				
 
 		elif auth==-1:
 			self.request.sendall(bytes("Invalid Password", "utf-8"))

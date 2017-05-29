@@ -1,4 +1,0 @@
-{"weight": 150, "crop_id": "apple", "time": "2017-05-26 15:02:03"}
-{"weight": 250, "crop_id": "capsicum", "time": "2017-05-26 15:02:03"}
-{"weight": 550, "crop_id": "onion", "time": "2017-05-26 15:02:03"}
-{"weight": 650, "crop_id": "potato", "time": "2017-05-26 15:02:03"}
