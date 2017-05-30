@@ -106,3 +106,5 @@ ENV/
 *.png
 images/
 server/images/
+
+.idea/
