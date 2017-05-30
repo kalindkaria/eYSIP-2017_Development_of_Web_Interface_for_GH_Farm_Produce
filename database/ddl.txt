@@ -1,0 +1,73 @@
+create table Crop
+(   
+    crop_id int,
+    local_name varchar(100),
+    english_name varchar(100),
+    scientific_name varchar(100),
+    shelf_life 
+    price real,
+    primary key(crop_id)
+);
+
+create table User
+(
+    username varchar(100),
+    first_name varchar(255),
+    last_name varchar(255),
+    password varchar(100),
+    address varchar(100),
+    user_type varchar(20),
+);
+
+create table Contact
+(
+    username varchar(100),
+    contact varchar(15)
+);
+
+create table Email
+(
+    username varchar(100),
+    email varchar(100)
+);
+
+create table Machine
+(
+    machine_id int,
+    password varchar(200),
+    location varchar(255),
+    date_of_manufacture datetime,
+    version varchar(20),
+    last_login datetime
+);
+
+create table Producer
+(
+    username varchar(100),
+    machine_id int
+);
+
+create table Trough
+(
+    machine_id int,
+    trough_id int,
+    primary key(trough_id)
+);
+
+create table Produce
+(
+    machine_id int,
+    crop_id int,
+    trough_id int,
+    weight real(200), 
+    image varchar(200),
+    timestamp,
+    date_of_produce datetime,
+    date_of_expiry datetime,
+    status varchar(20)
+);
+
+create table Inventory
+(
+    
+);
