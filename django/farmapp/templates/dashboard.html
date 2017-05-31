@@ -1,18 +1,7 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
 {% load static %}
 
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>GH Farm</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" type="text/css" href={% static "css/bootstrap.min.css" %}>
-    <link rel="stylesheet" type="text/css" href={% static "css/sidebar.css" %}>
-</head>
-
-<body>
+    {% block navbar %}
     <nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -32,29 +21,32 @@
             </ul>
         </div>
     </nav>
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-sm-3 col-md-2 hidden-xs-down bg-faded sidebar">
-                <ul class="nav nav-pills flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Overview <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Reports</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Analytics</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Export</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-    <script type="text/javascript" src={% static "js/jquery.min.js" %}></script>
-    <script type="text/javascript" src={% static "js/tether.min.js" %}></script>
-    <script type="text/javascript" src={% static "js/bootstrap.min.js" %}></script>
-</body>
+    {% endblock navbar %}
 
-</html>
+
+    {% block sidebar %}
+    <nav class="col-sm-3 col-md-3 hidden-xs-down bg-faded">
+        <ul class="nav nav-pills flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#">Overview <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Reports</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Analytics</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Export</a>
+            </li>
+        </ul>
+    </nav>
+    {% endblock sidebar %}
+
+
+
+    {% block content%}
+    <div class="col-md-9">
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ratione eos eligendi cumque doloribus. Eveniet eligendi minima consequuntur dignissimos soluta assumenda alias cum ratione! Eius sit quo ducimus veniam. Saepe, veritatis?</p>
+    </div>
+    {% endblock content%}
