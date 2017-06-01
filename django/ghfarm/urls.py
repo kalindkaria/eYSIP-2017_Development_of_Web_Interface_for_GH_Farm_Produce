@@ -16,7 +16,9 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from farmapp import views
+from machine import views as machine_views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$',views.home,name='home')
+    url(r'^$',views.home,name='home'),
+    url(r'^machine/$',machine_views.data_entry,name='data_entry')
 ]

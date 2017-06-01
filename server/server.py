@@ -33,7 +33,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 				
 				received_len = 0
 
-				fp = open(imagepath+crop['imagename'],'wb')
+				fp = open(imagepath + crop['imagename'], 'wb')
 				while received_len != file_size:
 					print(received_len)
 					strng = self.request.recv(1024)
