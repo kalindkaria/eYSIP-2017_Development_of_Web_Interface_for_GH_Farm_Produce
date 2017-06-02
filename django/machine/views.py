@@ -26,31 +26,34 @@ def data_entry(request):
                 time = datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
                 time = time.isoformat()
 
-                img_file = open(imagepath + crop['imagename'], 'wb')
+                img_file = open(imagepath + crop['imagename'], 'w')
                 img_file.write(crop['image'])
-                try:
-                    entry = Produce.objects.create(machine_id = machine_data['user_id'],\
-                                                   crop_id = crop['crop_id'],\
-                                                   trough_id = crop['trough_id'],\
-                                                   image = imagepath + crop['imagename'],\
-                                                   weight = crop['weight'],\
-                                                   timestamp = time,\
-                                                   status = 0\
-                                                  )
-                    print(entry)
-                except:
-                    j=1
-                    while machine_data.has_key(j):
-                        crop = machine_data[j]
-                        Produce.objects.filter(machine_id = machine_data['user_id'],\
-                                                       crop_id = crop['crop_id'],\
-                                                       trough_id = crop['trough_id'],\
-                                                       image = imagepath + crop['imagename'],\
-                                                       weight = crop['weight'],\
-                                                       timestamp = time,\
-                                                       status = 0).delete()
-                        j=j+1
-                    return StreamingHttpResponse("Error")
+
+                print(machine_data['user_id']+" "+crop['crop_id']+" "+crop['trough_id']+" "+crop['imagename']+crop['weight']+" "+time+" "+0)
+
+                # try:
+                #     entry = Produce.objects.create(machine_id = machine_data['user_id'],\
+                #                                    crop_id = crop['crop_id'],\
+                #                                    trough_id = crop['trough_id'],\
+                #                                    image = imagepath + crop['imagename'],\
+                #                                    weight = crop['weight'],\
+                #                                    timestamp = time,\
+                #                                    status = 0\
+                #                                   )
+                #     print(entry)
+                # except:
+                #     j=1
+                #     while machine_data.has_key(j):
+                #         crop = machine_data[j]
+                #         Produce.objects.filter(machine_id = machine_data['user_id'],\
+                #                                        crop_id = crop['crop_id'],\
+                #                                        trough_id = crop['trough_id'],\
+                #                                        image = imagepath + crop['imagename'],\
+                #                                        weight = crop['weight'],\
+                #                                        timestamp = time,\
+                #                                        status = 0).delete()
+                #         j=j+1
+                #     return StreamingHttpResponse("Error")
 
                 i=i+1
             return StreamingHttpResponse("Done")
