@@ -1,67 +1,56 @@
-import socket
+import requests  
 import json
 import math
 import datetime
 import os
 
-data = {'username': "machine_1",'password': "random"}
 
-HOST, PORT = "192.168.43.242", 1152
-imagepath = "/home/pi/ghfarm/images/"
-
-
-if os.path.getsize("/home/pi/ghfarm/details.txt")>0:
+if os.path.getsize("/home/pi/ghfarm/details.txt") > 0:
+	imagepath = "/home/pi/ghfarm/images/"
+	# entrypath = "/home/pi/ghfarm/entry/"
+	# authpath = "/home/pi/ghfarm/entry/"
+	machine_data= {'user_id': 1,'password': "random"}
+	# auth_file= open(authpath,'w')
+	# auth_file.write(json.dumps(machine_data))
+	crop_details = []
 	pending = []
-	# Create a socket (SOCK_STREAM means a TCP socket)
-	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	try:
-		# Connect to server and send data
-		sock.connect((HOST, PORT))
-		sock.send(bytes(json.dumps(data), "utf-8"))
-		response = ""
-		crop_details = []
-		# Receive data from the server and shut down
-		received = str(sock.recv(1024), "utf-8")
-		if received =="Authenticated":
-			time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-			with open('/home/pi/ghfarm/details.txt', 'r') as f:
-				crop_details = list(f.readlines())
-			last = crop_details[len(crop_details)-1]
-			print(crop_details)
-			for details in crop_details:
-				sock.send(bytes(details, "utf-8"))
-				values = json.loads(details)
-				img = open(imagepath+values['imagename'],'rb')
-				content = img.read()
-				img_size = str(math.ceil(len(content)/1024))
-				sendSize = str(sock.recv(1024), "utf-8")
-				sock.send(bytes(img_size , "utf-8"))
-				img_response = str(sock.recv(1024), "utf-8")
-				sock.sendall(content)
-				img.close()	
-				response = str(sock.recv(1024), "utf-8")
-				print (response)
-				if(response != 'Done'):
-					pending.append(details)
-					print (response)
-				if(details!=last):
-					sock.sendall(bytes("continue", "utf-8"))
-				else:
-					sock.sendall(bytes("break", "utf-8"))
-				send = str(sock.recv(1024), "utf-8")
 
-				f = open('/home/pi/ghfarm/details.txt','w')
-				for details in pending:
-					f.write(details)
-				f.close()
+	time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	with open('/home/pi/ghfarm/details.txt', 'r') as f:
+		crop_details = list(f.readlines())
+	last = crop_details[len(crop_details) - 1]
+	i=1
+	print(crop_details)
+	for details in crop_details:
+		values = json.loads(details)
+		values['user_id']=1
+		values['password']='random'
+		# entry_file = open(entrypath,'w')
+		# entry_file.write(details)
+		with open(imagepath + values['imagename'], 'rb') as img:
+			image = img.read()
+			image = str(image,"latin-1")
+			print(len(image))
+		#files = {'image': open(imagepath + values['imagename'], 'rb'),'entry':open(entrypath,'r'),'auth':open(authpath,'r')}
+		values['image']=image
+		#machine_data[str(i)] = values
+		i=i+1
 
-	except Exception as e:
-		print(e)
+		
 
-	finally:
-		sock.close()
+		url = "http://192.168.43.90:8000/machine/"
+		#headers = {'content-type': 'application/json'}
+		#r = requests.post(url, files=files)
+		r = requests.post(url, data=json.dumps(values))
+		print(r.text)
+		if(r.text != "Done"):
+			pending.append(details)
+			# files = {'image': open(imagepath + values['imagename'], 'rb')}
+			# r = requests.post(url, files=files)
+		
+			
 
-#print("Sent:     {}".format(json.dumps(data)))
-#print("Received: {}".format(received))
-#print("Sent:     {}".format(json.dumps(crop_details)))
-#print("Response: {}".format(response))
+	# f = open('/home/pi/ghfarm/details.txt', 'w')
+	# f.close()
+
+
