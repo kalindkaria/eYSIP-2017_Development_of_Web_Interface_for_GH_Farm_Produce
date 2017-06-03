@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
-from farmapp.models import Produce,Machine
+from farmapp.models import Produce,Machine,Crop
 from django.http import HttpResponse
 
 def auth_user(machine_data):
@@ -12,7 +12,7 @@ def auth_user(machine_data):
         print(machine)
         return 1
     except:
-        return 1
+        return 0
 
 
 @csrf_exempt
@@ -36,67 +36,25 @@ def data_entry(request):
             print(crop['weight'])
             print(time)
             print(0)
-            # try:
-            #     entry = Produce.objects.create(machine_id = crop['user_id'],\
-            #                                    crop_id = crop['crop_id'],\
-            #                                    trough_id = crop['trough_id'],\
-            #                                    image = imagepath + crop['imagename'],\
-            #                                    weight = crop['weight'],\
-            #                                    timestamp = time,\
-            #                                    status = 0\
-            #                                   )
-            #     print(entry)
-            # except:
-            #     return HttpResponse("Error")
-            return HttpResponse("Done")
+            try:
+                entry = Produce.objects.create(machine_id = crop['user_id'],\
+                                               crop_id = crop['crop_id'],\
+                                               trough_id = crop['trough_id'],\
+                                               image = imagepath + crop['imagename'],\
+                                               weight = crop['weight'],\
+                                               date_of_produce = time,\
+                                               status = 0\
+                                              )
+                input_crop = Crop.objects.get(crop_id = crop['crop_id'])
+                entry.date_of_expiry = entry.date_of_produce + datetime.timedelta(hours=input_crop.shelf_life)
+                entry.save()
+                print("Entry done")
+                return HttpResponse("Done")
+            except:
+                return HttpResponse("Error")
 
-            # i=1
-            # while i!=(len(machine_data)-1):
-            #     crop = machine_data[str(i)]
-            #
-            #     time = datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
-            #     time = time.isoformat()
-            #
-            #     with open(imagepath + crop['imagename'], 'wb') as img_file:
-            #         img_file.write(crop['image'].decode("base64"))
-            #
-            #     print(machine_data['user_id'])
-            #     print(crop['crop_id'])
-            #     print(crop['troughid'])
-            #     print(crop['imagename'])
-            #     print(crop['weight'])
-            #     print(time)
-            #     print(0)
-            #
-            #     # try:
-            #     #     entry = Produce.objects.create(machine_id = machine_data['user_id'],\
-            #     #                                    crop_id = crop['crop_id'],\
-            #     #                                    trough_id = crop['trough_id'],\
-            #     #                                    image = imagepath + crop['imagename'],\
-            #     #                                    weight = crop['weight'],\
-            #     #                                    timestamp = time,\
-            #     #                                    status = 0\
-            #     #                                   )
-            #     #     print(entry)
-            #     # except:
-            #     #     j=1
-            #     #     while machine_data.has_key(j):
-            #     #         crop = machine_data[j]
-            #     #         Produce.objects.filter(machine_id = machine_data['user_id'],\
-            #     #                                        crop_id = crop['crop_id'],\
-            #     #                                        trough_id = crop['trough_id'],\
-            #     #                                        image = imagepath + crop['imagename'],\
-            #     #                                        weight = crop['weight'],\
-            #     #                                        timestamp = time,\
-            #     #                                        status = 0).delete()
-            #     #         j=j+1
-            #     #     return StreamingHttpResponse("Error")
-            #
-            #     i=i+1
-            # return StreamingHttpResponse("Done")
-
-        if auth==0:
-            return StreamingHttpResponse("Invalid")
+        elif auth == 0:
+            return HttpResponse("Invalid")
 
 
 
