@@ -1,17 +1,19 @@
 from django.shortcuts import render
 import json
 import os
-from datetime import datetime
+import datetime
+
 from django.views.decorators.csrf import csrf_exempt
-from farmapp.models import Produce,Machine,Crop
+from farmapp.models import Produce,Machine,Crop,Trough,User
 from django.http import HttpResponse
 
 def auth_user(machine_data):
     try:
-        machine = Machine.objects.get(user_id = machine_data['user_id'], password = machine_data['password'])
+        machine = Machine.objects.get(machine_id = machine_data['user_id'], password = machine_data['password'])
         print(machine)
         return 1
-    except:
+    except Exception as e:
+        print(e)
         return 0
 
 
@@ -22,8 +24,8 @@ def data_entry(request):
         auth = auth_user(crop)
         imagepath = os.getcwd() + "/images/"
         if auth == 1:
-            time = datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
-            time = time.isoformat()
+            time = datetime.datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
+            #time = time.isoformat()
 
             with open(imagepath + crop['imagename'], 'wb') as img_file:
                 byte_str = crop['image']
@@ -37,20 +39,23 @@ def data_entry(request):
             print(time)
             print(0)
             try:
-                entry = Produce.objects.create(machine_id = crop['user_id'],\
-                                               crop_id = crop['crop_id'],\
-                                               trough_id = crop['trough_id'],\
+                entry = Produce(machine_id = Machine.objects.get(pk = crop['user_id']),\
+                                               crop_id = Crop.objects.get(pk = crop['crop_id']),\
+                                               trough_id = Trough.objects.get(pk = crop['troughid']),\
                                                image = imagepath + crop['imagename'],\
                                                weight = crop['weight'],\
                                                date_of_produce = time,\
+                                               timestamp = datetime.datetime.now(),\
                                                status = 0\
                                               )
                 input_crop = Crop.objects.get(crop_id = crop['crop_id'])
+
                 entry.date_of_expiry = entry.date_of_produce + datetime.timedelta(hours=input_crop.shelf_life)
                 entry.save()
                 print("Entry done")
                 return HttpResponse("Done")
-            except:
+            except Exception as e:
+                print(e)
                 return HttpResponse("Error")
 
         elif auth == 0:
