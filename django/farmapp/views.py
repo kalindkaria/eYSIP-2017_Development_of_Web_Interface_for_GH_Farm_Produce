@@ -1,8 +1,10 @@
 from django.shortcuts import render, HttpResponseRedirect
 from .forms import LoginForm, SignUpForm
 from farmapp.models import User
+from django.views.decorators.cache import cache_control
 
 
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def index(request):
     loginform = LoginForm()
     signupform = SignUpForm()
@@ -26,6 +28,8 @@ def logout(request):
 
 
 def login(request):
+    print("In LOGIN")
+    print(request.session.get("logged_in", False))
     if request.session.get('logged_in', False):
         if request.session.get('user_type', "").upper() == "PRODUCER":
             return HttpResponseRedirect('/producer/home/')
