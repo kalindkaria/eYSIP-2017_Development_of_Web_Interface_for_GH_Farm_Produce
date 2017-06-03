@@ -3,21 +3,20 @@
 {% block navlist %}
 	 <ul class="navbar-nav mr-auto justify-content-between">
     </ul>
-	<div class="navbar-nav nav-right">
-		<div class="btn-group">
-		  <button type="button" class="btn btn-outline-info">{{ request.session.email }}</button>
-		  <button type="button" class="btn btn-outline-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		    <span class="sr-only">Toggle Dropdown</span>
-		  </button>
-		  <div class="dropdown-menu">
-		    <a class="dropdown-item" href="#"><span class="fa fa-user"></span>   Profile</a>
-		    <a class="dropdown-item" href="#">Alerts <span class="badge badge-default badge-pill">0</span></a>
-		    <a class="dropdown-item" href="#">Orders</a>
+    <ul class="navbar-nav">
+    	<li>
+    		<a href="#" class="dropdown-toggle" href="https://example.com" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white; text-decoration: none">
+    			{{ request.session.email }}
+    		</a>
+    		<div class="dropdown-menu dropdown-menu-right">
+		    <a class="dropdown-item h-100" href="#"><span class="fa fa-user"></span>   Profile</a>
+		    <a class="dropdown-item h-100" href="#"><span class="fa fa-bell"></span>   Alerts <span class="badge badge-default badge-pill">0</span></a>
+		    <a class="dropdown-item" href="#"><span class="fa fa-shopping-cart"></span>    Orders</a>
 		    <div class="dropdown-divider"></div>
-		    <a class="dropdown-item" href="/logout">Logout</a>
+		    <a class="dropdown-item" href="/logout"><span class="fa fa-sign-out"></span>    Logout</a>
 		  </div>
-		</div>
-	</div>
+    	</li>
+    </ul>
 {% endblock navlist %}
 
 {% block sidebar %}
