@@ -1,0 +1,10 @@
+nav a{
+	color:white;
+
+}
+nav a:hover{
+	color: #33beFF;
+}
+nav a:focus{
+	color:#33beFF;
+}

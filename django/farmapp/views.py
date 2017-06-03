@@ -42,3 +42,6 @@ def home(request):
 def logout(request):
     request.session.flush()
     return HttpResponseRedirect('/')
+
+def producer_home(request):
+    return render(request,'producer.html',{})

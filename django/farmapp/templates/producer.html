@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap3 %}
+
+{% block navlist %}
+	<ul class="navbar-nav mr-auto justify-content-between">
+    </ul>
+    <ul class="navbar-nav">
+    	<li>
+    		<a href="#" class="dropdown-toggle" href="https://example.com" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white; text-decoration: none">
+    			{{ request.session.email }}
+    		</a>
+    		<div class="dropdown-menu dropdown-menu-right">
+		    <a class="dropdown-item h-100" href="#"><span class="fa fa-user"></span>   Profile</a>
+		    <a class="dropdown-item h-100" href="#"><span class="fa fa-bell"></span>   Alerts <span class="badge badge-default badge-pill">0</span></a>
+		    <a class="dropdown-item" href="#"><span class="fa fa-shopping-cart"></span>    Orders</a>
+		    <div class="dropdown-divider"></div>
+		    <a class="dropdown-item" href="/logout"><span class="fa fa-sign-out"></span>    Logout</a>
+		  </div>
+    	</li>
+    </ul>
+{% endblock navlist %}
+
+{% block sidebar %}
+<nav class="bg-inverse sidebar">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a class="nav-link active{% if page == "home" %}active{% endif %}" href="#" >Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "store" %}active{% endif %}" href="#">Store</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "analytics" %}active{% endif %}" href="#">Analytics</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "orders" %}active{% endif %}" href="#">Orders</a>
+        </li>
+    </ul>
+</nav>
+{% endblock sidebar %}
+
+{% block center %}
+
+<table class="table table-striped">
+  <thead class="thead-inverse">
+    <tr>
+      <th>#</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Username</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Jacob</td>
+      <td>Thornton</td>
+      <td>@fat</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>Larry</td>
+      <td>the Bird</td>
+      <td>@twitter</td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+{% endblock center %}

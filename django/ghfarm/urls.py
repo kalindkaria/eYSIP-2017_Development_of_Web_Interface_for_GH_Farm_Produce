@@ -22,5 +22,6 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^machine/$', machine_views.data_entry, name='data_entry'),
     url(r'^home/$', views.home, name='home'),
-    url(r'^logout/$', views.logout, name='logout')
+    url(r'^logout/$', views.logout, name='logout'),
+    url(r'^producer/home/$', views.producer_home, name='producer_home')
 ]
