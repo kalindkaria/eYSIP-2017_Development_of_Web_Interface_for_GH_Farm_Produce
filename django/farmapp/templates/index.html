@@ -36,7 +36,7 @@
             {% if error_message %}
             <p><strong>{{ error_message }}</strong></p>
             {% endif %}
-            <form action="" method="POST">
+            <form action="/login/" method="POST">
             {% csrf_token %} 
             {% bootstrap_form signupform show_help=False %} 
            <input type="submit" name="signup" value="Sign Up" class="btn btn-primary">
@@ -58,7 +58,7 @@
             {% if error_message %}
             <p><strong>{{ error_message }}</strong></p>
             {% endif %}
-            <form action="" method="POST">
+            <form action="/login/" method="POST">
             {% csrf_token %} 
             {% bootstrap_form loginform show_help=False %}    
             <input type="submit" name="login" value="Login"  class="btn btn-primary">
