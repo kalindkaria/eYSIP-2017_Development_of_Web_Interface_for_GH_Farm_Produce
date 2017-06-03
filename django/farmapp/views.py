@@ -1,5 +1,6 @@
 from django.shortcuts import render, HttpResponseRedirect
 from .forms import LoginForm, SignUpForm
+from farmapp.models import User
 
 
 def home(request):
@@ -14,7 +15,15 @@ def index(request):
             loginform = LoginForm(request.POST)
             if loginform.is_valid():
                 print(loginform.cleaned_data)
-                return HttpResponseRedirect('/home/')
+                try:
+                    user = User.objects.get(email=loginform.cleaned_data['email'], password=loginform.cleaned_data['password'])
+                    request.session['logged_in'] = True
+                    request.session['user_id'] = user.user_id
+                    request.session['email'] = user.email
+                    return HttpResponseRedirect('/home/')
+                except Exception as e:
+                    print(e)
+
         elif request.POST.get("signup", ""):
             signupform = SignUpForm(request.POST)
             print(signupform)

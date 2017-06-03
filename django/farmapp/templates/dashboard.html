@@ -2,37 +2,32 @@
 {% load static %}
 {% load bootstrap3 %}
 
-    {% block navbar %}
-    <nav class="navbar navbar-toggleable-md navbar-inverse bg-inverse fixed-top">
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand" href="#">GH Farm</a>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Store</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">About Us</a>
-                </li>
-            </ul>
-            <form class="form-inline col-md-1">
-                <button class="btn btn-outline-primary" type="button" data-toggle="modal" data-target="#signup">Sign Up</button>
-            </form>
-            <form class="form-inline col-md-1">
-                <button class="btn btn-outline-success" type="button" data-toggle="modal" data-target="#login">Login</button>
-            </form>
-        </div>
-    </nav>
+    {% block navlist %}
+    <ul class="navbar-nav mr-auto justify-content-between">
+        <li class="nav-item {% if page == "home" %}active{% endif %}">
+            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/store">Store</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/about">About Us</a>
+        </li>
+    </ul>
+    <div class="btn-group mr-2" role="group">
+        <button type="button" class="btn btn-outline-primary"data-toggle="modal" data-target="#signup">Sign Up</button>
+    </div>
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-success"data-toggle="modal" data-target="#login">Login</button>
+    </div>
+    {% endblock navlist %}
+
+    {% block modal %}
     <div class="modal fade" id="signup" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Login</h5>
+            <h5 class="modal-title" id="exampleModalLabel">Sign Up</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -44,7 +39,7 @@
             <form action="" method="POST">
             {% csrf_token %} 
             {% bootstrap_form signupform show_help=False %}    
-           <input type="submit" name="signup" value="Login"  class="btn btn-primary">
+           <input type="submit" name="signup" value="Sign Up" class="btn btn-primary">
             </form>
           </div>
         </div>
@@ -72,29 +67,23 @@
         </div>
       </div>
     </div>
-    {% endblock navbar %}
+    {% endblock modal %}
     {% block sidebar %}
-
-            <nav class="hidden-xs-down bg-faded">
-                <ul class="nav nav-pills flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Overview <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Reports</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Analytics</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Export</a>
-                    </li>
-                </ul>
-            </nav>
     {% endblock sidebar %}
 
     {% block content%}
-    <p>
-    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Minus distinctio laboriosam temporibus, voluptatem consequuntur, officia magnam fuga labore deserunt nulla. Exercitationem vel mollitia, deserunt accusantium enim aperiam nam harum alias!
-    </p>
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container" >
+          <h1 class="display-3">Hey There!</h1>
+          <p class="lead">Welcome to GH Farm.</p>
+          <hr class="my-4">
+          <p>
+          GH Farm is an automated farm produce Logging and Monitoring System. This website lets you get in touch with 
+          smart farms near you and buy their fresh produce.
+          </p>
+          <p class="lead">
+            <a class="btn btn-primary btn-lg" href="/about" role="button">Learn more</a>
+          </p>
+        </div>
+    </div>
     {% endblock content%}
