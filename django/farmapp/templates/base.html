@@ -9,7 +9,10 @@
     <title>GH Farm</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" type="text/css" href={% static "css/bootstrap.min.css" %}>
+    <!-- Custom Fonts -->
     <link rel="stylesheet" type="text/css" href={% static "css/sidebar.css" %}>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" type="text/css" href={% static "font-awesome/css/font-awesome.min.css" %}>
 </head>
 
 <body style="margin-top: 1%">
@@ -34,26 +37,7 @@
         {% block content %}
         <div class="row">
             <div class="col-md-3">
-            {% block sidebar %}
-
-            <nav class="hidden-xs-down bg-faded">
-                <ul class="nav nav-pills flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Overview <span class="sr-only">(current)</span></a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Reports</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Analytics</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Export</a>
-                    </li>
-                </ul>
-            </nav>
-
-            {% endblock sidebar %}
+            {% block sidebar %} {% endblock sidebar %}
             </div>
             <div class="col-md-9">{% block center %} {% endblock center %}</div>
         </div>

@@ -3,13 +3,11 @@ from .forms import LoginForm, SignUpForm
 from farmapp.models import User
 
 
-def home(request):
-    return render(request, 'base.html')
-
-
 def index(request):
     loginform = LoginForm()
     signupform = SignUpForm()
+    if request.session.get('logged_in', False):
+        return HttpResponseRedirect('/home/')
     if request.method == "POST":
         if request.POST.get("login", ""):
             loginform = LoginForm(request.POST)
@@ -32,4 +30,15 @@ def index(request):
                 return HttpResponseRedirect('/home/')
         else:
             print(request.POST)
-    return render(request, 'dashboard.html', {'loginform': loginform, 'signupform': signupform})
+    return render(request, 'index.html', {'loginform': loginform, 'signupform': signupform, 'page': 'index'})
+
+
+def home(request):
+    if request.session.get("logged_in", False):
+        return render(request, 'home.html', {'page': "home"})
+    return HttpResponseRedirect('/')
+
+
+def logout(request):
+    request.session.flush()
+    return HttpResponseRedirect('/')

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block navlist %}
+	 <ul class="navbar-nav mr-auto justify-content-between">
+    </ul>
+	<div class="navbar-nav nav-right">
+		<div class="btn-group">
+		  <button type="button" class="btn btn-outline-info">{{ request.session.email }}</button>
+		  <button type="button" class="btn btn-outline-info dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		    <span class="sr-only">Toggle Dropdown</span>
+		  </button>
+		  <div class="dropdown-menu">
+		    <a class="dropdown-item" href="#"><span class="fa fa-user"></span>   Profile</a>
+		    <a class="dropdown-item" href="#">Alerts <span class="badge badge-default badge-pill">0</span></a>
+		    <a class="dropdown-item" href="#">Orders</a>
+		    <div class="dropdown-divider"></div>
+		    <a class="dropdown-item" href="/logout">Logout</a>
+		  </div>
+		</div>
+	</div>
+{% endblock navlist %}
+
+{% block sidebar %}
+<nav class="bg-faded sidebar">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a class="nav-link {% if page == "home" %}active{% endif %}" href="#">Home<span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "store" %}active{% endif %}" href="#">Store</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "analytics" %}active{% endif %}" href="#">Analytics</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "orders" %}active{% endif %}" href="#">Orders</a>
+        </li>
+    </ul>
+</nav>
+{% endblock sidebar %}
