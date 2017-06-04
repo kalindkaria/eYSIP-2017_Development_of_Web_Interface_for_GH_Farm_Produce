@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponseRedirect
 from .forms import LoginForm, SignUpForm
-from farmapp.models import User
+from farmapp.models import User,Produce,Machine,Trough
 from django.views.decorators.cache import cache_control
 
 
@@ -67,5 +67,10 @@ def login(request):
 
 def producer_home(request):
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
-        return render(request, 'producer.html', {'page': "home"})
+        user = User.objects.get(pk = request.session['user_id'])
+        machines = Machine.objects.filter(user_id = user )
+        produce = list(Produce.objects.filter(machine_id__in = machines ))
+
+        print(produce)
+        return render(request, 'producer.html', {'page': "home",'produce':produce})
     return HttpResponseRedirect('/')

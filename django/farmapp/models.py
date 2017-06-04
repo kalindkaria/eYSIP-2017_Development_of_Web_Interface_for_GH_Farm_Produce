@@ -4,6 +4,8 @@ from django.db import models
 class User(models.Model):
     user_id = models.AutoField(primary_key=True)
     email = models.EmailField()
+    first_name= models.CharField(max_length=100,null=True)
+    last_name= models.CharField(max_length=100,null=True)
     password = models.CharField(max_length=20)
     address_line1 = models.CharField(max_length=100)
     address_line2 = models.CharField(max_length=100,null=True)
@@ -26,6 +28,7 @@ class Crop(models.Model):
         return self.english_name
 
 class Machine(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE,null=True)
     machine_id = models.AutoField(primary_key=True)
     password = models.CharField(max_length=20)
     location = models.CharField(max_length=255)
@@ -35,11 +38,11 @@ class Machine(models.Model):
     def __str__(self):
         return str(self.machine_id)
 
-class Producer(models.Model):
-    machine_id = models.ForeignKey(Machine,on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User,on_delete=models.CASCADE)
-    def __str__(self):
-        return self.user_id
+# class Producer(models.Model):
+#     machine_id = models.ForeignKey(Machine,on_delete=models.CASCADE)
+#     user_id = models.ForeignKey(User,on_delete=models.CASCADE)
+#     def __str__(self):
+#         return self.user_id
 
 
 class Trough(models.Model):
@@ -59,8 +62,8 @@ class Produce(models.Model):
     date_of_expiry = models.DateTimeField()
     status = models.FloatField()
     def __str__(self):
-        user = Producer.objects.get(machine_id = self.machine_id)
-        return str(user.user_id)
+        # user = Machine.objects.get(machine_id = self.machine_id.machine_id)
+        return str(self.machine_id.user_id.first_name +" - "+ self.crop_id.english_name)
 
 class Inventory(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)

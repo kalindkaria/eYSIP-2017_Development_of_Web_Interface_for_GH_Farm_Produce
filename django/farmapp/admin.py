@@ -3,7 +3,6 @@ from .models import *
 
 admin.site.register(Machine)
 admin.site.register(Produce)
-admin.site.register(Producer)
 admin.site.register(User)
 admin.site.register(Crop)
 admin.site.register(Trough)
