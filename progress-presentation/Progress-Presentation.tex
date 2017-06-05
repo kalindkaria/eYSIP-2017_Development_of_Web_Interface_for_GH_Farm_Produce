@@ -1,0 +1,121 @@
+\documentclass[10pt, a4paper]{beamer}
+
+\usetheme{Berkeley}
+\usecolortheme{sidebartab}
+
+\begin{document}
+    \setbeamertemplate{sidebar left}{}
+    \title{Progress Presentation-I}
+    \subtitle{e-Yantra Summer Intership-2017 \\ Development of GH farm-produce Web Monitoring System}
+    \author{Keivan Shah\\Hemang Gandhi\\
+    Mentors: \\Yogita\\Uma\\Parin}
+    \institute{IIT Bombay}
+    \date{\today}
+    %\addtobeamertemplate{sidebar left}{}{\includegraphics[scale = 0.3]{logowithtext.png}}
+    \frame{\titlepage}
+
+\setbeamertemplate{sidebar left}[sidebar theme]
+\section{Overview of Project}
+\begin{frame}{Overview of Project}
+    Development of GH farm-produce web monitoring System \\
+    \begin{itemize}
+        \item Objective: \\
+        \begin{enumerate}
+            \item To design a web portal to be used for monitoring and  keeping a record of vegetable produce in  the greenhouse.
+            \item To establish communication between the weighing machine and a server and save pre-defined characteristics of the vegetables like quantity(according to the weight), its image etc in the database and update the same on the web portal.
+        \end{enumerate}
+        \item Deliverables:\\
+        \begin{enumerate}
+            \item Creating User and Developer manual.
+            \item Report and Presentation
+        \end{enumerate}
+    \end{itemize}
+\end{frame}
+
+\section{Overview of Task}
+\begin{frame}{Overview of Task}
+    % Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+\begin{table}[]
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|}
+\hline
+Task.no & Task & Deadline \\ \hline
+\multicolumn{3}{|c|}{Week 1} \\ \hline
+1 & Learn Raspberry Pi & 2 days \\ \hline
+2 & \begin{tabular}[c]{@{}c@{}}Understanding the current system of the \\ GH farm-produce\end{tabular} & 1 day \\ \hline
+3 & \begin{tabular}[c]{@{}c@{}}Weighing machine ethernet connection\\  with localhost .\end{tabular} & 2 days \\ \hline
+4 & Study python & 1 day \\ \hline
+\multicolumn{3}{|c|}{Week 2} \\ \hline
+5 & \begin{tabular}[c]{@{}c@{}}Javascript, Ajax and Bootstrap and installing \\ Django on the system and backend\end{tabular} & 2 days \\ \hline
+6 & \begin{tabular}[c]{@{}c@{}}Designing a Login web page for all type of user \\ using Django Framework\end{tabular} & 1 day \\ \hline
+7 & \begin{tabular}[c]{@{}c@{}}Creating Web interface showing the data like \\ image and name of vegetable/fruit, weight in \\ grams, price,Add to cart etc that is logged by\\  the producer i.e Integrating these pages with the database .\end{tabular} & 3 days \\ \hline
+\end{tabular}%
+}
+\end{table}
+\end{frame}
+
+
+\section{Overview of Task}
+\begin{frame}{Overview of Task}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+\begin{table}[]
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|c|c|c|}
+\hline
+Task.no & Task & Deadline \\ \hline
+\multicolumn{3}{|c|}{Week 3} \\ \hline
+8 & \begin{tabular}[c]{@{}c@{}}Create Master page and maintain proper \\ designing throughout the website\end{tabular} & 2 days \\ \hline
+9 & \begin{tabular}[c]{@{}c@{}}An option for ​Add to cart​,will be given to produce \\ and its entire functionality to order the product.\end{tabular} & 3 day \\ \hline
+\multicolumn{3}{|c|}{Week 4} \\ \hline
+10 & \begin{tabular}[c]{@{}c@{}}In Admin Section:Create page to give access to users\\  and create new users(producer) for Admin.\end{tabular} & 2 days \\ \hline
+11 & \begin{tabular}[c]{@{}c@{}}In producer section:Create page showing all details of\\  products \& make provision to modify the details if necessary\end{tabular} & 1 day \\ \hline
+12 & Add notification feature for further production from the farm & 2 days \\ \hline
+\multicolumn{3}{|c|}{Week 5} \\ \hline
+13 & \begin{tabular}[c]{@{}c@{}}Generate Various reports as discussed above to get the customised\\  details of the data of the things produced in thefarm .\end{tabular} & 4 days \\ \hline
+14 & Reciprocate this project localhost to server & 2 days \\ \hline
+\multicolumn{3}{|c|}{Week 6} \\ \hline
+15 & Make Website fully functional & 2 days \\ \hline
+16 & Create user and developer manual & 3 days \\ \hline
+\end{tabular}%
+}
+\end{table}
+
+\end{frame}
+
+\section{Task Accomplished}
+\begin{frame}{Task Accomplished}
+    \begin{itemize}
+        \item Establishing communication between raspberry pi and server and inserting data into the database
+        \item Designing database schema for the project
+        \item Developing login page for different users (Admin,Consumer,Producer)
+        \item Showing produce log with images for each producer
+    \end{itemize}
+\end{frame}
+
+\section{Challenges Faced}
+\begin{frame}{Challenges Faced}
+    \begin{itemize}
+        \item Django architecture: \\Django is based on the Model-View-Controller(MVC) architecture. Since we have never worked with it before it took time to understand the architecture and how to set up our project with it to make optimum use of the architecture. 
+        \item Communication between raspberry pi and Server:\\We earlier used tcp socket server for communication which had the drawback of deadlock condition. We changed the entire architecture of the client-server communication to make use of the better RESTful API. This solved the problems we had about of having to run two servers, since Django supports REST API. This has also made the communication free from deadlocks and also the code can now be easily changed to communicate with any other server.
+    \end{itemize}
+\end{frame}
+
+\section{Future Plans}
+\begin{frame}{Future Plans}
+    \begin{itemize}
+        \item Develop web interface to provide consumer the option to add items to cart and purchase products currently available.
+        \item Creating reports in form of charts which describe different statistics and analytics.
+        \item Adding notification feature for new farm produce and orders.
+        \item Setting Up the website on an actual server.
+    \end{itemize}
+\end{frame}
+
+
+\section{Thank You}
+\begin{frame}{Thank You}
+    \centering THANK YOU !!!
+\end{frame}
+\end{document}
