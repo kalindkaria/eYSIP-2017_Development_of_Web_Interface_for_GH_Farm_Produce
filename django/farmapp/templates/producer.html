@@ -28,7 +28,7 @@
             <a class="nav-link {% if page == "home" %}active{% endif %}" href="#" >Home</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if page == "store" %}active{% endif %}" href="#">Store</a>
+            <a class="nav-link {% if page == "store" %}active{% endif %}" href="/producer/inventory">Inventory</a>
         </li>
         <li class="nav-item">
             <a class="nav-link {% if page == "analytics" %}active{% endif %}" href="#">Analytics</a>
@@ -46,29 +46,28 @@
 <table class="table table-striped">
   <thead class="thead-inverse">
     <tr>
-      <th>#</th>
       <th>Crop</th>
       <th>Weight</th>
       <th>Machine</th>
       <th>Trough</th>
       <th>Date of Produce</th>
       <th>Date of Expiry</th>
+      <th>Image</th>
     </tr>
   </thead>
   <tbody>
   	{%for entry in produce%}
     <tr>
-      <th scope="row">{{i}}</th>
       <td>{{entry.crop_id}}</td>
-      <td>{{entry.weight}}</td>
+      <td>{{entry.weight}}g</td>
       <td>{{entry.machine_id}}</td>
       <td>{{entry.trough_id}}</td>
       <td>{{entry.date_of_produce}}</td>
       <td>{{entry.date_of_expiry}}</td>
-    </tr>
+      <td><img src="{{entry.image}}"></td>
+    </tr> 
     {%endfor%}
   </tbody>
 </table>
-
 
 {% endblock center %}
