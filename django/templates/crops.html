@@ -2,18 +2,34 @@
 {% load static %}
 
 {% block content%}
-<div class="jumbotron jumbotron-fluid">
-    <div class="container" >
-      <h1 class="display-3">Hey There!</h1>
-      <p class="lead">Welcome to GH Farm.</p>
-      <hr class="my-4">
-      <p>
-      GH Farm is an automated farm produce Logging and Monitoring System. This website lets you get in touch with 
-      smart farms near you and buy their fresh produce.
-      </p>
-      <p class="lead">
-        <a class="btn btn-primary btn-lg" href="/about" role="button">Learn more</a>
-      </p>
-    </div>
+
+<div class="row">
+{% for crop in crops %}
+	<div class=" col-lg-3 col-md-6 col-xs-12"><a href="#" data-toggle="modal" data-target="#{{forloop.counter}}"><img src="{% static crop.imagepath %}" class="img-thumbnail" width=300 height=300></a>{{crop.english_name}}</div>
+
+
+	<div class="modal fade hidden" id="{{forloop.counter}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content" style="width:135%;">
+	      <div class="modal-header hidden">
+	        <h5 class="modal-title hidden" id="exampleModalLabel">Crop Details:</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	      	<ul class="list-group">
+	      		<li class="list-group-item">English Name: {{crop.english_name}}</li>
+	      		<li class="list-group-item">Local Name: {{crop.local_name}}</li>
+	      		<li class="list-group-item">Scientific Name:{{crop.scientific_name}}</li>
+	      		<li class="list-group-item">Shelf Life: {{crop.shelf_life}} hrs</li>
+	      		<li class="list-group-item">Price: Rs.{{crop.price}}/kg</li>
+	      	</ul>
+	      </div>
+
+	    </div>
+	  </div>
+	</div>
+{%endfor%}
 </div>
 {% endblock content%}
