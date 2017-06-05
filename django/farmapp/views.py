@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponseRedirect
 from .forms import LoginForm, SignUpForm
-from farmapp.models import User,Produce,Machine,Trough
+from farmapp.models import User,Produce,Machine,Trough,Inventory
 from django.views.decorators.cache import cache_control
 
 
@@ -78,9 +78,6 @@ def producer_home(request):
 def producer_inventory(request):
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
         user = User.objects.get(pk = request.session['user_id'])
-        machines = Machine.objects.filter(user_id = user )
-        produce = list(Produce.objects.filter(machine_id__in = machines ))
-
-        print(produce)
-        return render(request, 'producer.html', {'page': "home",'produce':produce})
+        inventory = Inventory.objects.filter(user_id = user)
+        return render(request, 'producer_inventory.html', {'page': "inventory",'inventory':inventory})
     return HttpResponseRedirect('/')

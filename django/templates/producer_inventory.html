@@ -1,0 +1,43 @@
+{% extends "producer.html" %}
+{% load static %}
+{% load bootstrap3 %}
+{% block sidebar %}
+<nav class="bg-inverse sidebar">
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item">
+            <a class="nav-link {% if page == "home" %}active{% endif %}" href="/producer/home" >Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "inventory" %}active{% endif %}" href="#">Inventory</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "analytics" %}active{% endif %}" href="#">Analytics</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if page == "orders" %}active{% endif %}" href="#">Orders</a>
+        </li>
+    </ul>
+</nav>
+{% endblock sidebar %}
+
+{% block center %}
+
+<h1>Produce:</h1>
+<table class="table table-striped table-bordered" style="width:75%; text-align:center;">
+  <thead class="thead-inverse mx-auto">
+    <tr>
+      <th style="text-align: center;">Crop</th>
+      <th>Weight</th>
+    </tr>
+  </thead>
+  <tbody>
+  	{%for entry in inventory%}
+    <tr>
+      <td>{{entry.crop_id}}</td>
+      <td>{{entry.weight}}g</td>
+    </tr> 
+    {%endfor%}
+  </tbody>
+</table>
+
+{% endblock center %}
