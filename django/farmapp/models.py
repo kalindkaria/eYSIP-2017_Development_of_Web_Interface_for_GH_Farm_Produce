@@ -21,8 +21,9 @@ class Crop(models.Model):
     crop_id = models.AutoField(primary_key=True)
     local_name = models.CharField(max_length=100,null=True)
     english_name = models.CharField(max_length=100,null=True)
-    scientific_name = models.CharField(max_length=100)
+    scientific_name = models.CharField(max_length=100,null=True)
     shelf_life = models.FloatField()
+    imagepath = models.CharField(max_length=100,null=True)
     price = models.FloatField()
     def __str__(self):
         return self.english_name
