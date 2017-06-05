@@ -78,13 +78,9 @@ def producer_home(request):
 
 def producer_inventory(request):
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
-<<<<<<< HEAD
-        user = User.objects.get(pk=request.session['user_id'])
-        machines = Machine.objects.filter(user_id=user)
-        produce = list(Produce.objects.filter(machine_id__in=machines))
-
-        print(produce)
-        return render(request, 'producer.html', {'page': "home", 'produce': produce})
+        user = User.objects.get(pk = request.session['user_id'])
+        inventory = Inventory.objects.filter(user_id = user)
+        return render(request, 'producer_inventory.html', {'page': "inventory",'inventory':inventory})
     return HttpResponseRedirect('/')
 
 
@@ -98,9 +94,3 @@ def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
     return render(request, 'crops.html', {'loginform': loginform, 'signupform': signupform, 'page': 'crops'})
-=======
-        user = User.objects.get(pk = request.session['user_id'])
-        inventory = Inventory.objects.filter(user_id = user)
-        return render(request, 'producer_inventory.html', {'page': "inventory",'inventory':inventory})
-    return HttpResponseRedirect('/')
->>>>>>> 755195d270f27e4d6068eed9ea670b839022883e
