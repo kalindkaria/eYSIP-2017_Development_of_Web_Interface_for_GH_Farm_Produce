@@ -1,0 +1,40 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block content%}
+<div class="jumbotron jumbotron-fluid">
+    <div class="container" >
+    	<h1>About the Project:</h1>
+      <p>
+      	We are designing a web portal to be used for monitoring and keeping a record of vegetable
+		produce in the greenhouse. Our project logs crop data in greenhouse to reduce
+		manual labour. Initially, the farm produce (i.e vegetables) are weighed on a weighing
+		machine. The weighing machine communicates with an server and sends
+		pre-defined characteristics of the vegetables like quantity(according to the weight),
+		its image etc which is then stored in the database and updated on the web portal.
+		The portal also aims at implementing an e-Commerce store. It involves python, for
+		backend of the weighing machine.
+      </p>
+      <p>
+      	Website will be designed using the following Web development technologies:
+      </p>
+      <ul>
+      	<li><b>Front-end+Back-end:</b> AngularJS, python, Bootstrap, Javascript (including JQuery
+and AJAX)</li>
+      	<li><b>Framework:</b> Django</li>
+      	<li><b>Database:</b> MySQL</li>
+      	<li><b>Web Tools:</b> Sublime Text, Pycharm Community Edition</li>
+      	<li><b>Development platform:</b> Linux Mint</li>
+      	<li><b>Target Environment:</b> Desktop, Tablets, Mobiles</li>
+      </ul>
+      <p>
+      	System has three components:
+      </p>
+      <ol>
+      	<li>Weighing machine.</li>
+      	<li>Ethernet connection with server.</li>
+		<li>Web interface for data logging and monitoring</li>
+      </ol>
+    </div>
+</div>
+{% endblock content%}

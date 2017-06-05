@@ -25,5 +25,7 @@ urlpatterns = [
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^login/$', views.login, name="login"),
     url(r'^producer/home/$', views.producer_home, name='producer_home'),
-    url(r'^producer/inventory/$', views.producer_inventory, name='producer_inventory')
+    url(r'^producer/inventory/$', views.producer_inventory, name='producer_inventory'),
+    url(r'^about/$', views.about, name='about'),
+    url(r'^crops/', views.crops, name='crops'),
 ]
