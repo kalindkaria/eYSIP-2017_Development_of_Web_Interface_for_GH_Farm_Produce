@@ -1,10 +1,17 @@
 nav a{
 	color:white;
-
+	
 }
 nav a:hover{
 	color: #33beFF;
+	text-decoration: none;
 }
 nav a:focus{
 	color:#33beFF;
+	text-decoration: none;
+}
+
+.black{
+	text-decoration: none;
+	color: black;
 }
