@@ -25,14 +25,17 @@ if os.path.getsize("/home/pi/ghfarm/details.txt") > 0:
 			print(len(image))
 		values['image']=image
 		i=i+1
+		try:
+			r = requests.post(url, data=json.dumps(values))
+			print(r.text)
+			if(r.text != "Done"):
+				pending.append(details)
+		except:
+			print("Error occured")
 
-		r = requests.post(url, data=json.dumps(values))
-		print(r.text)
-		if(r.text != "Done"):
-			pending.append(details)
+	with open('/home/pi/ghfarm/details.txt', 'w') as detail_file:
+		for details in pending:
+			detail_file.write(details)
 
-	f = open('/home/pi/ghfarm/details.txt', 'w')
-	f.write(pending)
-	f.close()
 
 

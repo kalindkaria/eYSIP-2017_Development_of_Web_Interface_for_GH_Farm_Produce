@@ -28,7 +28,7 @@
             <a class="nav-link {% if page == "home" %}active{% endif %}" href="#" >Home</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if page == "store" %}active{% endif %}" href="/producer/inventory">Inventory</a>
+            <a class="nav-link {% if page == "inventory" %}active{% endif %}" href="/producer/inventory">Inventory</a>
         </li>
         <li class="nav-item">
             <a class="nav-link {% if page == "analytics" %}active{% endif %}" href="#">Analytics</a>
@@ -43,9 +43,10 @@
 {% block center %}
 
 <h1>Produce:</h1>
-<table class="table table-striped">
+<table class="table table-striped table-bordered">
   <thead class="thead-inverse">
     <tr>
+      <th>#</th>
       <th>Crop</th>
       <th>Weight</th>
       <th>Machine</th>
@@ -58,16 +59,41 @@
   <tbody>
   	{%for entry in produce%}
     <tr>
+      <td>{{forloop.counter}}</td>
       <td>{{entry.crop_id}}</td>
       <td>{{entry.weight}}g</td>
+      <td>{{entry.crop_id}}</td>
       <td>{{entry.machine_id}}</td>
       <td>{{entry.trough_id}}</td>
       <td>{{entry.date_of_produce}}</td>
       <td>{{entry.date_of_expiry}}</td>
-      <td><img src="{{entry.image}}"></td>
+      <td><a href="#" data-toggle="modal" data-target="#{{forloop.counter}}"><img src="{% static entry.image %}"  width=28 height=28></a></td>
     </tr> 
     {%endfor%}
   </tbody>
 </table>
+<!-- Modal -->
+{%for entry in produce%}
+<div class="modal fade hidden" id="{{forloop.counter}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="width:135%;">
+      <div class="modal-header hidden">
+        <h5 class="modal-title hidden" id="exampleModalLabel">{{entry.crop_id}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+       	<img src="{% static entry.image %}"  width=640 height=480>
+      </div>
 
+    </div>
+  </div>
+</div>
+{%endfor%}
 {% endblock center %}
+
+
+
+
+
