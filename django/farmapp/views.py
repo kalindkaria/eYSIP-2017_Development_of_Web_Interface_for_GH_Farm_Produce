@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponseRedirect
 from .forms import LoginForm, SignUpForm
-from farmapp.models import User,Produce,Machine,Trough,Inventory
+from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop
 from django.views.decorators.cache import cache_control
 
 
@@ -93,4 +93,5 @@ def about(request):
 def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
-    return render(request, 'crops.html', {'loginform': loginform, 'signupform': signupform, 'page': 'crops'})
+    crops = Crop.objects.all()
+    return render(request, 'crops.html', {'loginform': loginform, 'signupform': signupform, 'page': 'crops','crops':crops})
