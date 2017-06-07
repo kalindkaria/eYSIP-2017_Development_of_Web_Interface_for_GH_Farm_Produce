@@ -66,8 +66,8 @@
     
     {% block breadcrumbs %}
     <nav class="breadcrumb">
-    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-    {% if title %} &rsaquo; {{ title }}{% endif %}
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+    <li class="breadcrumb-item">{% if title %} {{ title }}{% endif %}</li>
     </nav>
     {% endblock %}
 
@@ -83,7 +83,7 @@
     <div id="content">
         {% block pretitle %}{% endblock %}
         <!-- {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %} -->
-        <div class="row">
+        <div class="row justify-content-around">
         {% block content %}
         {% block object-tools %}{% endblock %}
         {{ content }}
