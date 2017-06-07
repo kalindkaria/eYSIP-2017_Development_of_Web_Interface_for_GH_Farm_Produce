@@ -12,4 +12,6 @@ class SignUpForm(forms.Form):
     password = forms.CharField(label="Password", help_text="Enter your password", widget=forms.PasswordInput(), label_suffix=":")
     repass = forms.CharField(label="Retype Password", help_text="Retype your Password", widget=forms.PasswordInput(), label_suffix=":")
 
+class CartForm(forms.Form):
+    quantity = forms.FloatField(label="Quantity",help_text="Specify quantity",label_suffix=":")
 

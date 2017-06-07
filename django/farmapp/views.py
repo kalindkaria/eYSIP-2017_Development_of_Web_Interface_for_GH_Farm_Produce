@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponseRedirect
 from .forms import LoginForm, SignUpForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop
 from django.views.decorators.cache import cache_control
+from django.db.models import Sum
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
@@ -95,5 +96,19 @@ def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
     crops = Crop.objects.all()
+    # for crop in crops:
+    #     try:
+    #         availability = Inventory.objects.filter(crop_id = crop).aggregate(Sum('weight'))['weight__sum']
+    #         if availability!= None:
+    #             crop.availability = availability
+    #     except:
+    #         crop.availability = 0
+    #     #print(crop.english_name+"-"+str(crop.availability))
+    #     crop.save()
+    # print(crops[10].english_name + "-" + str(crops[10].availability))
     context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops','crops':crops}
     return render(request, 'crops.html', context)
+
+def add_to_cart(request):
+    if request.session.get('cart_id',False):
+        asdsa="dsf"
