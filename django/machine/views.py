@@ -22,6 +22,8 @@ def update_inventory(entry):
         inventory = Inventory.objects.get(user_id = user,crop_id = entry.crop_id)
         inventory.weight = inventory.weight + entry.weight
         inventory.save()
+        crop = Crop.objects.get(crop_id = entry.crop_id)
+        crop.availability = crop.availability + entry.weight
     except :
         inventory = Inventory.objects.create(user_id = user,crop_id = entry.crop_id,weight=entry.weight)
 
