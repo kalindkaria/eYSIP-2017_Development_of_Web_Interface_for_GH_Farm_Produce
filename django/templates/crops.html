@@ -12,7 +12,7 @@
 			<a href="#" data-toggle="modal" data-target="#{{forloop.counter}}">
 				<img src="{% static crop.imagepath %}" class="img-thumbnail">
 			</a>
-			<p style="text-align: center;">{{ crop.availability }}</p>
+			<p style="text-align: center;">{{ crop.availability|add:"-100" }}</p>
 			<button class="btn-default btn-success">Add to Cart</button>
 		</div>
 	</div>
