@@ -27,23 +27,24 @@
 
 {% if not is_popup %}
 {% block breadcrumbs %}
-<div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-&rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a>
-&rsaquo; {{ cl.opts.verbose_name_plural|capfirst }}
+<div class="breadcrumb">
+<li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+<li class="breadcrumb-item"><a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a></li>
+<li class="breadcrumb-item">{{ cl.opts.verbose_name_plural|capfirst }}</li>
 </div>
 {% endblock %}
 {% endif %}
 
-{% block coltype %}flex{% endblock %}
+{% block coltype %}{% endblock %}
 
 {% block content %}
   <div id="content-main">
     {% block object-tools %}
-        <ul class="object-tools">
+        <ul class="list-group">
           {% block object-tools-items %}
             {% if has_add_permission %}
-            <li>
+            <li class="list-group-item">
+              <span class="fa fa-plus mr-2"></span>
               {% url cl.opts|admin_urlname:'add' as add_url %}
               <a href="{% add_preserved_filters add_url is_popup to_field %}" class="addlink">
                 {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
@@ -54,7 +55,7 @@
         </ul>
     {% endblock %}
     {% if cl.formset.errors %}
-        <p class="errornote">
+        <p class="alert alert-danger">
         {% if cl.formset.total_error_count == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
         </p>
         {{ cl.formset.non_form_errors }}
