@@ -27,6 +27,7 @@ if os.path.getsize("/home/pi/ghfarm/details.txt") > 0:
 		i=i+1
 		try:
 			r = requests.post(url, data=json.dumps(values))
+			print(type(r.text))
 			print(r.text)
 			if(r.text != "Done"):
 				pending.append(details)

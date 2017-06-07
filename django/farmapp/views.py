@@ -87,11 +87,13 @@ def producer_inventory(request):
 def about(request):
     loginform = LoginForm()
     signupform = SignUpForm()
-    return render(request, 'about.html', {'loginform': loginform, 'signupform': signupform, 'page': 'about'})
+    context = {'loginform': loginform, 'signupform': signupform, 'page': 'about'}
+    return render(request, 'about.html', context)
 
 
 def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
     crops = Crop.objects.all()
-    return render(request, 'crops.html', {'loginform': loginform, 'signupform': signupform, 'page': 'crops','crops':crops})
+    context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops','crops':crops}
+    return render(request, 'crops.html', context)

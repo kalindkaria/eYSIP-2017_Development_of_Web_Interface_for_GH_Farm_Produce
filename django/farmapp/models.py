@@ -16,6 +16,8 @@ class User(models.Model):
     contact = models.TextField()
     def __str__(self):
         return self.email
+    class Meta:
+        verbose_name_plural = "users"
 
 class Crop(models.Model):
     crop_id = models.AutoField(primary_key=True)
@@ -27,6 +29,8 @@ class Crop(models.Model):
     price = models.FloatField()
     def __str__(self):
         return self.english_name
+    class Meta:
+        verbose_name_plural = "crops"
 
 class Machine(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE,null=True)
@@ -38,19 +42,16 @@ class Machine(models.Model):
     last_login = models.DateTimeField()
     def __str__(self):
         return str(self.machine_id)
-
-# class Producer(models.Model):
-#     machine_id = models.ForeignKey(Machine,on_delete=models.CASCADE)
-#     user_id = models.ForeignKey(User,on_delete=models.CASCADE)
-#     def __str__(self):
-#         return self.user_id
-
+    class Meta:
+        verbose_name_plural = "machines"
 
 class Trough(models.Model):
     trough_id = models.AutoField(primary_key=True)
     machine_id = models.ForeignKey(Machine,on_delete=models.CASCADE)
     def __str__(self):
         return str(self.machine_id)
+    class Meta:
+        verbose_name_plural = "troughs"
 
 class Produce(models.Model):
     machine_id = models.ForeignKey(Machine,on_delete=models.CASCADE)
@@ -65,21 +66,41 @@ class Produce(models.Model):
     def __str__(self):
         # user = Machine.objects.get(machine_id = self.machine_id.machine_id)
         return str(self.machine_id.user_id.first_name +" - "+ self.crop_id.english_name)
+    class Meta:
+        verbose_name_plural = "produce"
 
 class Inventory(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     weight = models.FloatField()
-
+    def __str__(self):
+        return str(self.user_id)
+    class Meta:
+        verbose_name_plural = "inventories"
 
 class Cart(models.Model):
     cart_id = models.AutoField(primary_key=True)
+    def __str__(self):
+        return str(self.cart_id)
+    class Meta:
+        verbose_name_plural = "cart"
+
+class Cart_session(models.Model):
+    cart_id = models.ForeignKey(Cart,on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     weight = models.FloatField()
     time = models.DateTimeField()
+    def __str__(self):
+        return str(self.cart_id)
+    class Meta:
+        verbose_name_plural = "cart sessions"
 
 class Order(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='Consumer')
-    cart_id = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    cart_id = models.ForeignKey(Cart_session, on_delete=models.CASCADE)
     seller = models.ForeignKey(User, on_delete=models.CASCADE,related_name='Producer')
     delivery_date = models.DateTimeField()
+    def __str__(self):
+        return str(self.user_id+"-"+self.seller+"-"+self.delivery_date)
+    class Meta:
+        verbose_name_plural = "orders"
