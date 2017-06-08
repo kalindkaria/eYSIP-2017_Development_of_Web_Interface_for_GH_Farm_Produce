@@ -5,11 +5,11 @@
 <h2>Our Crops:</h2>
 <hr>
 
-<div class="card-columns">
+<div class="row">
 {% for crop in crops %}
-	<div class="">
+	<div class="col-md-3 col-sm-6 col-xs-12">
 		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
-			<div class="card-header" style="outline-color: #333">
+			<div class="card-header" style="border-color: #333">
 		    	{{ crop.local_name }}
 		  	</div>
 			<a href="#" data-toggle="modal" data-target="#{{forloop.counter}}">
@@ -17,11 +17,11 @@
 			</a>
 		  <div class="card-block">
 		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availabilty > 0 %}
-		    	<p class="card-text">Available: {{ crop.availability }}</p>
-		    {% else  %}
+		    {% ifequal crop.availabilty 0.0 %}
 		    	<p class="card-text">Unavailable</p>
-		    {% endif %}
+		    {% else  %}
+		    	<p class="card-text">Available: {{ crop.availability }}</p>
+		    {% endifequal %}
 		    <div class="text-right">
 		    	<button class="btn btn-success">Add to Cart <span class="fa fa-shopping-cart ml-2"></span></button>
 		  	</div>
