@@ -8,12 +8,20 @@
 <div class="row">
 {% for crop in crops %}
 	<div class=" col-lg-3 col-md-6 col-xs-12">
-		<div>
+		<div class="card text-center bg-inverse">
+			<div class="card-header bg-inverse" style="color: white">
+		    	{{ crop.local_name }}
+		  	</div>
 			<a href="#" data-toggle="modal" data-target="#{{forloop.counter}}">
-				<img src="{% static crop.imagepath %}" class="img-thumbnail">
+					<img src="{% static crop.imagepath %}" class="img-thumbnail">
 			</a>
-			<p style="text-align: center;">{{ crop.availability|add:"-100" }}</p>
-			<button class="btn-default btn-success">Add to Cart</button>
+		  <div class="card-block">
+		    <!-- <h4 class="card-title">Special title treatment</h4> -->
+		    <p class="card-text">Available: {{ crop.availability }}</p>
+		    <div class="m">
+		    	<button class="btn btn-success">Add to Cart <span class="fa fa-shopping-cart ml-2"></span></button>
+		  	</div>
+		  </div>
 		</div>
 	</div>
 
