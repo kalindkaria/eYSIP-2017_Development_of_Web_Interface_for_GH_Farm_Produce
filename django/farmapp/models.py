@@ -1,5 +1,5 @@
 from django.db import models
-
+import datetime
 # Create your models here.
 class User(models.Model):
     user_id = models.AutoField(primary_key=True)
@@ -89,8 +89,8 @@ class Cart(models.Model):
 class Cart_session(models.Model):
     cart_id = models.ForeignKey(Cart,on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
-    weight = models.FloatField()
-    time = models.DateTimeField()
+    weight = models.FloatField(default=0)
+    time = models.DateTimeField(default=datetime.datetime.now())
     def __str__(self):
         return str(self.cart_id)
     class Meta:

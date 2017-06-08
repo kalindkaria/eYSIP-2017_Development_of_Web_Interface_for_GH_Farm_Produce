@@ -120,15 +120,21 @@ def add_to_cart(request,crop_id):
             cart = Cart.objects.create()
             cart_session.cart_id = cart
             request.session['cart_id'] = cart.cart_id
-
+        print(request.session['cart_id'])
         loginform = LoginForm()
         signupform = SignUpForm()
         cart_session.crop_id = Crop.objects.get(crop_id = crop_id)
-        added_crops = Cart_session.objects.filter(cart_id = cart_session.cart_id)
+        cart_session.save()
+        cart_items = Cart_session.objects.filter(cart_id = cart_session.cart_id)
         id=[]
-        for crop in added_crops:
-            id.append(crop.crop_id)
+        print(cart_items)
+        for crop in cart_items:
+            id.append(crop.crop_id.crop_id)
+        print(id)
+        added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
         crops = Crop.objects.exclude(crop_id__in = id).order_by('-availability')
+        print(crops)
         context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops ,'added_crops':added_crops}
         return render(request, 'shop.html' , context)
+
 
