@@ -27,6 +27,6 @@ urlpatterns = [
     url(r'^producer/home/$', views.producer_home, name='producer_home'),
     url(r'^producer/inventory/$', views.producer_inventory, name='producer_inventory'),
     url(r'^about/$', views.about, name='about'),
-    url(r'^crops/', views.crops, name='crops'),
-    url(r'^crops/cart/$', views.add_to_cart, name='add_to_cart')
+    url(r'^crops/$', views.crops, name='crops'),
+    url(r'^shop/cart/(?P<crop_id>[0-9]+)/$', views.add_to_cart, name='add_to_cart')
 ]

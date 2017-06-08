@@ -1,0 +1,103 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block content%}
+<h2>Our Crops:</h2>
+<hr>
+
+<div class="row">
+{% for crop in added_crops %}
+	<div class="col-md-3 col-sm-6 col-xs-12">
+		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
+			<div class="card-header" style="border-color: #333">
+		    	{{ crop.local_name }}
+		  	</div>
+			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
+					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
+			</a>
+		  <div class="card-block">
+		    <!-- <h4 class="card-title">Special title treatment</h4> -->
+		    {% if crop.availability == 0.0 %}
+		    	<p class="card-text">Unavailable</p>
+		    {% else  %}
+		    	<p class="card-text">Available: {{ crop.availability }}</p>
+		    {% endif %}
+		    <div class="text-right">
+		    	<button class="btn btn-danger">Remove From Cart<span class="fa fa-shopping-cart ml-2"></span></button>
+		  	</div>
+		  </div>
+		</div>
+	</div>
+
+
+	<div class="modal fade hidden" id="{{crop.crop_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content" style="width:135%;">
+	      <div class="modal-header hidden">
+	        <h5 class="modal-title hidden" id="exampleModalLabel">Crop Details:</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	      	<ul class="list-group">
+	      		<li class="list-group-item">English Name: {{crop.english_name}}</li>
+	      		<li class="list-group-item">Local Name: {{crop.local_name}}</li>
+	      		<li class="list-group-item">Scientific Name:{{crop.scientific_name}}</li>
+	      		<li class="list-group-item">Shelf Life: {{crop.shelf_life}} hrs</li>
+	      		<li class="list-group-item">Price: Rs.{{crop.price}}/kg</li>
+	      	</ul>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+{%endfor%}
+
+{% for crop in crops %}
+	<div class="col-md-3 col-sm-6 col-xs-12">
+		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
+			<div class="card-header" style="border-color: #333">
+		    	{{ crop.local_name }}
+		  	</div>
+			<a href="#" data-toggle="modal" data-target="#{{forloop.counter}}">
+					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
+			</a>
+		  <div class="card-block">
+		    <!-- <h4 class="card-title">Special title treatment</h4> -->
+		    {% if crop.availability == 0.0 %}
+		    	<p class="card-text">Unavailable</p>
+		    {% else  %}
+		    	<p class="card-text">Available: {{ crop.availability }}</p>
+		    {% endif %}
+		    <div class="text-right">
+		    	<button class="btn btn-success">Add to Cart <span class="fa fa-shopping-cart ml-2"></span></button>
+		  	</div>
+		  </div>
+		</div>
+	</div>
+
+
+	<div class="modal fade hidden" id="{{forloop.counter}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content" style="width:135%;">
+	      <div class="modal-header hidden">
+	        <h5 class="modal-title hidden" id="exampleModalLabel">Crop Details:</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	      	<ul class="list-group">
+	      		<li class="list-group-item">English Name: {{crop.english_name}}</li>
+	      		<li class="list-group-item">Local Name: {{crop.local_name}}</li>
+	      		<li class="list-group-item">Scientific Name:{{crop.scientific_name}}</li>
+	      		<li class="list-group-item">Shelf Life: {{crop.shelf_life}} hrs</li>
+	      		<li class="list-group-item">Price: Rs.{{crop.price}}/kg</li>
+	      	</ul>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+{%endfor%}
+</div>
+{% endblock content%}

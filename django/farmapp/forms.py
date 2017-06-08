@@ -15,3 +15,4 @@ class SignUpForm(forms.Form):
 class CartForm(forms.Form):
     quantity = forms.FloatField(label="Quantity",help_text="Specify quantity",label_suffix=":")
 
+

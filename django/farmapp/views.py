@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponseRedirect
-from .forms import LoginForm, SignUpForm
-from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop
+from .forms import LoginForm, SignUpForm,CartForm
+from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum
 
@@ -95,7 +95,8 @@ def about(request):
 def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
-    crops = Crop.objects.all()
+    crops = Crop.objects.all().order_by('-availability')
+
     # for crop in crops:
     #     try:
     #         availability = Inventory.objects.filter(crop_id = crop).aggregate(Sum('weight'))['weight__sum']
@@ -109,6 +110,25 @@ def crops(request):
     context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops','crops':crops}
     return render(request, 'crops.html', context)
 
-def add_to_cart(request):
-    if request.session.get('cart_id',False):
-        asdsa="dsf"
+def add_to_cart(request,crop_id):
+    if Crop.objects.get(crop_id = crop_id):
+        cart_session = Cart_session()
+        if request.session.get('cart_id', False):
+            cart = Cart.objects.get(cart_id = request.session['cart_id'])
+            cart_session.cart_id = cart
+        else:
+            cart = Cart.objects.create()
+            cart_session.cart_id = cart
+            request.session['cart_id'] = cart.cart_id
+
+        loginform = LoginForm()
+        signupform = SignUpForm()
+        cart_session.crop_id = Crop.objects.get(crop_id = crop_id)
+        added_crops = Cart_session.objects.filter(cart_id = cart_session.cart_id)
+        id=[]
+        for crop in added_crops:
+            id.append(crop.crop_id)
+        crops = Crop.objects.exclude(crop_id__in = id).order_by('-availability')
+        context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops ,'added_crops':added_crops}
+        return render(request, 'shop.html' , context)
+
