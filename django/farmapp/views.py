@@ -105,6 +105,7 @@ def crops(request):
         print(id)
         added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
         request.session['cart_count'] = added_crops.count()
+
         crops = Crop.objects.exclude(crop_id__in = id).order_by('-availability')
         print(crops)
 
@@ -148,10 +149,20 @@ def remove_from_cart(request,crop_id):
         if request.session.get('cart_id',False):
             cart = Cart.objects.get(cart_id = request.session['cart_id'])
             Cart_session.objects.get(cart_id = cart,crop_id = input_crop).delete()
+
+            # cart_count = Cart_session.objects.filter(cart_id = cart).count()
+            # if cart_count == 0:
+            #     del request.session['cart_id']
+            #     del request.session['cart_count']
         return HttpResponseRedirect('/crops')
 
     except:
         return HttpResponseRedirect('/crops')
 
-def view_cart(request,cart_id):
-    dsa=""
+def view_cart(request):
+    loginform = LoginForm()
+    signupform = SignUpForm()
+    cart = Cart.objects.get(cart_id = request.session['cart_id'])
+    cart_session = Cart_session.objects.filter(cart_id = cart)
+    context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops' ,'cart_session':cart_session}
+    return render(request,'cart.html',context)

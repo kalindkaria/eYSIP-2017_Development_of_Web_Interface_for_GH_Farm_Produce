@@ -29,5 +29,7 @@ urlpatterns = [
     url(r'^about/$', views.about, name='about'),
     url(r'^crops/$', views.crops, name='crops'),
     url(r'^shop/addcart/(?P<crop_id>[0-9]+)/$', views.add_to_cart, name='add_to_cart'),
-    url(r'^shop/removecart/(?P<crop_id>[0-9]+)/$', views.remove_from_cart, name='remove_from_cart')
+    url(r'^shop/removecart/(?P<crop_id>[0-9]+)/$', views.remove_from_cart, name='remove_from_cart'),
+    url(r'^cart/$', views.view_cart, name='cart')
 ]
+

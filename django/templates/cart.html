@@ -1,0 +1,73 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block content%}
+<div class="container-fluid">
+  <div class="jumbotron jumbotron-fluid">
+  <div class="container-fluid">
+    <h2>My cart:</h2>
+    <hr>
+
+    <div class="row" style="margin-bottom:1rem ">
+      <div class="col-md-2">
+          <strong>Image</strong>
+      </div> 
+      <div class="col-md-2">
+        <span>
+          <strong>Name</strong>
+        </span>      
+      </div> 
+      <div class="col-md-2">
+        <span>
+          <strong>Maximum limit<br>per customer</strong>
+        </span>      
+      </div>  
+      <div class="col-md-2">
+        <span>
+          <strong>Price</strong>
+        </span>      
+      </div> 
+      <div class="col-md-2">
+        <span>
+          <strong>Availability</strong>
+        </span>      
+      </div>    
+    </div>
+    <hr>
+    {% for item in cart_session %}
+    <div class="row" style="margin-bottom:1rem ">
+      <div class="col-md-2">
+        <img src="{% static item.crop_id.imagepath %}" class="img-thumbnail" width=65 height=65 >
+      </div> 
+      <div class="col-md-2">
+        <span>
+          {{item.crop_id.local_name}}<strong>/</strong><br>{{item.crop_id.english_name}}
+        </span>      
+      </div> 
+      <div class="col-md-2">
+        <span>
+         fadsjklljk
+        </span>      
+      </div>  
+      <div class="col-md-2">
+        <span>
+          Rs.{{item.crop_id.price}}/kg
+        </span>      
+      </div>
+      <div class="col-md-2">
+        <span>
+          {{ item.crop_id.availability}} g
+        </span>      
+      </div>
+      <div class="col-md-2">
+        <a href="{% url 'remove_from_cart' item.crop_id.crop_id %}"><button class="btn btn-danger">Remove <span class="fa fa-shopping-cart ml-2"></span></button></a>
+      </div>   
+    </div>
+    <hr>
+    {% endfor %}
+    
+  </div>
+
+  </div>
+</div>
+{% endblock content%}
