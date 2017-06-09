@@ -14,10 +14,10 @@
             <a class="nav-link" href="/about">About Us</a>
         </li>
     </ul>
-    {% if request.session.cart_id %}
+    {% if request.session.cart_count %}
     </div>
         <div class="btn-group mr-2" role="group">
-        <a href="/cart"><button type="button" class="btn btn-outline-info">Cart  <span style="background-color: white;">{{request.session.cart_count}}</span></button></a>
+        <a href="/cart"><button type="button" class="btn btn-outline-info"><span class="fa fa-shopping-cart mr-2"></span>Cart <span class="badge badge-primary">{{request.session.cart_count}}</span></button></a>
     </div>
     {% endif %}
     <div class="btn-group mr-2" role="group">
