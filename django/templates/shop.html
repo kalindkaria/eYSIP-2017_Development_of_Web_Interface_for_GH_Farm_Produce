@@ -22,7 +22,7 @@
 		    {% else  %}
 		    	<p class="card-text">Available: {{ crop.availability }}</p>
 		    	<div class="text-right">
-		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-danger">Remove from cart<span class="fa fa-shopping-cart ml-2"></span></button></a>
+		    		<a href="{% url 'remove_from_cart' crop.crop_id %}"><button class="btn btn-danger">Remove from cart<span class="fa fa-shopping-cart ml-2"></span></button></a>
 		  		</div>
 		    {% endif %}
 

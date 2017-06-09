@@ -2,7 +2,7 @@ from django.shortcuts import render, HttpResponseRedirect
 from .forms import LoginForm, SignUpForm,CartForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
 from django.views.decorators.cache import cache_control
-from django.db.models import Sum
+from django.db.models import Sum,Count
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
@@ -95,23 +95,28 @@ def about(request):
 def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
-    crops = Crop.objects.all().order_by('-availability')
+    if request.session.get('cart_id',False):
+        cart = Cart.objects.get(cart_id = request.session['cart_id'])
+        cart_items = Cart_session.objects.filter(cart_id = cart)
+        id=[]
+        print(cart_items)
+        for crop in cart_items:
+            id.append(crop.crop_id.crop_id)
+        print(id)
+        added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+        request.session['cart_count'] = added_crops.count()
+        crops = Crop.objects.exclude(crop_id__in = id).order_by('-availability')
+        print(crops)
 
-    # for crop in crops:
-    #     try:
-    #         availability = Inventory.objects.filter(crop_id = crop).aggregate(Sum('weight'))['weight__sum']
-    #         if availability!= None:
-    #             crop.availability = availability
-    #     except:
-    #         crop.availability = 0
-    #     #print(crop.english_name+"-"+str(crop.availability))
-    #     crop.save()
-    # print(crops[10].english_name + "-" + str(crops[10].availability))
-    context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops','crops':crops}
-    return render(request, 'crops.html', context)
+    else:
+        crops = Crop.objects.all().order_by('-availability')
+        added_crops = []
+    context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,'added_crops': added_crops}
+    return render(request, 'shop.html', context)
 
 def add_to_cart(request,crop_id):
-    if Crop.objects.get(crop_id = crop_id):
+    try:
+        input_crop = Crop.objects.get(crop_id = crop_id)
         cart_session = Cart_session()
         if request.session.get('cart_id', False):
             cart = Cart.objects.get(cart_id = request.session['cart_id'])
@@ -121,20 +126,32 @@ def add_to_cart(request,crop_id):
             cart_session.cart_id = cart
             request.session['cart_id'] = cart.cart_id
         print(request.session['cart_id'])
-        loginform = LoginForm()
-        signupform = SignUpForm()
-        cart_session.crop_id = Crop.objects.get(crop_id = crop_id)
+        cart_session.crop_id = input_crop
         cart_session.save()
-        cart_items = Cart_session.objects.filter(cart_id = cart_session.cart_id)
-        id=[]
-        print(cart_items)
-        for crop in cart_items:
-            id.append(crop.crop_id.crop_id)
-        print(id)
-        added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
-        crops = Crop.objects.exclude(crop_id__in = id).order_by('-availability')
-        print(crops)
-        context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops ,'added_crops':added_crops}
-        return render(request, 'shop.html' , context)
+        # cart_items = Cart_session.objects.filter(cart_id = cart_session.cart_id)
+        # id=[]
+        # print(cart_items)
+        # for crop in cart_items:
+        #     id.append(crop.crop_id.crop_id)
+        # print(id)
+        # added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+        # crops = Crop.objects.exclude(crop_id__in = id).order_by('-availability')
+        # print(crops)
+        # context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops ,'added_crops':added_crops}
+        return HttpResponseRedirect('/crops')
+    except:
+        return HttpResponseRedirect('/crops')
 
+def remove_from_cart(request,crop_id):
+    try:
+        input_crop = Crop.objects.get(crop_id = crop_id)
+        if request.session.get('cart_id',False):
+            cart = Cart.objects.get(cart_id = request.session['cart_id'])
+            Cart_session.objects.get(cart_id = cart,crop_id = input_crop).delete()
+        return HttpResponseRedirect('/crops')
 
+    except:
+        return HttpResponseRedirect('/crops')
+
+def view_cart(request,cart_id):
+    dsa=""
