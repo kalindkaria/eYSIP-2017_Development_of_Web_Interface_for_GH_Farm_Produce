@@ -14,7 +14,6 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" type="text/css" href={% static "font-awesome/css/font-awesome.min.css" %}>
     <link rel="stylesheet" type="text/css" href={% static "css/style.css" %}>
-    <link rel="stylesheet" type="text/css" href={% static "css/morris.css" %}>
     {% block head %}
     {% endblock head %}
  
@@ -51,6 +50,7 @@
         {% block footer %} {% endblock footer %}
     </div>
     {% block scripts %} {% endblock scripts %}
+    <script type="text/javascript" src={% static "js/jquery.min.js" %}></script>
     <script type="text/javascript" src={% static "js/tether.min.js" %}></script>
     <script type="text/javascript" src={% static "js/bootstrap.min.js" %}></script>
 </body>
