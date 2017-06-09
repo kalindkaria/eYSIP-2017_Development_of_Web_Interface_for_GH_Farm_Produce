@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'farmapp',
     'machine',
-    'bootstrap3'
+    'bootstrap3',
+    'graphos'
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<!-- Scripts -->
+<script type="text/javascript" src={% static "js/raphael.min.js" %}></script>
+<script type="text/javascript" src={% static "js/oldjquery.js" %}></script>
+<script type="text/javascript">
+	var oldjQuery = jQuery.noConflict(true);
+</script>
+<script type="text/javascript" src={% static "js/morris.js" %}></script>
+{% endblock head %}
+
+{% block content %}
+{{ chart.as_html }}
+{% endblock content %}

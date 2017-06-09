@@ -3,6 +3,8 @@ from .forms import LoginForm, SignUpForm,CartForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
+from graphos.sources.simple import SimpleDataSource
+from graphos.renderers.morris import LineChart
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
@@ -166,3 +168,19 @@ def view_cart(request):
     cart_session = Cart_session.objects.filter(cart_id = cart)
     context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops' ,'cart_session':cart_session}
     return render(request,'cart.html',context)
+
+
+def graph(request):
+    data = [
+        ['Year', 'Sales', 'Expenses'],
+        [2004, 1000, 400],
+        [2005, 1170, 460],
+        [2006, 660, 1120],
+        [2007, 1030, 1540]
+    ]
+    # DataSource object
+    data_source = SimpleDataSource(data=data)
+    # Chart object
+    chart = LineChart(data_source, html_id='graph')
+    context = {'chart': chart}
+    return render(request, 'graph.html', context)
