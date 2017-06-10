@@ -8,6 +8,16 @@ import math
 import datetime
 import sys
 import json
+import urllib.request
+import requests
+
+#NETWORK Constants
+URL = "http://192.168.0.111:8000/machine/"
+PREDICT_URL = "http://192.168.0.111:8000/predict/"
+USER_ID = 1
+PASSWORD = "random"
+imagepath = "/home/pi/ghfarm/images/"
+
 
 #address constant for lines in lcd display
 LINE_1 = 0x80
@@ -66,15 +76,14 @@ def tare():
 	taredWeight = (diff / 49000.0) * 230.0  #store the calculated weight in variable
 
 def takePicture():
-	lcd.clear()
 	lcd.string("Taking picture...", LINE_2)
 	if os.path.exists('/dev/video0'):
 		#create image file name with current date
-		imgName = "image-" + datetime.datetime.now().isoformat() + ".jpg"
+		imgName = "image-"+ datetime.datetime.now().isoformat()+str(USER_ID)+".jpg"
 		imagepath = "/home/pi/ghfarm/images/%s" %imgName
 		#capture image and save in images directory. if image file does not exists in folder then retake the image
 		while os.path.isfile(imagepath) == False:
-			os.system("fswebcam -r 1080x1080 -S 10 --scale 300x300 --no-banner %s" %imagepath)
+			os.system("fswebcam -r 300x300 -S 10 --no-banner %s" %imagepath)
 		return True, imgName
 	else:	#if camera is not attached display error message
 		lcd.clear()
@@ -90,6 +99,7 @@ def storeData(data):
 	lcd.string("Weight: "+str(data['weight']), LINE_2)
 	lcd.string("CropID: "+str(data['cropid']), LINE_3)
 	lcd.string("TroughID: "+str(data['troughid']), LINE_4)
+	time.sleep(2)
 	f = open('/home/pi/ghfarm/details.txt','a')
 	t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	crops = {'weight':data['weight'],'crop_id':data['cropid'],'time': t, 'imagename':data['imagename'], 'troughid':data['troughid']}
@@ -217,7 +227,7 @@ def display_screen():
 				active = 0
 				GPIO.cleanup()
 				sys.stdout.flush()
-				os.execv(sys.executable, ['python'] + sys.argv)
+				os.execv(sys.executable, ['python3'] + sys.argv)
 				break
 			elif key == 'C':
 				lcd.clear()
@@ -232,6 +242,74 @@ def display_screen():
 		else:
 			return weight
 
+
+def is_connected(url):
+	try:
+		urllib.request.urlopen(url, timeout=5)
+		return True
+	except:
+		return False
+
+
+def predict(data):
+	data['user_id']=USER_ID
+	data['password']=PASSWORD
+	with open(imagepath + data['imagename'], 'rb') as img:
+		image = img.read()
+		image = str(image,"latin-1")
+	data['image']=image
+	try:
+		r = requests.post(PREDICT_URL, data=json.dumps(data).encode('utf-8'))
+		print(r.text)
+		r = json.loads(r.text)
+		return True, r['prediction'], r['crop_id']
+	except Exception as e:
+		return False, e, ""
+
+
+def send_all_data(data):
+	data['user_id']=USER_ID
+	data['password']=PASSWORD
+	data['time']= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	with open(imagepath + data['imagename'], 'rb') as img:
+		image = img.read()
+		image = str(image,"latin-1")
+	data['image']=image
+	try:
+		r = requests.post(URL, data=json.dumps(data))
+		print(r.text)
+		if(r.text != "Done"):
+			with open('/home/pi/ghfarm/details.txt', 'w') as detail_file:
+				detail_file.write(json.dumps(data))
+			return False
+		return True
+	except:
+		with open('/home/pi/ghfarm/details.txt', 'w') as detail_file:
+				detail_file.write(json.dumps(data))
+		return False
+
+
+def show_prediction(data, name):
+	lcd.clear()
+	time.sleep(0.1)
+	lcd.string(" Predicted Crop", LINE_1)
+	lcd.string(name, LINE_2)
+	lcd.string("* to continue", LINE_3)
+	lcd.string("# to change", LINE_4)
+	key =""
+	while True:
+		if key == '*':
+			return data
+		if key == '#':
+			cropIDAccepted, cropid =  acceptCropID()
+			if(cropIDAccepted):
+				return cropid
+			else:
+				continue
+		key = kpad.get_key()
+
+
+
 def init():
 	print("Initialization")
 	global baseValue
@@ -245,7 +323,6 @@ def init():
 	lcd.string("    Calibrating", LINE_1)
 	lcd.string("   Please wait...", LINE_2)
 	baseValue = lc.base_value()
-
 try :
 	init()
 	print("Started System")
@@ -254,29 +331,56 @@ try :
 	stage = 0
 	while True:
 		data['weight'] = display_screen()
+		print(data['weight'])
 		while True:
 			if stage==0:
-				cropIDAccepted,data['cropid'] =  acceptCropID()
-				if(cropIDAccepted):
-					stage = 1
+				print("Taking Picture")
+				imageAccepted,data['imagename'] = takePicture()
+				if(imageAccepted):
+					stage += 1
 				else:
 					break
 			if stage==1:
+				print("Taking TroughID")
 				troughIDAccepted,data['troughid'] = acceptTroughID()
 				if(troughIDAccepted):
-					stage = 2
+					stage += 1 
 				else:
-					stage = 0
+					stage -= 1
 					continue
 			if stage==2:
-				imageAccepted,data['imagename'] = takePicture()
-				if(imageAccepted):
-					stage = 3
+				print("Trying to Connect")
+				if is_connected(PREDICT_URL):
+					print("Calling Predict")
+					success, prediction, cropid = predict(data)
+					data['crop_id'] = cropid
+					print(success,prediction,cropid)
+					if success:
+						print("Showing Prediction")
+						data['crop_id'] = show_prediction(cropid,prediction)
+					else:
+						while True:
+							cropIDAccepted, data['crop_id'] =  acceptCropID()
+							if(cropIDAccepted):
+								 break
+							else:
+								continue
 				else:
-					stage = 1
-					continue
+					print("Taking Crop ID")
+					while True:
+						cropIDAccepted, data['crop_id'] =  acceptCropID()
+						if(cropIDAccepted):
+							 break
+						else:
+							continue
+				stage += 1
 			if stage==3:
-				storeData(data)
+				if is_connected(URL):
+					print("Sending DAta")
+					send_all_data(data)
+				else:
+					print("Storing DAta")
+					storeData(data)
 				stage = 0
 				break
 except KeyboardInterrupt:

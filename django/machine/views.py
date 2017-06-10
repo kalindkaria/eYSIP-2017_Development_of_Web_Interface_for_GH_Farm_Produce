@@ -2,10 +2,11 @@ from django.shortcuts import render
 import json
 import os
 import datetime
-
+from machine import *
 from django.views.decorators.csrf import csrf_exempt
 from farmapp.models import Produce,Machine,Crop,Trough,User,Inventory
 from django.http import HttpResponse
+
 
 def auth_user(machine_data):
     try:
@@ -32,12 +33,11 @@ def data_entry(request):
     if request.method=='POST':
         crop = json.loads(request.body.decode('utf-8'))
         auth = auth_user(crop)
-        imagepath = os.getcwd() + "/images/"
         if auth == 1:
+            imagepath = os.getcwd() + "/images/"
             time = datetime.datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
-            #time = time.isoformat()
-
-            with open(imagepath + crop['imagename'], 'wb') as img_file:
+            imagepath = imagepath + crop['imagename']
+            with open(imagepath, 'wb') as img_file:
                 byte_str = crop['image']
                 img_file.write(bytes(byte_str,'latin-1'))
 
@@ -49,17 +49,15 @@ def data_entry(request):
             print(time)
             print(0)
             try:
-                entry = Produce(machine_id = Machine.objects.get(pk = crop['user_id']),\
-                                               crop_id = Crop.objects.get(pk = crop['crop_id']),\
-                                               trough_id = Trough.objects.get(pk = crop['troughid']),\
-                                               image = crop['imagename'],\
-                                               weight = crop['weight'],\
-                                               date_of_produce = time,\
-                                               timestamp = datetime.datetime.now(),\
-                                               status = 0\
-                                              )
-                input_crop = Crop.objects.get(crop_id = crop['crop_id'])
-
+                entry = Produce(machine_id=Machine.objects.get(pk = crop['user_id']),
+                                crop_id=Crop.objects.get(pk = crop['crop_id']),
+                                trough_id=Trough.objects.get(pk = crop['troughid']),
+                                image=crop['imagename'],
+                                weight=crop['weight'],
+                                date_of_produce=time,
+                                timestamp=datetime.datetime.now(),
+                                status=0)
+                input_crop = Crop.objects.get(crop_id=crop['crop_id'])
                 entry.date_of_expiry = entry.date_of_produce + datetime.timedelta(hours=input_crop.shelf_life)
                 entry.save()
                 update_inventory(entry)
@@ -71,6 +69,7 @@ def data_entry(request):
 
         elif auth == 0:
             return HttpResponse("Invalid")
+    return HttpResponse("ALive")
 
 
 

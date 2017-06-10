@@ -8,7 +8,7 @@ if os.path.getsize("/home/pi/ghfarm/details.txt") > 0:
 	imagepath = "/home/pi/ghfarm/images/"
 	crop_details = []
 	pending = []
-	url = "http://192.168.43.90:8000/machine/"
+	url = "http://192.168.0.111:8000/machine/"
 	#time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	with open('/home/pi/ghfarm/details.txt', 'r') as f:
 		crop_details = list(f.readlines())
@@ -19,6 +19,7 @@ if os.path.getsize("/home/pi/ghfarm/details.txt") > 0:
 		values = json.loads(details)
 		values['user_id']=1
 		values['password']='random'
+		values['upload']='offline'
 		with open(imagepath + values['imagename'], 'rb') as img:
 			image = img.read()
 			image = str(image,"latin-1")
@@ -32,6 +33,7 @@ if os.path.getsize("/home/pi/ghfarm/details.txt") > 0:
 			if(r.text != "Done"):
 				pending.append(details)
 		except:
+			pending.append(details)
 			print("Error occured")
 
 	with open('/home/pi/ghfarm/details.txt', 'w') as detail_file:
