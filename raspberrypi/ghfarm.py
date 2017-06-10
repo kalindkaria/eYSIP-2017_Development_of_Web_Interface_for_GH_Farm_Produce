@@ -97,15 +97,14 @@ def storeData(data):
 	lcd.clear()
 	lcd.string("Storing data...", LINE_1)
 	lcd.string("Weight: "+str(data['weight']), LINE_2)
-	lcd.string("CropID: "+str(data['cropid']), LINE_3)
+	lcd.string("CropID: "+str(data['crop_id']), LINE_3)
 	lcd.string("TroughID: "+str(data['troughid']), LINE_4)
-	time.sleep(2)
 	f = open('/home/pi/ghfarm/details.txt','a')
 	t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	crops = {'weight':data['weight'],'crop_id':data['cropid'],'time': t, 'imagename':data['imagename'], 'troughid':data['troughid']}
+	crops = {'weight':data['weight'],'crop_id':data['crop_id'],'time': t, 'imagename':data['imagename'], 'troughid':data['troughid']}
 	crop_details = json.dumps(crops)
 	f.write(crop_details +'\n')
-	time.sleep(3)
+	time.sleep(2)
 
 def validateCropID():
 	return True
@@ -252,6 +251,10 @@ def is_connected(url):
 
 
 def predict(data):
+	lcd.clear()
+	lcd.string("       Asking", LINE_2)
+	lcd.string("    Nostradamus", LINE_3)
+	lcd.string("   Please wait...", LINE_4)
 	data['user_id']=USER_ID
 	data['password']=PASSWORD
 	with open(imagepath + data['imagename'], 'rb') as img:
@@ -268,6 +271,12 @@ def predict(data):
 
 
 def send_all_data(data):
+	lcd.clear()
+	lcd.string("Sending data...", LINE_1)
+	lcd.string("Weight: "+str(data['weight']), LINE_2)
+	lcd.string("CropID: "+str(data['crop_id']), LINE_3)
+	lcd.string("TroughID: "+str(data['troughid']), LINE_4)
+	time.sleep(1)
 	data['user_id']=USER_ID
 	data['password']=PASSWORD
 	data['time']= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -291,7 +300,7 @@ def send_all_data(data):
 
 def show_prediction(data, name):
 	lcd.clear()
-	time.sleep(0.1)
+	time.sleep(0.3)
 	lcd.string(" Predicted Crop", LINE_1)
 	lcd.string(name, LINE_2)
 	lcd.string("* to continue", LINE_3)
@@ -376,7 +385,7 @@ try :
 				stage += 1
 			if stage==3:
 				if is_connected(URL):
-					print("Sending DAta")
+					print("Sending Data")
 					send_all_data(data)
 				else:
 					print("Storing DAta")
