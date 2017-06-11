@@ -53,7 +53,8 @@ def caculateWeight():
 	if weight < 0:	#if weight becomes negative then set it back to zero
 		weight = 0
 	return int(weight)
-	
+
+# Show the weight from the load sensor to the screen.
 def displayWeight():
 	lcd.string("Object weight is:", LINE_3)
 	weight = caculateWeight()	#get calculated weight from the calculateWeight function
@@ -65,7 +66,9 @@ def displayWeight():
 		lcd.string("Press * button to", LINE_1)
 		lcd.string("continue.", LINE_2)
 	return weight
-	
+
+
+# Change the base value to current load sensor value so that weight is zero	
 def tare():
 	global baseValue
 	global taredWeight
@@ -75,6 +78,8 @@ def tare():
 	diff = math.fabs(baseValue- lcval)
 	taredWeight = (diff / 49000.0) * 230.0  #store the calculated weight in variable
 
+
+# Take a picture of the Crop from the webcam
 def takePicture():
 	lcd.string("Taking picture...", LINE_2)
 	if os.path.exists('/dev/video0'):
@@ -92,7 +97,7 @@ def takePicture():
 		time.sleep(2)
 		return False, "NoCamera"
 		
-
+# Store all data offline for later Upload
 def storeData(data):
 	lcd.clear()
 	lcd.string("Storing data...", LINE_1)
@@ -106,9 +111,12 @@ def storeData(data):
 	f.write(crop_details +'\n')
 	time.sleep(2)
 
+
 def validateCropID():
 	return True
 
+
+# Accept a valid crop id as input from the keypad
 def acceptCropID():
 	lcd.clear()
 	cropID = ""
@@ -154,9 +162,14 @@ def acceptCropID():
 			lcd.string("Please Try Again", LINE_3)
 			time.sleep(1)
 
+
+
 def validateTroughID():
 	return True
-	
+
+
+
+# Accept a valid trough id from user as input	
 def acceptTroughID():
 	lcd.clear()
 	troughID = ""
@@ -201,6 +214,8 @@ def acceptTroughID():
 			lcd.string("Please Try Again", LINE_3)
 			time.sleep(1)
 
+
+# The default display. Show the reading from load sensor on the screen
 def display_screen():
 	weight = 0
 	while True:
@@ -242,6 +257,7 @@ def display_screen():
 			return weight
 
 
+# Check if the machine is connected to the internet
 def is_connected(url):
 	try:
 		urllib.request.urlopen(url, timeout=5)
@@ -250,6 +266,7 @@ def is_connected(url):
 		return False
 
 
+# Send the crop image and other data to the server for preidction and return the predicted crop name and id
 def predict(data):
 	lcd.clear()
 	lcd.string("       Asking", LINE_2)
@@ -270,6 +287,7 @@ def predict(data):
 		return False, e, ""
 
 
+# Send all the data along with the crop id to the server
 def send_all_data(data):
 	lcd.clear()
 	lcd.string("Sending data...", LINE_1)
@@ -298,6 +316,7 @@ def send_all_data(data):
 		return False
 
 
+# Display the prediction on the screen and change is asked to.
 def show_prediction(data, name):
 	lcd.clear()
 	time.sleep(0.3)

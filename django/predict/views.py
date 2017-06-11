@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from farmapp.models import Crop, Machine
 from django.http import HttpResponse
@@ -7,6 +6,7 @@ import json
 import os
 
 
+# Function to check if the machine trying to log exists.
 def auth_user(machine_data):
     try:
         machine = Machine.objects.get(machine_id = machine_data['user_id'], password = machine_data['password'])
@@ -17,6 +17,7 @@ def auth_user(machine_data):
         return 0
 
 
+# Function to predict the type of crop.
 @csrf_exempt
 def predict(request):
     if request.method =='POST':
