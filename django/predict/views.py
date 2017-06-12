@@ -30,10 +30,15 @@ def predict(request):
                 img_file.write(bytes(byte_str,'latin-1'))
 
             # Predicting Crop_ID
-            prediction = nostradamus.predict(imagepath)
-            cropid = Crop.objects.get(english_name__iexact=prediction)
-            reply = {'prediction': prediction, 'crop_id': cropid.pk}
-            return HttpResponse(json.dumps(reply))
+            percentages,crop_names = nostradamus.predict(imagepath)
+            print(percentages,crop_names)
+            primary_keys = []
+            for c in crop_names:
+                cid = Crop.objects.get(english_name__iexact=c)
+                primary_keys.append(cid.pk)
+            send = [crop_names,percentages,primary_keys]
+
+            return HttpResponse(json.dumps(send))
         return HttpResponse("Authentication Failed")
     return HttpResponse("Alive")
 

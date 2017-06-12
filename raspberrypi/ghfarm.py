@@ -12,8 +12,8 @@ import urllib.request
 import requests
 
 #NETWORK Constants
-URL = "http://192.168.0.111:8000/machine/"
-PREDICT_URL = "http://192.168.0.111:8000/predict/"
+URL = "http://192.168.0.66:8000/machine/"
+PREDICT_URL = "http://192.168.0.66:8000/predict/"
 USER_ID = 1
 PASSWORD = "random"
 imagepath = "/home/pi/ghfarm/images/"
@@ -282,9 +282,9 @@ def predict(data):
 		r = requests.post(PREDICT_URL, data=json.dumps(data).encode('utf-8'))
 		print(r.text)
 		r = json.loads(r.text)
-		return True, r['prediction'], r['crop_id']
+		return True, r[0], r[1], r[2]
 	except Exception as e:
-		return False, e, ""
+		return False, e, "", "", ""
 
 
 # Send all the data along with the crop id to the server
@@ -317,17 +317,19 @@ def send_all_data(data):
 
 
 # Display the prediction on the screen and change is asked to.
-def show_prediction(data, name):
+def show_prediction(names, percentages,primary_keys):
 	lcd.clear()
 	time.sleep(0.3)
-	lcd.string(" Predicted Crop", LINE_1)
-	lcd.string(name, LINE_2)
+	s = ("Accuracy: %4.2f" % (percentages[0]*100))
+	s = s + '%'
+	lcd.string(s, LINE_2)
+	lcd.string(names[0], LINE_1)
 	lcd.string("* to continue", LINE_3)
 	lcd.string("# to change", LINE_4)
 	key =""
 	while True:
 		if key == '*':
-			return data
+			return primary_keys[0]
 		if key == '#':
 			cropIDAccepted, cropid =  acceptCropID()
 			if(cropIDAccepted):
@@ -380,12 +382,12 @@ try :
 				print("Trying to Connect")
 				if is_connected(PREDICT_URL):
 					print("Calling Predict")
-					success, prediction, cropid = predict(data)
-					data['crop_id'] = cropid
-					print(success,prediction,cropid)
+					success, names, percentages, primary_keys = predict(data)
+					data['crop_id'] = primary_keys[0]
+					print(success,percentages,primary_keys)
 					if success:
 						print("Showing Prediction")
-						data['crop_id'] = show_prediction(cropid,prediction)
+						data['crop_id'] = show_prediction(names,percentages,primary_keys)
 					else:
 						while True:
 							cropIDAccepted, data['crop_id'] =  acceptCropID()
