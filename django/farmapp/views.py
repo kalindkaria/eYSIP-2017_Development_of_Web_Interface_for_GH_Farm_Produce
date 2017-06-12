@@ -3,8 +3,8 @@ from .forms import LoginForm, SignUpForm,CartForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
-from graphos.sources.simple import SimpleDataSource
-from graphos.renderers.morris import LineChart
+from graphos.sources.model import ModelDataSource
+from graphos.renderers.morris import DonutChart
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
@@ -191,17 +191,19 @@ def view_cart(request):
 
 
 
+class TotalProduce(ModelDataSource):
+    def get_data(self):
+        data = super(TotalProduce, self).get_data()
+        header = data[0]
+        data_without_header = data[1:]
+        for row in data_without_header:
+            row[0] = row[0].english_name
+        data_without_header.insert(0, header)
+        return data_without_header
+
+
 def graph(request):
-    data = [
-        ['Year', 'Sales', 'Expenses'],
-        [2004, 1000, 400],
-        [2005, 1170, 460],
-        [2006, 660, 1120],
-        [2007, 1030, 1540]
-    ]
-    # DataSource object
-    data_source = SimpleDataSource(data=data)
-    # Chart object
-    chart = LineChart(data_source, html_id='graph')
+    queryset = Inventory.objects.filter()
+    chart = DonutChart(TotalProduce(queryset, fields=['crop_id', 'weight']), html_id='graph', options={'postUnits': "g"})
     context = {'chart': chart}
     return render(request, 'graph.html', context)
