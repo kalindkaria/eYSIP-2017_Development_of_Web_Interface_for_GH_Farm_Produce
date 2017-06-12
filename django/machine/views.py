@@ -27,8 +27,17 @@ def update_inventory(entry):
         inventory.save()
         crop = Crop.objects.get(crop_id=entry.crop_id)
         crop.availability = crop.availability + entry.weight
+        crop.save()
+
     except:
-        Inventory.objects.create(user_id=user, crop_id=entry.crop_id, weight=entry.weight)
+        try:
+            Inventory.objects.create(user_id=user, crop_id=entry.crop_id, weight=entry.weight)
+            crop = Crop.objects.get(crop_id=entry.crop_id)
+            crop.availability = crop.availability + entry.weight
+            crop.save()
+        except Exception as e:
+            print(e)
+
 
 
 # The main view to handle the data logged by the machine. It checks the machines authentication

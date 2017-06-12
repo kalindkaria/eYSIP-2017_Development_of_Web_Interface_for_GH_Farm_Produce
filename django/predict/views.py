@@ -29,7 +29,7 @@ def predict(request):
                 byte_str = crop['image']
                 img_file.write(bytes(byte_str,'latin-1'))
 
-# Predicting Crop_ID
+            # Predicting Crop_ID
             prediction = nostradamus.predict(imagepath)
             cropid = Crop.objects.get(english_name__iexact=prediction)
             reply = {'prediction': prediction, 'crop_id': cropid.pk}
