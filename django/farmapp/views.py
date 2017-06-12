@@ -4,7 +4,7 @@ from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
 from graphos.sources.model import ModelDataSource
-from graphos.renderers.morris import DonutChart
+from graphos.renderers.morris import DonutChart, BarChart
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
@@ -189,12 +189,15 @@ class TotalProduce(ModelDataSource):
         data_without_header = data[1:]
         for row in data_without_header:
             row[0] = row[0].english_name
+            print(row[1])
+            row[1] = str(int(round(row[1])))
+            print(row[1])
         data_without_header.insert(0, header)
         return data_without_header
 
 
 def graph(request):
-    queryset = Inventory.objects.filter()
-    chart = DonutChart(TotalProduce(queryset, fields=['crop_id', 'weight']), html_id='graph', options={'postUnits': "g"})
+    queryset = Inventory.objects.all()
+    chart = DonutChart(TotalProduce(queryset, fields=['crop_id', 'weight']), html_id='graph', options={'formatter':'function(y){return y+" gm"}'})
     context = {'chart': chart}
     return render(request, 'graph.html', context)

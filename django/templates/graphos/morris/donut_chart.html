@@ -1,6 +1,7 @@
 <script type="text/javascript">
 Morris.Donut({
   element: '{{ chart.get_html_id }}',
-  data: {{ chart.get_data_json|safe }}
+  data: {{ chart.get_data_json|safe }},
+  formatter: {{ chart.get_options.formatter|safe }},
 });
 </script>
