@@ -45,8 +45,8 @@ session.run(tf.global_variables_initializer())
 def predict(image_path):
     transfer_value = [model.transfer_values(image_path=image_path)]    
     feed_dict = {x: transfer_value}
-    classification = session.run(y_pred_cls,feed_dict)
-    return dataset.class_names[classification[0]]
+    classification = session.run(y_pred,feed_dict)
+    return classification,dataset.class_names
 
 # def predict_folder(folder_path):
 #     for filename in sorted(os.listdir(folder_path)):
