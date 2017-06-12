@@ -320,10 +320,9 @@ def send_all_data(data):
 def show_prediction(names, percentages,primary_keys):
 	lcd.clear()
 	time.sleep(0.3)
-	s = ("Accuracy: %4.2f" % (percentages[0]*100))
-	s = s + '%'
-	lcd.string(s, LINE_2)
+	s = ("Confidence: %4.2f" % (percentages[0]*100)) + '%'
 	lcd.string(names[0], LINE_1)
+	lcd.string(s, LINE_2)
 	lcd.string("* to continue", LINE_3)
 	lcd.string("# to change", LINE_4)
 	key =""

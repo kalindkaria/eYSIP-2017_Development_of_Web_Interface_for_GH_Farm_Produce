@@ -106,6 +106,7 @@ images/
 server/images/
 
 .idea/
+.vscode/
 
 #ml
 django/inception/

@@ -31,10 +31,11 @@ def predict(request):
 
             # Predicting Crop_ID
             percentages,crop_names = nostradamus.predict(imagepath)
-            print(percentages,crop_names)
             primary_keys = []
-            for c in crop_names:
+            
+            for i,c in enumerate(crop_names):
                 cid = Crop.objects.get(english_name__iexact=c)
+                crop_names[i] = cid.short_name
                 primary_keys.append(cid.pk)
             send = [crop_names,percentages,primary_keys]
 
