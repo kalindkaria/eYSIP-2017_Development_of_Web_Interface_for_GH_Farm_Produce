@@ -1,6 +1,7 @@
 import tensorflow as tf
 import prettytensor as pt
 import os
+import numpy as np
 from dataset import load_cached
 dataset = load_cached(cache_path='veg.pkl', in_dir='./veg')
 num_classes = dataset.num_classes
@@ -46,7 +47,11 @@ def predict(image_path):
     transfer_value = [model.transfer_values(image_path=image_path)]    
     feed_dict = {x: transfer_value}
     classification = session.run(y_pred,feed_dict)
-    return classification,dataset.class_names
+    classification = classification[0]
+    joined = zip(classification,dataset.class_names)
+    sorted_class_names = [a for (_,a) in sorted(joined,reverse=True)]
+    sorted_classification = sorted(classification,reverse=True)
+    return np.array(sorted_classification).tolist(),sorted_class_names
 
 # def predict_folder(folder_path):
 #     for filename in sorted(os.listdir(folder_path)):
