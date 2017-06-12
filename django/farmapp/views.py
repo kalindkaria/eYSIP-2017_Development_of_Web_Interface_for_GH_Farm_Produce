@@ -3,8 +3,8 @@ from .forms import LoginForm, SignUpForm,CartForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
-from graphos.sources.simple import SimpleDataSource
-from graphos.renderers.morris import LineChart
+from graphos.sources.model import ModelDataSource
+from graphos.renderers.morris import DonutChart
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
@@ -90,13 +90,15 @@ def producer_inventory(request):
 def about(request):
     loginform = LoginForm()
     signupform = SignUpForm()
+    request.session['page'] = '/about'
     context = {'loginform': loginform, 'signupform': signupform, 'page': 'about'}
     return render(request, 'about.html', context)
 
-
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
+    request.session['page'] = "/crops"
     if request.session.get('cart_id',False):
         cart = Cart.objects.get(cart_id = request.session['cart_id'])
         cart_items = Cart_session.objects.filter(cart_id = cart)
@@ -156,31 +158,43 @@ def remove_from_cart(request,crop_id):
             # if cart_count == 0:
             #     del request.session['cart_id']
             #     del request.session['cart_count']
-        return HttpResponseRedirect('/crops')
+        return HttpResponseRedirect(request.session['page'])
 
     except:
-        return HttpResponseRedirect('/crops')
+        return HttpResponseRedirect(request.session['page'])
 
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def view_cart(request):
+    request.session['page'] = "/cart"
     loginform = LoginForm()
     signupform = SignUpForm()
     cart = Cart.objects.get(cart_id = request.session['cart_id'])
     cart_session = Cart_session.objects.filter(cart_id = cart)
+
+    id=[]
+    for crop in cart_session:
+        id.append(crop.crop_id.crop_id)
+    added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+    request.session['cart_count'] = added_crops.count()
+    if request.session['cart_count']==0:
+        return HttpResponseRedirect('/crops')
     context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops' ,'cart_session':cart_session}
     return render(request,'cart.html',context)
 
 
+class TotalProduce(ModelDataSource):
+    def get_data(self):
+        data = super(TotalProduce, self).get_data()
+        header = data[0]
+        data_without_header = data[1:]
+        for row in data_without_header:
+            row[0] = row[0].english_name
+        data_without_header.insert(0, header)
+        return data_without_header
+
+
 def graph(request):
-    data = [
-        ['Year', 'Sales', 'Expenses'],
-        [2004, 1000, 400],
-        [2005, 1170, 460],
-        [2006, 660, 1120],
-        [2007, 1030, 1540]
-    ]
-    # DataSource object
-    data_source = SimpleDataSource(data=data)
-    # Chart object
-    chart = LineChart(data_source, html_id='graph')
+    queryset = Inventory.objects.filter()
+    chart = DonutChart(TotalProduce(queryset, fields=['crop_id', 'weight']), html_id='graph', options={'postUnits': "g"})
     context = {'chart': chart}
     return render(request, 'graph.html', context)
