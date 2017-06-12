@@ -21,11 +21,20 @@ def index(request):
 
 def home(request):
     if request.session.get("logged_in", False) and request.session.get('user_type', "").upper() != "PRODUCER":
-        return render(request, 'home.html', {'page': "home"})
+        return HttpResponseRedirect(request.session['page'])
     return HttpResponseRedirect('/')
 
 
 def logout(request):
+    if request.session.get('cart_id',False):
+        cart_id = request.session['cart_id']
+        cart_count = request.session['cart_count']
+        user = User.objects.get(user_id = request.session['user_id'])
+        user.last_cart = request.session['cart_id']
+        request.session.flush()
+        # request.session['cart_id'] = cart_id
+        # request.session['cart_count'] = cart_count
+        return HttpResponseRedirect('/')
     request.session.flush()
     return HttpResponseRedirect('/')
 
@@ -91,8 +100,13 @@ def about(request):
     loginform = LoginForm()
     signupform = SignUpForm()
     request.session['page'] = '/about'
-    context = {'loginform': loginform, 'signupform': signupform, 'page': 'about'}
-    return render(request, 'about.html', context)
+
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
+        context = {'page': 'about'}
+        return render(request, 'login/about.html', context)
+    else:
+        context = {'loginform': loginform, 'signupform': signupform, 'page': 'about'}
+        return render(request, 'about.html', context)
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def crops(request):
@@ -118,7 +132,7 @@ def crops(request):
         added_crops = []
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
         context = {'page':'home','crops': crops,'added_crops': added_crops}
-        return render(request, 'shop_loggedin.html', context)
+        return render(request, 'login/shop.html', context)
     else:
         context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,'added_crops': added_crops}
         return render(request, 'shop.html', context)
@@ -184,11 +198,13 @@ def view_cart(request):
         return HttpResponseRedirect('/crops')
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
         context = {'page':'cart','crops': crops,'cart_session':cart_session}
-        return render(request, 'cart_loggedin.html', context)
+        return render(request, 'login/cart.html', context)
     else:
         context = {'loginform': loginform, 'signupform': signupform, 'page': 'cart', 'cart_session': cart_session}
         return render(request, 'cart.html', context)
 
+def checkout(request):
+    return render(request,'login/checkout.html',{})
 
 
 class TotalProduce(ModelDataSource):

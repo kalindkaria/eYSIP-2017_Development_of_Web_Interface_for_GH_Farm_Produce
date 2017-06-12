@@ -2,8 +2,8 @@
 {% load static %}
 {% block navlist %}
 	<ul class="navbar-nav mr-auto justify-content-between">
-		<li class="nav-item {% if page == "index" %}active{% endif %}">
-            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+		<li class="nav-item {% if page == "home" %}active{% endif %}">
+            <a class="nav-link" href="/crops">Home <span class="sr-only">(current)</span></a>
         </li>
         <li class="nav-item {% if page == "analytics" %}active{% endif %}">
             <a class="nav-link" href="/crops">Analytics</a>
@@ -16,11 +16,11 @@
         </li>
     </ul>
     <ul class="navbar-nav justify-content-end">
-    	<li class="nav-item">
-		    <div class="btn-group mr-2" role="group">
-		        <a href="/cart"><span class="fa fa-shopping-cart mr-2"></span>Cart<span class="badge badge-primary">{{request.session.cart_count}}</span></button></a>
-		    </div>
+		{% if request.session.cart_count %}
+		<li class="nav-item">
+	        <a href="/cart"><button type="button" class="btn btn-outline-info mr-2"><span class="fa fa-shopping-cart mr-2"></span>Cart<span class="badge badge-primary">{{request.session.cart_count}}</span></button></a>
 		</li>
+		{% endif %}
     	<li class="nav-item mt-2">
     		<a href="#" class="dropdown-toggle" href="#" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="color: white; text-decoration: none">
     			{{ request.session.email }}
@@ -35,106 +35,3 @@
     	</li>
     </ul>
 {% endblock navlist %}
-
-{% block content%}
-<h2>Our Crops:</h2>
-<hr>
-
-<div class="row">
-{% for crop in added_crops %}
-<div class="col-md-3 col-sm-6 col-xs-12">
-		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
-			<div class="card-header" style="border-color: #333">
-		    	{{ crop.local_name }}
-		  	</div>
-			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
-					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
-			</a>
-		  <div class="card-block">
-		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availability == 0.0 %}
-		    	<p class="card-text">Unavailable</p>
-		    {% else  %}
-		    	<p class="card-text">Available: {{ crop.availability }}</p>
-		    	<div class="text-right">
-		    		<a href="{% url 'remove_from_cart' crop.crop_id %}"><button class="btn btn-danger">Remove from cart<span class="fa fa-shopping-cart ml-2"></span></button></a>
-		  		</div>
-		    {% endif %}
-
-		  </div>
-		</div>
-	</div>
-
-
-	<div class="modal fade hidden" id="{{crop.crop_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog" role="document">
-	    <div class="modal-content" style="width:135%;">
-	      <div class="modal-header hidden">
-	        <h5 class="modal-title hidden" id="exampleModalLabel">Crop Details:</h5>
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          <span aria-hidden="true">&times;</span>
-	        </button>
-	      </div>
-	      <div class="modal-body">
-	      	<ul class="list-group">
-	      		<li class="list-group-item">English Name: {{crop.english_name}}</li>
-	      		<li class="list-group-item">Local Name: {{crop.local_name}}</li>
-	      		<li class="list-group-item">Scientific Name:{{crop.scientific_name}}</li>
-	      		<li class="list-group-item">Shelf Life: {{crop.shelf_life}} hrs</li>
-	      		<li class="list-group-item">Price: Rs.{{crop.price}}/kg</li>
-	      	</ul>
-	      </div>
-	    </div>
-	  </div>
-	</div>
-{%endfor%}
-
-{% for crop in crops %}
-<div class="col-md-3 col-sm-6 col-xs-12">
-		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
-			<div class="card-header" style="border-color: #333">
-		    	{{ crop.local_name }}
-		  	</div>
-			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
-					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
-			</a>
-		  <div class="card-block">
-		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availability == 0.0 %}
-		    	<p class="card-text">Unavailable</p>
-		    {% else  %}
-		    	<p class="card-text">Available: {{ crop.availability }}</p>
-		    	<div class="text-right">
-		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart <span class="fa fa-shopping-cart ml-2"></span></button></a>
-		  		</div>
-		    {% endif %}
-
-		  </div>
-		</div>
-	</div>
-
-
-	<div class="modal fade hidden" id="{{crop.crop_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog" role="document">
-	    <div class="modal-content" style="width:135%;">
-	      <div class="modal-header hidden">
-	        <h5 class="modal-title hidden" id="exampleModalLabel">Crop Details:</h5>
-	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          <span aria-hidden="true">&times;</span>
-	        </button>
-	      </div>
-	      <div class="modal-body">
-	      	<ul class="list-group">
-	      		<li class="list-group-item">English Name: {{crop.english_name}}</li>
-	      		<li class="list-group-item">Local Name: {{crop.local_name}}</li>
-	      		<li class="list-group-item">Scientific Name:{{crop.scientific_name}}</li>
-	      		<li class="list-group-item">Shelf Life: {{crop.shelf_life}} hrs</li>
-	      		<li class="list-group-item">Price: Rs.{{crop.price}}/kg</li>
-	      	</ul>
-	      </div>
-	    </div>
-	  </div>
-	</div>
-{%endfor%}
-</div>
-{% endblock content%}
