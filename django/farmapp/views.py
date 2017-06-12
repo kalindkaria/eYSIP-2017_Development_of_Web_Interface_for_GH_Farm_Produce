@@ -116,8 +116,12 @@ def crops(request):
     else:
         crops = Crop.objects.all().order_by('-availability')
         added_crops = []
-    context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,'added_crops': added_crops}
-    return render(request, 'shop.html', context)
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
+        context = {'page':'home','crops': crops,'added_crops': added_crops}
+        return render(request, 'shop_loggedin.html', context)
+    else:
+        context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,'added_crops': added_crops}
+        return render(request, 'shop.html', context)
 
 def add_to_cart(request,crop_id):
     try:
@@ -178,8 +182,13 @@ def view_cart(request):
     request.session['cart_count'] = added_crops.count()
     if request.session['cart_count']==0:
         return HttpResponseRedirect('/crops')
-    context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops' ,'cart_session':cart_session}
-    return render(request,'cart.html',context)
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
+        context = {'page':'cart','crops': crops,'cart_session':cart_session}
+        return render(request, 'cart_loggedin.html', context)
+    else:
+        context = {'loginform': loginform, 'signupform': signupform, 'page': 'cart', 'cart_session': cart_session}
+        return render(request, 'cart.html', context)
+
 
 
 def graph(request):
