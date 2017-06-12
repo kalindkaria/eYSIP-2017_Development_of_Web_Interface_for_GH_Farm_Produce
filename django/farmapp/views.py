@@ -90,13 +90,15 @@ def producer_inventory(request):
 def about(request):
     loginform = LoginForm()
     signupform = SignUpForm()
+    request.session['page'] = '/about'
     context = {'loginform': loginform, 'signupform': signupform, 'page': 'about'}
     return render(request, 'about.html', context)
 
-
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
+    request.session['page'] = "/crops"
     if request.session.get('cart_id',False):
         cart = Cart.objects.get(cart_id = request.session['cart_id'])
         cart_items = Cart_session.objects.filter(cart_id = cart)
@@ -156,16 +158,26 @@ def remove_from_cart(request,crop_id):
             # if cart_count == 0:
             #     del request.session['cart_id']
             #     del request.session['cart_count']
-        return HttpResponseRedirect('/crops')
+        return HttpResponseRedirect(request.session['page'])
 
     except:
-        return HttpResponseRedirect('/crops')
+        return HttpResponseRedirect(request.session['page'])
 
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def view_cart(request):
+    request.session['page'] = "/cart"
     loginform = LoginForm()
     signupform = SignUpForm()
     cart = Cart.objects.get(cart_id = request.session['cart_id'])
     cart_session = Cart_session.objects.filter(cart_id = cart)
+
+    id=[]
+    for crop in cart_session:
+        id.append(crop.crop_id.crop_id)
+    added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+    request.session['cart_count'] = added_crops.count()
+    if request.session['cart_count']==0:
+        return HttpResponseRedirect('/crops')
     context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops' ,'cart_session':cart_session}
     return render(request,'cart.html',context)
 

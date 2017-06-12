@@ -15,8 +15,7 @@
         </li>
     </ul>
     {% if request.session.cart_count %}
-    </div>
-        <div class="btn-group mr-2" role="group">
+    <div class="btn-group mr-2" role="group">
         <a href="/cart"><button type="button" class="btn btn-outline-info"><span class="fa fa-shopping-cart mr-2"></span>Cart <span class="badge badge-primary">{{request.session.cart_count}}</span></button></a>
     </div>
     {% endif %}
@@ -25,7 +24,7 @@
     </div>
     <div class="btn-group" role="group">
         <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#login">Login</button>
-
+    </div>
     {% endblock navlist %}
 
     {% block modal %}
