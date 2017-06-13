@@ -116,7 +116,7 @@ CREATE TABLE `auth_user` (
   `date_joined` datetime(6) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -125,7 +125,7 @@ CREATE TABLE `auth_user` (
 
 LOCK TABLES `auth_user` WRITE;
 /*!40000 ALTER TABLE `auth_user` DISABLE KEYS */;
-INSERT INTO `auth_user` VALUES (1,'pbkdf2_sha256$36000$9FZpMkQsQXQA$YjuFel1LiAh7eNdhgTgXSR5+dvwluUL2lWtm/Vvwhhg=','2017-06-13 06:34:38.746560',1,'keivan','','','keivanshahh@gmail.com',1,1,'2017-06-02 11:29:55.386698');
+INSERT INTO `auth_user` VALUES (1,'pbkdf2_sha256$36000$9FZpMkQsQXQA$YjuFel1LiAh7eNdhgTgXSR5+dvwluUL2lWtm/Vvwhhg=','2017-06-13 07:17:51.000000',1,'keivan','Keivan','Shah','keivanshahh@gmail.com',1,1,'2017-06-02 11:29:55.000000'),(2,'pbkdf2_sha256$36000$mzznPbAdh8Wo$xue2TEyxD7+ftkue5I8/LZv7lvBj/CHINUWgoZjLRBk=',NULL,1,'hemang','Hemang','Gandhi','gandhihemang97@gmail.com',1,1,'2017-06-13 07:18:44.000000'),(3,'pbkdf2_sha256$36000$EcZ8h9N7kcMz$zy45qBhuHZxT4Lnzp3+28Idsyz916RAW6JKNVkoaGMI=',NULL,1,'sanket','Sanket','Shanbhag','sanketshanbhag@gmail.com',1,1,'2017-06-13 07:19:08.000000');
 /*!40000 ALTER TABLE `auth_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -206,7 +206,7 @@ CREATE TABLE `django_admin_log` (
   KEY `django_admin_log_user_id_c564eba6_fk_auth_user_id` (`user_id`),
   CONSTRAINT `django_admin_log_content_type_id_c4bce8eb_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`),
   CONSTRAINT `django_admin_log_user_id_c564eba6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -215,7 +215,6 @@ CREATE TABLE `django_admin_log` (
 
 LOCK TABLES `django_admin_log` WRITE;
 /*!40000 ALTER TABLE `django_admin_log` DISABLE KEYS */;
-INSERT INTO `django_admin_log` VALUES (1,'2017-06-03 05:23:51.076952','1','keivan@gmail.com',1,'[{\"added\": {}}]',12,1),(2,'2017-06-03 10:32:19.390456','2','hemang@gmail.com',1,'[{\"added\": {}}]',12,1),(3,'2017-06-04 17:13:31.779765','1','Okra',1,'[{\"added\": {}}]',14,1),(4,'2017-06-04 17:13:56.336695','1','Okra',3,'',14,1),(5,'2017-06-05 14:14:29.409539','1','Amaranthus Green',1,'[{\"added\": {}}]',14,1),(6,'2017-06-05 14:16:43.098236','2','Amaranthus Red',1,'[{\"added\": {}}]',14,1),(7,'2017-06-05 14:21:28.867423','3','Baby Fenugreek',1,'[{\"added\": {}}]',14,1),(8,'2017-06-05 14:23:25.460027','4','Basil',1,'[{\"added\": {}}]',14,1),(9,'2017-06-05 14:27:28.507468','5','Beetroot',1,'[{\"added\": {}}]',14,1),(10,'2017-06-05 14:31:51.291882','6','Bitter Gourd',1,'[{\"added\": {}}]',14,1),(11,'2017-06-05 14:33:40.722572','7','Bottle Gourd',1,'[{\"added\": {}}]',14,1),(12,'2017-06-05 14:35:36.592024','8','Brinjal',1,'[{\"added\": {}}]',14,1),(13,'2017-06-05 14:37:13.209764','9','Cabbage',1,'[{\"added\": {}}]',14,1),(14,'2017-06-05 14:39:05.700575','10','Cauliflower',1,'[{\"added\": {}}]',14,1),(15,'2017-06-05 14:41:22.868041','11','Chilli',1,'[{\"added\": {}}]',14,1),(16,'2017-06-05 14:42:30.084867','12','Cluster Beans',1,'[{\"added\": {}}]',14,1),(17,'2017-06-05 14:44:17.495813','13','Coriander',1,'[{\"added\": {}}]',14,1),(18,'2017-06-05 14:49:19.875812','14','Cucumber',1,'[{\"added\": {}}]',14,1),(19,'2017-06-05 14:50:57.292677','15','Fenugreek',1,'[{\"added\": {}}]',14,1),(20,'2017-06-05 14:54:23.549381','16','Iceberg Lettuce',1,'[{\"added\": {}}]',14,1),(21,'2017-06-05 14:56:03.301715','17','Ladyfinger',1,'[{\"added\": {}}]',14,1),(22,'2017-06-05 14:59:17.215708','18','Lemon Grass',1,'[{\"added\": {}}]',14,1),(23,'2017-06-05 15:01:26.547751','19','Lollo Rosso',1,'[{\"added\": {}}]',14,1),(24,'2017-06-05 15:02:37.957663','20','Maize',1,'[{\"added\": {}}]',14,1),(25,'2017-06-05 15:03:56.224182','21','Mustard',1,'[{\"added\": {}}]',14,1),(26,'2017-06-05 15:06:11.180921','22','Onion',1,'[{\"added\": {}}]',14,1),(27,'2017-06-05 15:07:41.004611','23','Parsley',1,'[{\"added\": {}}]',14,1),(28,'2017-06-05 15:09:33.993421','24','Radish',1,'[{\"added\": {}}]',14,1),(29,'2017-06-05 15:11:45.037777','25','Ridge Gourd',1,'[{\"added\": {}}]',14,1),(30,'2017-06-05 15:13:51.813113','26','Snake Gourd',1,'[{\"added\": {}}]',14,1),(31,'2017-06-05 15:15:10.663952','27','Spinach',1,'[{\"added\": {}}]',14,1),(32,'2017-06-05 15:17:52.294698','28','Termari Leaf',1,'[{\"added\": {}}]',14,1),(33,'2017-06-05 15:19:53.360778','29','Turmeric',1,'[{\"added\": {}}]',14,1),(34,'2017-06-05 15:20:56.948492','30','Tomato',1,'[{\"added\": {}}]',14,1),(35,'2017-06-06 04:15:13.814920','1','1',1,'[{\"added\": {}}]',11,1),(36,'2017-06-06 04:15:44.496001','2','2',1,'[{\"added\": {}}]',11,1),(37,'2017-06-06 04:16:20.909769','1','1',1,'[{\"added\": {}}]',13,1),(38,'2017-06-06 04:16:30.461053','2','1',1,'[{\"added\": {}}]',13,1),(39,'2017-06-06 04:16:35.784983','3','2',1,'[{\"added\": {}}]',13,1),(40,'2017-06-06 04:16:41.416461','4','2',1,'[{\"added\": {}}]',13,1),(41,'2017-06-06 04:29:31.342209','2','hemang@gmail.com',2,'[{\"changed\": {\"fields\": [\"first_name\", \"last_name\"]}}]',12,1),(42,'2017-06-06 04:29:47.639292','1','keivan@gmail.com',2,'[{\"changed\": {\"fields\": [\"first_name\", \"last_name\"]}}]',12,1),(43,'2017-06-12 09:29:35.925744','28','TurmericL',2,'[{\"changed\": {\"fields\": [\"english_name\"]}}]',14,1),(44,'2017-06-12 09:30:43.329783','28','Termari Leaf',2,'[{\"changed\": {\"fields\": [\"english_name\"]}}]',14,1),(45,'2017-06-12 09:45:16.590814','30','Tomato',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(46,'2017-06-12 09:45:25.485346','29','Turmeric',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(47,'2017-06-12 09:45:49.507720','28','Termari Leaf',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(48,'2017-06-12 09:45:57.659011','27','Spinach',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(49,'2017-06-12 09:46:15.053951','26','Snake Gourd',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(50,'2017-06-12 09:46:26.433624','25','Ridge Gourd',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(51,'2017-06-12 09:46:34.141902','24','Radish',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(52,'2017-06-12 09:46:44.444769','23','Parsley',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(53,'2017-06-12 09:46:53.470349','22','Onion',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(54,'2017-06-12 09:47:03.122045','21','Mustard',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(55,'2017-06-12 09:47:12.293474','20','Maize',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(56,'2017-06-12 09:47:22.142996','19','Lollo Rosso',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(57,'2017-06-12 09:47:32.100310','18','Lemon Grass',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(58,'2017-06-12 09:47:41.235856','17','Ladyfinger',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(59,'2017-06-12 09:47:52.667232','16','Iceberg Lettuce',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(60,'2017-06-12 09:48:01.316302','15','Fenugreek',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(61,'2017-06-12 09:48:11.909945','14','Cucumber',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(62,'2017-06-12 09:48:21.801580','13','Coriander',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(63,'2017-06-12 09:48:37.258878','12','Cluster Beans',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(64,'2017-06-12 09:48:46.964564','11','Chilli',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(65,'2017-06-12 09:48:55.738418','10','Cauliflower',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(66,'2017-06-12 09:49:04.968990','9','Cabbage',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(67,'2017-06-12 09:49:18.781886','10','Cauliflower',2,'[]',14,1),(68,'2017-06-12 09:49:25.562150','9','Cabbage',2,'[]',14,1),(69,'2017-06-12 09:49:35.199338','8','Brinjal',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(70,'2017-06-12 09:49:45.732030','7','Bottle Gourd',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(71,'2017-06-12 09:49:55.210229','6','Bitter Gourd',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(72,'2017-06-12 09:50:04.817430','5','Beetroot',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(73,'2017-06-12 09:50:13.114751','4','Basil',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(74,'2017-06-12 09:51:08.900645','3','Baby Fenugreek',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(75,'2017-06-12 09:51:20.106365','2','Amaranthus Red',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(76,'2017-06-12 09:51:29.485627','1','Amaranthus Green',2,'[{\"changed\": {\"fields\": [\"short_name\"]}}]',14,1),(77,'2017-06-13 06:34:53.841410','15','Hemang - Coriander',3,'',9,1),(78,'2017-06-13 06:34:53.907491','14','Hemang - Ladyfinger',3,'',9,1),(79,'2017-06-13 06:34:53.951972','13','Hemang - Coriander',3,'',9,1),(80,'2017-06-13 06:34:53.996332','12','Hemang - Spinach',3,'',9,1),(81,'2017-06-13 06:34:54.040783','11','Hemang - Onion',3,'',9,1),(82,'2017-06-13 06:34:54.085158','10','Hemang - Spinach',3,'',9,1),(83,'2017-06-13 06:34:54.129464','9','Hemang - Coriander',3,'',9,1),(84,'2017-06-13 06:34:54.173889','8','Hemang - Ladyfinger',3,'',9,1),(85,'2017-06-13 06:34:54.218280','7','Hemang - Ladyfinger',3,'',9,1),(86,'2017-06-13 06:34:54.263262','6','Hemang - Ladyfinger',3,'',9,1),(87,'2017-06-13 06:34:54.351849','5','Hemang - Ladyfinger',3,'',9,1),(88,'2017-06-13 06:34:54.440693','4','Hemang - Ladyfinger',3,'',9,1),(89,'2017-06-13 06:34:54.485111','3','Hemang - Brinjal',3,'',9,1),(90,'2017-06-13 06:34:54.529550','2','Hemang - Cabbage',3,'',9,1),(91,'2017-06-13 06:34:54.574038','1','Hemang - Baby Fenugreek',3,'',9,1);
 /*!40000 ALTER TABLE `django_admin_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -293,7 +292,7 @@ CREATE TABLE `django_session` (
 
 LOCK TABLES `django_session` WRITE;
 /*!40000 ALTER TABLE `django_session` DISABLE KEYS */;
-INSERT INTO `django_session` VALUES ('qy5mnizf5l4ddg6dyp0frefd29an6pf3','MmJjNzUzMGNkMjY1MjdhNDJjNGFhZDM4NjE1NDlmZWE2NGFkNWQzYjp7Il9hdXRoX3VzZXJfYmFja2VuZCI6ImRqYW5nby5jb250cmliLmF1dGguYmFja2VuZHMuTW9kZWxCYWNrZW5kIiwibG9nZ2VkX2luIjp0cnVlLCJfYXV0aF91c2VyX2hhc2giOiJmYmJhMTRjMGFhMTYxMDRlMTVkNzliM2VlMGI4MDllMGFmYWIzMjg4IiwidXNlcl9pZCI6MiwiX2F1dGhfdXNlcl9pZCI6IjEiLCJlbWFpbCI6ImhlbWFuZ0BnbWFpbC5jb20iLCJ1c2VyX3R5cGUiOiJQcm9kdWNlciJ9','2017-06-26 08:46:05.844144'),('w3t361qlrmvomi5i9166wjmzclufgl9g','ZmI0ZjljN2FmY2M5ZjBiMTk2MWI1NzQ3ODM0MDk0ODNhYzU2YzVkYjp7Il9hdXRoX3VzZXJfYmFja2VuZCI6ImRqYW5nby5jb250cmliLmF1dGguYmFja2VuZHMuTW9kZWxCYWNrZW5kIiwiX2F1dGhfdXNlcl9oYXNoIjoiZmJiYTE0YzBhYTE2MTA0ZTE1ZDc5YjNlZTBiODA5ZTBhZmFiMzI4OCIsIl9hdXRoX3VzZXJfaWQiOiIxIn0=','2017-06-20 11:31:10.702269'),('xwc8fpolvyuz99h4aq6bodnpb9cmv3cg','YzY4YjNhYjUwMzk5ZmQ4MmIxYWQ2MTg3NjBlZjRlMjIyOTMyMmM0Mzp7Il9hdXRoX3VzZXJfaGFzaCI6ImZiYmExNGMwYWExNjEwNGUxNWQ3OWIzZWUwYjgwOWUwYWZhYjMyODgiLCJ1c2VyX3R5cGUiOiJQcm9kdWNlciIsIl9hdXRoX3VzZXJfaWQiOiIxIiwiZW1haWwiOiJoZW1hbmdAZ21haWwuY29tIiwidXNlcl9pZCI6MiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJsb2dnZWRfaW4iOnRydWV9','2017-06-27 06:34:38.791471');
+INSERT INTO `django_session` VALUES ('7c71kaow88w70immw3idopf6e33xsk81','YmIyYTQyYTAzMWE3NWU1NWNmYjU4ZmMyYzZmMTgzZGRlNzNkYTA4Yjp7Il9hdXRoX3VzZXJfaGFzaCI6ImZiYmExNGMwYWExNjEwNGUxNWQ3OWIzZWUwYjgwOWUwYWZhYjMyODgiLCJfYXV0aF91c2VyX2JhY2tlbmQiOiJkamFuZ28uY29udHJpYi5hdXRoLmJhY2tlbmRzLk1vZGVsQmFja2VuZCIsIl9hdXRoX3VzZXJfaWQiOiIxIn0=','2017-06-27 07:17:51.356487'),('qy5mnizf5l4ddg6dyp0frefd29an6pf3','MmJjNzUzMGNkMjY1MjdhNDJjNGFhZDM4NjE1NDlmZWE2NGFkNWQzYjp7Il9hdXRoX3VzZXJfYmFja2VuZCI6ImRqYW5nby5jb250cmliLmF1dGguYmFja2VuZHMuTW9kZWxCYWNrZW5kIiwibG9nZ2VkX2luIjp0cnVlLCJfYXV0aF91c2VyX2hhc2giOiJmYmJhMTRjMGFhMTYxMDRlMTVkNzliM2VlMGI4MDllMGFmYWIzMjg4IiwidXNlcl9pZCI6MiwiX2F1dGhfdXNlcl9pZCI6IjEiLCJlbWFpbCI6ImhlbWFuZ0BnbWFpbC5jb20iLCJ1c2VyX3R5cGUiOiJQcm9kdWNlciJ9','2017-06-26 08:46:05.844144'),('w3t361qlrmvomi5i9166wjmzclufgl9g','ZmI0ZjljN2FmY2M5ZjBiMTk2MWI1NzQ3ODM0MDk0ODNhYzU2YzVkYjp7Il9hdXRoX3VzZXJfYmFja2VuZCI6ImRqYW5nby5jb250cmliLmF1dGguYmFja2VuZHMuTW9kZWxCYWNrZW5kIiwiX2F1dGhfdXNlcl9oYXNoIjoiZmJiYTE0YzBhYTE2MTA0ZTE1ZDc5YjNlZTBiODA5ZTBhZmFiMzI4OCIsIl9hdXRoX3VzZXJfaWQiOiIxIn0=','2017-06-20 11:31:10.702269'),('xwc8fpolvyuz99h4aq6bodnpb9cmv3cg','YzY4YjNhYjUwMzk5ZmQ4MmIxYWQ2MTg3NjBlZjRlMjIyOTMyMmM0Mzp7Il9hdXRoX3VzZXJfaGFzaCI6ImZiYmExNGMwYWExNjEwNGUxNWQ3OWIzZWUwYjgwOWUwYWZhYjMyODgiLCJ1c2VyX3R5cGUiOiJQcm9kdWNlciIsIl9hdXRoX3VzZXJfaWQiOiIxIiwiZW1haWwiOiJoZW1hbmdAZ21haWwuY29tIiwidXNlcl9pZCI6MiwiX2F1dGhfdXNlcl9iYWNrZW5kIjoiZGphbmdvLmNvbnRyaWIuYXV0aC5iYWNrZW5kcy5Nb2RlbEJhY2tlbmQiLCJsb2dnZWRfaW4iOnRydWV9','2017-06-27 06:34:38.791471');
 /*!40000 ALTER TABLE `django_session` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -406,7 +405,6 @@ CREATE TABLE `farmapp_inventory` (
 
 LOCK TABLES `farmapp_inventory` WRITE;
 /*!40000 ALTER TABLE `farmapp_inventory` DISABLE KEYS */;
-INSERT INTO `farmapp_inventory` VALUES (1,354,3,2),(2,196,9,2),(3,211,8,2),(4,2664,17,2),(5,1312,17,2),(6,1275,17,2),(7,1300,17,2),(8,1299,17,2),(9,112,13,2),(10,72,27,2),(11,77,22,2),(12,36,27,2),(13,36,13,2),(14,37,17,2),(15,104,13,2),(16,43,5,2),(17,41,9,2),(18,37,22,2),(19,37,9,2),(20,36,17,2),(21,26,9,2),(22,36,30,2);
 /*!40000 ALTER TABLE `farmapp_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -507,7 +505,6 @@ CREATE TABLE `farmapp_produce` (
 
 LOCK TABLES `farmapp_produce` WRITE;
 /*!40000 ALTER TABLE `farmapp_produce` DISABLE KEYS */;
-INSERT INTO `farmapp_produce` VALUES (16,'image-2017-06-07T17:18:55.8360831.jpg',43,'2017-06-13 06:35:38.703725','2017-06-07 11:49:13.000000','2017-06-12 11:49:13.000000',0,5,1,1),(17,'image-2017-06-07T17:19:31.0693011.jpg',41,'2017-06-13 06:37:15.801405','2017-06-07 11:50:50.000000','2017-06-12 11:50:50.000000',0,9,1,1),(18,'image-2017-06-07T17:22:35.0084101.jpg',37,'2017-06-13 06:39:53.764841','2017-06-07 11:53:27.000000','2017-06-11 11:53:27.000000',0,22,1,1),(19,'image-2017-06-07T17:24:40.2124661.jpg',37,'2017-06-13 06:41:56.269329','2017-06-07 11:55:20.000000','2017-06-12 11:55:20.000000',0,9,1,1),(20,'image-2017-06-07T17:25:38.1284491.jpg',36,'2017-06-13 06:42:41.147639','2017-06-07 11:56:04.000000','2017-06-11 11:56:04.000000',0,17,1,1),(21,'image-2017-06-07T17:33:27.0063551.jpg',26,'2017-06-13 06:51:41.480049','2017-06-07 12:05:15.000000','2017-06-12 12:05:15.000000',0,9,1,1),(22,'image-2017-06-07T17:37:09.1372901.jpg',36,'2017-06-13 06:55:00.552039','2017-06-07 12:08:34.000000','2017-06-10 12:08:34.000000',0,30,1,1);
 /*!40000 ALTER TABLE `farmapp_produce` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -558,7 +555,7 @@ CREATE TABLE `farmapp_user` (
   `first_name` varchar(100) DEFAULT NULL,
   `last_name` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -567,7 +564,7 @@ CREATE TABLE `farmapp_user` (
 
 LOCK TABLES `farmapp_user` WRITE;
 /*!40000 ALTER TABLE `farmapp_user` DISABLE KEYS */;
-INSERT INTO `farmapp_user` VALUES (1,'keivan@gmail.com','keivan','qwerty','asdfgh','zxcvbn','poiuyt','123456','Consumer','9876541345','Keivan','Shah'),(2,'hemang@gmail.com','hemang','qwertyuiop','asdfghjkl','zxcvbnm,','lkjhgfdsa','1234567890','Producer','9876543210','Hemang','Gandhi');
+INSERT INTO `farmapp_user` VALUES (1,'keivan@gmail.com','keivan','qwerty','asdfgh','zxcvbn','poiuyt','123456','Consumer','9876541345','Keivan','Shah'),(2,'hemang@gmail.com','hemang','qwertyuiop','asdfghjkl','zxcvbnm,','lkjhgfdsa','1234567890','Producer','9876543210','Hemang','Gandhi'),(3,'producer@gmail.com','produce','IIT B','Powai, Mumbai','Maharashtra','India','400067','Producer','9876543210','Producer','produce'),(4,'consumer@gmail.com','consumer','Guest House','IIT B, Powai','Maharashtra','India','400001','Consumer','1234567890','Consumer','Consume');
 /*!40000 ALTER TABLE `farmapp_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -580,4 +577,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-13 12:37:03
+-- Dump completed on 2017-06-13 12:55:09

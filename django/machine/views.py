@@ -25,18 +25,18 @@ def update_inventory(entry):
         inventory = Inventory.objects.get(user_id=user, crop_id=entry.crop_id)
         inventory.weight = inventory.weight + entry.weight
         inventory.save()
-        crop = Crop.objects.get(crop_id=entry.crop_id)
+        crop = Crop.objects.get(crop_id=entry.crop_id.crop_id)
         crop.availability = crop.availability + entry.weight
         crop.save()
-
     except:
+        print("In first exception"+str(user)+str(entry.crop_id))
         try:
             Inventory.objects.create(user_id=user, crop_id=entry.crop_id, weight=entry.weight)
-            crop = Crop.objects.get(crop_id=entry.crop_id)
+            crop = Crop.objects.get(crop_id=entry.crop_id.crop_id)
             crop.availability = crop.availability + entry.weight
             crop.save()
         except Exception as e:
-            print(e)
+            print(e+"Hello")
 
 
 

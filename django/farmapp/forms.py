@@ -7,12 +7,14 @@ class LoginForm(forms.Form):
 
 
 class SignUpForm(forms.Form):
-    name = forms.CharField(label="Name", max_length=100, help_text="Enter your Full Name", label_suffix=":")
-    email = forms.EmailField(label="Email ID", max_length=100, help_text="Enter your Email ID", label_suffix=":")
-    password = forms.CharField(label="Password", help_text="Enter your password", widget=forms.PasswordInput(), label_suffix=":")
-    repass = forms.CharField(label="Retype Password", help_text="Retype your Password", widget=forms.PasswordInput(), label_suffix=":")
+    firstname = forms.CharField(label="First Name", max_length=100, label_suffix=":")
+    lastname = forms.CharField(label="Last Name", max_length=100, label_suffix=":")
+    email = forms.EmailField(label="Email ID", max_length=100, label_suffix=":")
+    contact = forms.CharField(label="Contact", max_length=15, label_suffix=":")
+    password = forms.CharField(label="Password", widget=forms.PasswordInput(), label_suffix=":")
+    repass = forms.CharField(label="Retype Password", widget=forms.PasswordInput(), label_suffix=":")
 
 class CartForm(forms.Form):
-    quantity = forms.FloatField(label="Quantity",help_text="Specify quantity",label_suffix=":")
+    quantity = forms.FloatField(label="Quantity", help_text="Specify quantity", label_suffix=":")
 
 
