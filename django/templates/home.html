@@ -18,7 +18,7 @@
     <ul class="navbar-nav justify-content-end">
 		{% if request.session.cart_count %}
 		<li class="nav-item">
-	        <a href="/cart"><button type="button" class="btn btn-outline-info mr-2"><span class="fa fa-shopping-cart mr-2"></span>Cart<span class="badge badge-primary">{{request.session.cart_count}}</span></button></a>
+	        <a href="/cart"><button type="button" class="btn btn-outline-info mr-2"><span class="fa fa-shopping-cart mr-2"></span>Cart  <span class="badge badge-primary">{{request.session.cart_count}}</span></button></a>
 		</li>
 		{% endif %}
     	<li class="nav-item mt-2">

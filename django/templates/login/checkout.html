@@ -1,5 +1,27 @@
 {% extends "home.html" %}
 {% load static %}
 {% block content %}
-<h1>Lele</h1>
+
+{% for item in cart_session %}
+
+<div class="card" style="width: 20rem;">
+  <img class="card-img-top" src="{% static item.crop_id.imagepath %}" alt="Card image cap">
+  <div class="card-block">
+    <h4 class="card-title">{{item.crop_id.english_name}}</h4>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+  <div class="mr-2">Sellers:</div>
+  {% for p in outerlist|get_item:item.crop_id.crop_id %}
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">{{ p.0.email}} <strong>Min:{{ p.3 }}   Max:{{ p.4 }}  Available:{{p.2}}</strong> </li>
+  </ul>
+  {% endfor %}
+
+  <div class="card-block">
+    <a href="#" class="card-link">Card link</a>
+    <a href="#" class="card-link">Another link</a>
+  </div>
+</div>
+
+{% endfor %}
 {% endblock content %}

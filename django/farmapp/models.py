@@ -1,6 +1,13 @@
 from django.db import models
 import datetime
 # Create your models here.
+class Cart(models.Model):
+    cart_id = models.AutoField(primary_key=True)
+    def __str__(self):
+        return str(self.cart_id)
+    class Meta:
+        verbose_name_plural = "cart"
+
 class User(models.Model):
     user_id = models.AutoField(primary_key=True)
     email = models.EmailField()
@@ -13,6 +20,7 @@ class User(models.Model):
     country = models.CharField(max_length=100)
     pin_code = models.CharField(max_length=20)
     user_type = models.CharField(max_length=20)
+    last_cart = models.ForeignKey(Cart,null=True,on_delete=models.CASCADE)
     contact = models.TextField()
     def __str__(self):
         return self.email
@@ -75,22 +83,16 @@ class Inventory(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     weight = models.FloatField()
+    minimum = models.FloatField(default=0)
+    maximum = models.FloatField(default=0)
     def __str__(self):
         return str(self.user_id)
     class Meta:
         verbose_name_plural = "inventories"
 
-class Cart(models.Model):
-    cart_id = models.AutoField(primary_key=True)
-    def __str__(self):
-        return str(self.cart_id)
-    class Meta:
-        verbose_name_plural = "cart"
-
 class Cart_session(models.Model):
     cart_id = models.ForeignKey(Cart,on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
-    weight = models.FloatField(default=0)
     time = models.DateTimeField(default=datetime.datetime.now())
     def __str__(self):
         return str(self.cart_id)
@@ -100,7 +102,9 @@ class Cart_session(models.Model):
 class Order(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='Consumer')
     cart_id = models.ForeignKey(Cart_session, on_delete=models.CASCADE)
+    crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     seller = models.ForeignKey(User, on_delete=models.CASCADE,related_name='Producer')
+    weight = models.FloatField(default=0)
     delivery_date = models.DateTimeField()
     def __str__(self):
         return str(self.user_id+"-"+self.seller+"-"+self.delivery_date)
