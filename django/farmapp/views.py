@@ -3,9 +3,21 @@ from .forms import LoginForm, SignUpForm,CartForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
+from django.db.models import F
 from graphos.sources.model import ModelDataSource
-from graphos.renderers.morris import DonutChart, BarChart
 
+from graphos.renderers.morris import DonutChart
+from django.template.defaulttags import register
+
+
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
+
+@register.filter
+def get_list_item(list, key):
+    return list[key]
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def index(request):
@@ -21,17 +33,23 @@ def index(request):
 
 def home(request):
     if request.session.get("logged_in", False) and request.session.get('user_type', "").upper() != "PRODUCER":
-        return HttpResponseRedirect(request.session['page'])
+        if request.session.get('cart_id', False):
+            if request.session.get('page',False):
+                return HttpResponseRedirect(request.session['page'])
+            else:
+                return HttpResponseRedirect('/crops')
+        else:
+            return HttpResponseRedirect('/crops')
     return HttpResponseRedirect('/')
 
 
 def logout(request):
     if request.session.get('cart_id',False):
-        cart_id = request.session['cart_id']
-        cart_count = request.session['cart_count']
         user = User.objects.get(user_id = request.session['user_id'])
-        user.last_cart = request.session['cart_id']
+        user.last_cart = Cart.objects.get(cart_id = request.session['cart_id'])
+        user.save()
         request.session.flush()
+
         # request.session['cart_id'] = cart_id
         # request.session['cart_count'] = cart_count
         return HttpResponseRedirect('/')
@@ -63,6 +81,14 @@ def login(request):
                         return HttpResponseRedirect('/producer/home/')
                     else:
                         print("A Consumer Logged In")
+                        cart = Cart.objects.get(cart_id=user.last_cart.cart_id)
+                        print(user.last_cart.cart_id)
+                        if request.session.get('cart_id',False):
+                            user.last_cart = cart
+                            user.save()
+                        else:
+                            request.session['cart_id'] = cart.cart_id
+
                         return HttpResponseRedirect('/home/')
                 except Exception as e:
                     print(e)
@@ -204,7 +230,35 @@ def view_cart(request):
         return render(request, 'cart.html', context)
 
 def checkout(request):
-    return render(request,'login/checkout.html',{})
+
+    cart = Cart.objects.get(cart_id=request.session['cart_id'])
+    cart_session = Cart_session.objects.filter(cart_id=cart)
+    producers = []
+    # for item in cart_session:
+    #     entry1 =Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
+    #     producers.append(entry1)
+    # print(producers)
+    outerlist = {}
+
+    for item in cart_session:
+        producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
+        item_list = []
+        for producer in producers:
+            print(producer)
+            machines = Machine.objects.filter(user_id = producer.user_id)
+            row = Produce.objects.filter(machine_id__in = machines, crop_id = producer.crop_id).order_by('date_of_produce')[0]
+            innerlist = []
+            innerlist.append(producer.user_id)
+            innerlist.append(producer.crop_id)
+            innerlist.append(producer.weight)
+            innerlist.append(producer.minimum)
+            innerlist.append(producer.maximum)
+            innerlist.append(row.image)
+            item_list.append(innerlist)
+        outerlist[item.crop_id.crop_id] = item_list
+    context = { 'page': 'checkout', 'cart_session': cart_session , 'outerlist':outerlist }
+    print(outerlist)
+    return render(request,'login/checkout.html',context)
 
 
 class TotalProduce(ModelDataSource):
