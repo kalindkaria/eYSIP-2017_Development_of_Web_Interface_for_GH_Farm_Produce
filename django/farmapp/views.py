@@ -5,8 +5,10 @@ from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
 from django.db.models import F
 from graphos.sources.model import ModelDataSource
+
 from graphos.renderers.morris import DonutChart
 from django.template.defaulttags import register
+
 
 
 @register.filter
@@ -266,12 +268,15 @@ class TotalProduce(ModelDataSource):
         data_without_header = data[1:]
         for row in data_without_header:
             row[0] = row[0].english_name
+            print(row[1])
+            row[1] = str(int(round(row[1])))
+            print(row[1])
         data_without_header.insert(0, header)
         return data_without_header
 
 
 def graph(request):
-    queryset = Inventory.objects.filter()
-    chart = DonutChart(TotalProduce(queryset, fields=['crop_id', 'weight']), html_id='graph', options={'postUnits': "g"})
+    queryset = Inventory.objects.all()
+    chart = DonutChart(TotalProduce(queryset, fields=['crop_id', 'weight']), html_id='graph', options={'formatter':'function(y){return y+" gm"}'})
     context = {'chart': chart}
     return render(request, 'graph.html', context)

@@ -25,6 +25,8 @@ LINE_2 = 0xC0
 LINE_3 = 0x94
 LINE_4 = 0xD4
 
+LINES = [LINE_1,LINE_2,LINE_3,LINE_4]
+
 #Global Variables
 min_weight = 10
 baseValue = 0	#variable to store the base value of load cell
@@ -88,7 +90,7 @@ def takePicture():
 		imagepath = "/home/pi/ghfarm/images/%s" %imgName
 		#capture image and save in images directory. if image file does not exists in folder then retake the image
 		while os.path.isfile(imagepath) == False:
-			os.system("fswebcam -r 300x300 -S 10 --no-banner %s" %imagepath)
+			os.system("fswebcam -r 640x480 -S 10 --no-banner %s" %imagepath)
 		return True, imgName
 	else:	#if camera is not attached display error message
 		lcd.clear()
@@ -316,11 +318,70 @@ def send_all_data(data):
 		return False
 
 
+# Generate 4 options at a time
+def generate_options(names,percentages,primary_keys):
+	all_options = []
+	all_pks = []
+	assert len(names) == len(percentages) , "Length's of names and percentages don't match!"
+	for start_idx in range(0,len(names),4):
+		s = []
+		pk = []
+		for j in range(0,min(4,len(names) - start_idx)):
+			idx = start_idx + j
+			assert len(names[idx]) <= 11, "Length of name too long!"
+			row = str(j+1) + '.' + names[idx].ljust(11) + (' {:05.2f}'.rjust(5).format(percentages[idx]*100)) + '%'
+			s.append(row)
+			pk.append(primary_keys[idx])
+		all_options.append(s)
+		all_pks.append(pk)
+	return all_options,all_pks
+
+# Show choices to select crop along with percentages
+def show_choices(names,percentages,primary_keys):
+	lcd.clear()
+	print("Options:")
+	options,pks = generate_options(names,percentages,primary_keys)
+	last_idx = len(options) - 1
+	print(options)
+	curr_start_idx = 0
+	key = ''
+	while True:
+		option = options[curr_start_idx]
+		for i in range(0,len(option)):
+			lcd.string(option[i],LINES[i])
+
+		for i in range(1,len(option)+1):
+			key = kpad.get_key()
+			if key == str(i):
+				time.sleep(0.1)
+				return pks[curr_start_idx][int(i-1)]
+
+		key = kpad.get_key()
+
+		if key == '*':
+			lcd.clear()
+			time.sleep(0.1)
+			if curr_start_idx == last_idx:
+				curr_start_idx = 0
+			elif curr_start_idx < last_idx:
+				curr_start_idx = (curr_start_idx + 1)
+			continue
+
+		if key == '#':
+			lcd.clear()
+			time.sleep(0.1)
+			if curr_start_idx == 0:
+				curr_start_idx = last_idx
+			elif curr_start_idx >= 1:
+				curr_start_idx = (curr_start_idx - 1)
+			continue
+				
+
 # Display the prediction on the screen and change is asked to.
 def show_prediction(names, percentages,primary_keys):
 	lcd.clear()
 	time.sleep(0.3)
-	s = ("Confidence: %4.2f" % (percentages[0]*100)) + '%'
+	s = ("Confidence: {:05.2f}".format(percentages[0]*100)) + '%'
 	lcd.string(names[0], LINE_1)
 	lcd.string(s, LINE_2)
 	lcd.string("* to continue", LINE_3)
@@ -330,14 +391,8 @@ def show_prediction(names, percentages,primary_keys):
 		if key == '*':
 			return primary_keys[0]
 		if key == '#':
-			cropIDAccepted, cropid =  acceptCropID()
-			if(cropIDAccepted):
-				return cropid
-			else:
-				continue
+			return show_choices(names,percentages,primary_keys)
 		key = kpad.get_key()
-
-
 
 def init():
 	print("Initialization")
