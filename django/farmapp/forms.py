@@ -1,5 +1,5 @@
 from django import forms
-from .models import Crop
+from .models import Crop, Produce
 
 class LoginForm(forms.Form):
     email = forms.EmailField(label="Email ID", max_length=100, help_text="Enter your email id", label_suffix=":")
@@ -19,10 +19,10 @@ class CartForm(forms.Form):
 
 
 class AnalyticsForm(forms.Form):
-    crops = Crop.objects.all()
-    crop_list = []
-    for crop in crops:
-        crop_list.append([crop.crop_id, crop.english_name])
-    crops = forms.ChoiceField(choices = crop_list, widget=forms.CheckboxSelectMultiple)
-    start_date = forms.DateField(label="Start Date")
-    end_date = forms.DateField(label="End Date")
+    def __init__(self, *args, **kwargs):
+        super(AnalyticsForm, self).__init__(*args, **kwargs)
+        crop_list = kwargs.pop('crop_list', None)
+        self.fields['crops'] = forms.ModelChoiceField(choices = crop_list, widget=forms.CheckboxSelectMultiple)
+
+    start_date = forms.DateField(label="Start Date", required=False)
+    end_date = forms.DateField(label="End Date", required=False)

@@ -3,12 +3,14 @@ from .forms import LoginForm, SignUpForm,CartForm, AnalyticsForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
-from django.db.models import F
+from django.db.models import F, Q
 from graphos.sources.model import ModelDataSource
+from graphos.sources.simple import SimpleDataSource
 
-from graphos.renderers.morris import DonutChart
+from graphos.renderers.morris import DonutChart, BarChart, AreaChart
 from django.template.defaulttags import register
 
+import datetime
 
 
 @register.filter
@@ -281,6 +283,47 @@ def graph(request):
     context = {'chart': chart}
     return render(request, 'graph.html', context)
 
+def set_to_list(set_of_dict):
+    keys = set_of_dict[0].keys()
+    list = []
+    list.append(tuple(keys))
+    for dict in set_of_dict:
+        list.append(tuple(dict.values()))
+    return list
+
 def analytics(request):
-    form = AnalyticsForm()
-    return render(request, 'analytics.html', {'analyticsform':form})
+    context = {}
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
+        inventory = Inventory.objects.filter(user_id=request.session['user_id'])
+        producer_crops = []
+        crop_list = []
+        for item in inventory:
+            producer_crops.append(Crop.objects.get(crop_id=item.crop_id.pk))
+        for crop in producer_crops:
+            crop_list.append([crop.crop_id, crop.english_name])
+        print(crop_list)
+        form = AnalyticsForm(request.POST or None, crop_list=crop_list)
+        print("In Analytics")
+        if request.method == "POST":
+            print("Method POST")
+            if form.is_valid():
+                print("Printing Data:"+str(form.cleaned_data))
+                selected_crops =  Crop.objects.filter(pk__in=form.cleaned_data['crops'])
+                data = []
+                for crop in selected_crops:
+                    try:
+                        object = Inventory.objects.get(user_id=request.session['user_id'], crop_id=crop)
+                        data.append([crop.english_name, object.weight])
+                    except:
+                        data.append([crop.english_name, 0])
+                sorted_data = list(sorted(data, key=lambda data: data[1], reverse=True))
+                sorted_data.insert(0,['Crop Name', 'Weight'])
+                print(sorted_data)
+                data = SimpleDataSource(sorted_data)
+                chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
+                context['chart']=chart
+            else:
+                print("Not Valid")
+        context['analyticsform']=form
+        return render(request, 'analytics.html', context)
+    return HttpResponseRedirect("/")
