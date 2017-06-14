@@ -1,0 +1,168 @@
+{% extends "producer.html" %}
+{% load static %} 
+{% load bootstrap3 %} 
+
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href={% static "css/morris.css" %}>
+<!-- Scripts -->
+<script type="text/javascript" src={% static "js/raphael.min.js" %}></script>
+<script type="text/javascript" src={% static "js/oldjquery.js" %}></script>
+<script type="text/javascript">
+	var oldjQuery = jQuery.noConflict(true);
+</script>
+<script type="text/javascript" src={% static "js/morris.js" %}></script>
+
+<link rel="stylesheet" type="text/css" href={% static "css/datepicker.css" %}>
+<script type="text/javascript" src={% static "js/moment.js" %}></script>
+<script type="text/javascript" src={% static "js/datepicker.js" %}></script>
+{% endblock head %} 
+
+
+
+{% block content %}
+<form action="" method="POST">
+    {% csrf_token %}
+    {% if analyticsform.errors %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+	    <span aria-hidden="true">&times;</span>
+	  </button>
+	  {{ analyticsform.errors }}
+	</div>
+    {% endif %}
+    <div id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="card">
+            <div class="card-header" role="tab" id="headingOne">
+                <h5 class="mb-0">
+	        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+	          Crops
+	        </a>
+	      </h5>
+            </div>
+            <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne">
+                <div class="card-block">
+                    <!-- CROPS -->
+                    <div class="form-check">
+                        <label for="selectall" class="form-check-label">
+                            <input type="checkbox" id="selectall" name="selectall" class="form-check-input" /> Select All
+                        </label>
+                    </div>
+                    {% for pk, choice in analyticsform.crops.field.choices %}
+                    <div class="form-check form-check-inline">
+                        <label for="id_crops_{{ pk }}" class="form-check-label">
+                            <input type="checkbox" id="id_crops_{{ pk }}" value="{{ pk }}" name="crops" class="form-check-input crop_checkbox" /> {{ choice }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" role="tab" id="headingTwo">
+                <h5 class="mb-0">
+	        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+	          Time Period
+	        </a>
+	      </h5>
+            </div>
+            <div id="collapseTwo" class="collapse" role="tabpanel" aria-labelledby="headingTwo">
+                <div class="card-block">
+                    <!-- DATE -->
+                    <p>{{ analyticsform.start_date.label }}</p>
+                    <div class='input-group col-md-3 date'>
+                        <input type='text' class="form-control" id='{{ analyticsform.start_date.auto_id }}' />
+                    </div>
+                    <p>{{ analyticsform.end_date.label }}</p>
+                    <div class='input-group col-md-3 date'>
+                        <input type='text' class="form-control" id='{{ analyticsform.end_date.auto_id }}' />
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" role="tab" id="headingThree">
+                    <h5 class="mb-0">
+	        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+	          Type
+	        </a>
+	      </h5>
+                </div>
+                <div id="collapseThree" class="collapse" role="tabpanel" aria-labelledby="headingThree">
+                    <div class="card-block">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-end">
+            <input type="submit" name="analyticsform" value="Analyze" class="btn btn-primary mr-4">
+        </div>
+    </div>
+</form>
+<hr>
+
+{% if chart %} 
+	{{ chart.as_html }} 
+{% else %}
+	<p>NO CHART</p>
+{% endif %} 
+
+{% endblock content %} 
+
+
+
+{% block scripts %}
+
+<script type="text/javascript">
+$(function() {
+    $('#{{ analyticsform.start_date.auto_id }}').datetimepicker({
+        icons: {
+            time: "fa fa-clock-o",
+            date: "fa fa-calendar-o",
+            up: "fa fa-arrow-up",
+            down: "fa fa-arrow-down",
+        },
+        format: 'DD/MM/YYYY'
+    });
+    $('#{{ analyticsform.end_date.auto_id }}').datetimepicker({
+        icons: {
+            time: "fa fa-clock-o",
+            date: "fa fa-calendar-o",
+            up: "fa fa-arrow-up",
+            down: "fa fa-arrow-down",
+        },
+        format: 'DD/MM/YYYY',
+        useCurrent: false
+    });
+    $("#{{ analyticsform.start_date.auto_id }}").on("dp.change", function(e) {
+        $('#{{ analyticsform.end_date.auto_id}}').data("DateTimePicker").minDate(e.date);
+    });
+    $("#{{ analyticsform.end_date.auto_id }}").on("dp.change", function(e) {
+        $('#{{ analyticsform.start_date.auto_id }}').data("DateTimePicker").maxDate(e.date);
+    });
+});
+</script>
+<script type="text/javascript">
+var select_all = document.getElementById("selectall"); //select all checkbox
+var checkboxes = document.getElementsByClassName("crop_checkbox"); //checkbox items
+
+//select all checkboxes
+select_all.addEventListener("change", function(e) {
+    for (i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = select_all.checked;
+    }
+});
+
+for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].addEventListener('change', function(e) { //".checkbox" change
+        //uncheck "select all", if one of the listed checkbox item is unchecked
+        if (this.checked == false) {
+            select_all.checked = false;
+        }
+        //check "select all" if all checkbox items are checked
+        if (document.querySelectorAll('.checkbox:checked').length == checkboxes.length) {
+            select_all.checked = true;
+        }
+    });
+}
+</script>
+{% endblock scripts %}

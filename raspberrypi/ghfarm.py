@@ -84,7 +84,8 @@ def tare():
 
 # Take a picture of the Crop from the webcam
 def takePicture():
-	lcd.string("Taking picture...", LINE_2)
+	lcd.clear()
+	lcd.string("Taking picture...", LINE_1)
 	if os.path.exists('/dev/video0'):
 		#create image file name with current date
 		imgName = "image-"+ datetime.datetime.now().isoformat()+str(USER_ID)+".jpg"
