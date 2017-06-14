@@ -5,6 +5,10 @@ from machine import *
 from django.views.decorators.csrf import csrf_exempt
 from farmapp.models import Produce, Machine, Crop, Trough, User, Inventory
 from django.http import HttpResponse
+import requests
+
+TRAIN_URL = 'http://192.168.0.66:8000'
+TRAIN_SECRET_KEY = 'El-Psy-Kongroo'
 
 
 # Function to check if the machine trying to log exists.
@@ -51,6 +55,10 @@ def data_entry(request):
             imagepath = os.getcwd() + "/images/"
             time = datetime.datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
             imagepath = imagepath + crop['imagename']
+
+            # Make a copy to send for training
+            training_image = crop['image']
+
             with open(imagepath, 'wb') as img_file:
                 byte_str = crop['image']
                 img_file.write(bytes(byte_str, 'latin-1'))
@@ -75,6 +83,22 @@ def data_entry(request):
                 entry.date_of_expiry = entry.date_of_produce + datetime.timedelta(hours=input_crop.shelf_life)
                 entry.save()
                 update_inventory(entry)
+
+                
+                training_image_name = entry.image
+                training_label = entry.crop_id.short_name
+
+                # Json Payload to send for training along with secret-key
+                training_data = {'secret':TRAIN_SECRET_KEY,
+                                 'label':training_label,'image':training_image,
+                                 'image_name':training_image_name}
+                
+                # Try to send training_data to train server.
+                try:
+                    r = requests.post(TRAIN_URL, data=json.dumps(training_data).encode('utf-8'))
+                    print("Data sent for training!")
+                except Exception as e:
+                    print("Couldn't send data for training because of " + e)
                 print("Entry done")
                 return HttpResponse("Done")
             except Exception as e:
