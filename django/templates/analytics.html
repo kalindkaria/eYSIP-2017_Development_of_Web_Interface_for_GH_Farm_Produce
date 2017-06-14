@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap3 %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href={% static "css/datepicker.css" %}>
+	<script type="text/javascript" src={% static "js/moment.js" %}></script>
+	<script type="text/javascript" src={% static "js/datepicker.js" %}></script>
+{% endblock head %}
+
+{% block content %}
+<form action="" method="POST">
+    {% csrf_token %}
+	<div id="accordion" role="tablist" aria-multiselectable="true">
+	  <div class="card">
+	    <div class="card-header" role="tab" id="headingOne">
+	      <h5 class="mb-0">
+	        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+	          Crops
+	        </a>
+	      </h5>
+	    </div>
+
+	    <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne">
+	      <div class="card-block">
+	      <!-- CROPS -->
+	        {% for pk, choice in analyticsform.crops.field.choices %}
+			<div class="form-check form-check-inline">
+			  <label for="{{ pk }}" class="form-check-label">
+			  <input type="checkbox" id="{{ pk }}" value="{{ pk }}" name="options" class="form-check-input" />
+			  {{ choice }}
+			  </label>
+			</div>
+			{% endfor %}
+	      </div>
+	    </div>
+	  </div>
+	  <div class="card">
+	    <div class="card-header" role="tab" id="headingTwo">
+	      <h5 class="mb-0">
+	        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+	          Time Period
+	        </a>
+	      </h5>
+	    </div>
+	    <div id="collapseTwo" class="collapse" role="tabpanel" aria-labelledby="headingTwo">
+	      <div class="card-block">
+	        <!-- DATE -->
+			<div class='input-group date'>
+				<label for="datetimepicker1">
+				Start Date:
+                <input type='text' class="form-control" id='datetimepicker1'/>
+                </label>
+            </div>
+            <script type="text/javascript">
+		        $(function () {
+		            $('#datetimepicker1').datetimepicker({
+		                icons: {
+		                    time: "fa fa-clock-o",
+		                    date: "fa fa-calendar-o",
+		                    up: "fa fa-arrow-up",
+		                    down: "fa fa-arrow-down",
+		                },
+                		format: 'DD/MM/YYYY'
+		            });
+		        });
+		    </script>
+	    </div>
+	  </div>
+	  <div class="card">
+	    <div class="card-header" role="tab" id="headingThree">
+	      <h5 class="mb-0">
+	        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+	          Type
+	        </a>
+	      </h5>
+	    </div>
+	    <div id="collapseThree" class="collapse" role="tabpanel" aria-labelledby="headingThree">
+	      <div class="card-block">
+	        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+
+
+	<input type="submit" name="analyticsform" value="Analyze" class="btn btn-primary">
+</form>
+{% endblock content %}

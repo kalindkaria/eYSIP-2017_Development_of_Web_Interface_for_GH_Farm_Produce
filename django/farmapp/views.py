@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponseRedirect
-from .forms import LoginForm, SignUpForm,CartForm
+from .forms import LoginForm, SignUpForm,CartForm, AnalyticsForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
@@ -280,3 +280,7 @@ def graph(request):
     chart = DonutChart(TotalProduce(queryset, fields=['crop_id', 'weight']), html_id='graph', options={'formatter':'function(y){return y+" gm"}'})
     context = {'chart': chart}
     return render(request, 'graph.html', context)
+
+def analytics(request):
+    form = AnalyticsForm()
+    return render(request, 'analytics.html', {'analyticsform':form})
