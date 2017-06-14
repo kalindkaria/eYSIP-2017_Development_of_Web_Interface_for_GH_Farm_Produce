@@ -19,10 +19,16 @@ class CartForm(forms.Form):
 
 
 class AnalyticsForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        super(AnalyticsForm, self).__init__(*args, **kwargs)
-        crop_list = kwargs.pop('crop_list', None)
-        self.fields['crops'] = forms.ModelChoiceField(choices = crop_list, widget=forms.CheckboxSelectMultiple)
+    crop_list = []
+    allcrops = Crop.objects.all()
+    for crop in allcrops:
+        crop_list.append([str(crop.crop_id), crop.english_name])
+    start_date = forms.DateField(label="Start Date", required=False, input_formats=['YYYY-MM-DD'], widget=forms.DateInput(format='%Y-%m-%d'))
+    end_date = forms.DateField(label="End Date", required=False, input_formats=['YYYY-MM-DD'], widget=forms.DateInput(format='%Y-%m-%d'))
+    crops = forms.MultipleChoiceField(crop_list, widget=forms.CheckboxSelectMultiple())
 
-    start_date = forms.DateField(label="Start Date", required=False)
-    end_date = forms.DateField(label="End Date", required=False)
+    def __init__(self, *args, **kwargs):
+        crop_list = kwargs.pop('crop_list', None)
+        super(AnalyticsForm, self).__init__(*args, **kwargs)
+        self.fields['crops'].choices = crop_list
+

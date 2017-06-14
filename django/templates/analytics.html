@@ -29,6 +29,7 @@
 	    <span aria-hidden="true">&times;</span>
 	  </button>
 	  {{ analyticsform.errors }}
+	  {{ analyticsform.non_field_errors }}
 	</div>
     {% endif %}
     <div id="accordion" role="tablist" aria-multiselectable="true">
@@ -71,11 +72,13 @@
                     <!-- DATE -->
                     <p>{{ analyticsform.start_date.label }}</p>
                     <div class='input-group col-md-3 date'>
-                        <input type='text' class="form-control" id='{{ analyticsform.start_date.auto_id }}' />
+                        <input type='text' class="form-control" id='{{ analyticsform.start_date.auto_id }}' 
+                        name='start_date' />
                     </div>
                     <p>{{ analyticsform.end_date.label }}</p>
                     <div class='input-group col-md-3 date'>
-                        <input type='text' class="form-control" id='{{ analyticsform.end_date.auto_id }}' />
+                        <input type='text' class="form-control" id='{{ analyticsform.end_date.auto_id }}'
+                        name='end_date' />
                     </div>
                 </div>
             </div>
@@ -121,7 +124,7 @@ $(function() {
             up: "fa fa-arrow-up",
             down: "fa fa-arrow-down",
         },
-        format: 'DD/MM/YYYY'
+        format: 'YYYY-MM-DD'
     });
     $('#{{ analyticsform.end_date.auto_id }}').datetimepicker({
         icons: {
@@ -130,7 +133,7 @@ $(function() {
             up: "fa fa-arrow-up",
             down: "fa fa-arrow-down",
         },
-        format: 'DD/MM/YYYY',
+        format: 'YYYY-MM-DD',
         useCurrent: false
     });
     $("#{{ analyticsform.start_date.auto_id }}").on("dp.change", function(e) {

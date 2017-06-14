@@ -382,25 +382,32 @@ def analytics(request):
         for item in inventory:
             producer_crops.append(Crop.objects.get(crop_id=item.crop_id.pk))
         for crop in producer_crops:
-            crop_list.append([crop.crop_id, crop.english_name])
+            crop_list.append([str(crop.crop_id), crop.english_name])
         print(crop_list)
-        form = AnalyticsForm(request.POST or None, crop_list=crop_list)
-        print("In Analytics")
+        form = AnalyticsForm(crop_list=crop_list)
         if request.method == "POST":
-            print("Method POST")
+            form = AnalyticsForm(request.POST, crop_list=crop_list)
+            print(request.POST)
             if form.is_valid():
                 print("Printing Data:"+str(form.cleaned_data))
                 selected_crops =  Crop.objects.filter(pk__in=form.cleaned_data['crops'])
                 data = []
                 for crop in selected_crops:
                     try:
-                        object = Inventory.objects.get(user_id=request.session['user_id'], crop_id=crop)
+                        user = User.objects.get(pk=request.session['user_id'])
+                        machines = Machine.objects.filter(user_id=user)
+                        object = Produce.objects.filter(machine_id__in=machines, crop_id=crop)\
+                            .exclude(date_of_produce__lte=form.cleaned_data['start_date'])\
+                            .exclude(date_of_produce__gte=form.cleaned_data['end_date'])
+                        print(object)
+                        object = object.aggregate(Sum('weight'))
+                        print(object)
                         data.append([crop.english_name, object.weight])
-                    except:
+                    except Exception as e:
+                        print(e)
                         data.append([crop.english_name, 0])
                 sorted_data = list(sorted(data, key=lambda data: data[1], reverse=True))
                 sorted_data.insert(0,['Crop Name', 'Weight'])
-                print(sorted_data)
                 data = SimpleDataSource(sorted_data)
                 chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
                 context['chart']=chart
