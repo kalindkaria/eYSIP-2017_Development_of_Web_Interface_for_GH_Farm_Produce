@@ -83,10 +83,11 @@ class Inventory(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     weight = models.FloatField()
+    sold = models.FloatField(default=0)
     minimum = models.FloatField(default=0)
     maximum = models.FloatField(default=0)
     def __str__(self):
-        return str(self.user_id)
+        return str(self.user_id.first_name+"-"+self.crop_id.english_name)
     class Meta:
         verbose_name_plural = "inventories"
 
@@ -101,12 +102,12 @@ class Cart_session(models.Model):
 
 class Order(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='Consumer')
-    cart_id = models.ForeignKey(Cart_session, on_delete=models.CASCADE)
+    cart_id = models.ForeignKey(Cart, on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     seller = models.ForeignKey(User, on_delete=models.CASCADE,related_name='Producer')
     weight = models.FloatField(default=0)
-    delivery_date = models.DateTimeField()
+    delivery_date = models.DateTimeField(null=True)
     def __str__(self):
-        return str(self.user_id+"-"+self.seller+"-"+self.delivery_date)
+        return str(self.user_id.first_name+"-"+self.seller.first_name)
     class Meta:
         verbose_name_plural = "orders"

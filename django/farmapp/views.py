@@ -5,6 +5,7 @@ from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
 from django.db.models import F
 from graphos.sources.model import ModelDataSource
+from django.db import transaction
 
 from graphos.renderers.morris import DonutChart
 from django.template.defaulttags import register
@@ -13,6 +14,8 @@ from django.template.defaulttags import register
 
 @register.filter
 def get_item(dictionary, key):
+    print(key)
+    print(type(key))
     return dictionary.get(key)
 
 @register.filter
@@ -229,36 +232,114 @@ def view_cart(request):
         context = {'loginform': loginform, 'signupform': signupform, 'page': 'cart', 'cart_session': cart_session}
         return render(request, 'cart.html', context)
 
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def checkout(request):
+    outerlist = {}
+    errors = {}
+    error_flag =0
+    form_values = {}
+
+    if request.method == "POST":
+        cart = Cart.objects.get(cart_id=request.session['cart_id'])
+        cart_session = Cart_session.objects.filter(cart_id=cart)
+        valid_producers = []
+        for item in cart_session:
+            producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
+            item_errors =[]
+            for producer in producers:
+                requested_quantity = request.POST.get(producer.user_id.first_name +  str(producer.crop_id.crop_id))
+                form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = int(requested_quantity)
+                requested_quantity = float(requested_quantity)
+                print(requested_quantity)
+                if requested_quantity!= 0:
+                    if (producer.weight - producer.sold) < requested_quantity and (producer.weight - producer.sold) >= producer.minimum:
+                        message = "Sorry "+producer.crop_id.english_name+" is  unavailable as requested quantity of "\
+                                  +str(requested_quantity)+"gm is greater than available quantity of "\
+                                  +str(producer.weight - producer.sold)+"gm !"
+                        form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = 0
+                        error_flag =1
+                        item_errors.append(message)
+                    elif (producer.weight - producer.sold) < producer.minimum:
+                        message = "Sorry "+producer.user_id.first_name+" does not have enough "+producer.crop_id.english_name+"!"
+                        form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = 0
+                        error_flag =1
+                        item_errors.append(message)
+                    else:
+                        valid_producers.append(producer)
+            errors[item.crop_id.crop_id] = item_errors
+            print("Crop:"+item.crop_id.english_name)
+            print("Producers : "+str(valid_producers))
+            print("Errors : "+str(errors))
+            print(len(errors))
+        if error_flag==0:
+            with transaction.atomic():
+                user = User.objects.get(user_id = request.session['user_id'])
+                for producer in valid_producers:
+                    requested_quantity = request.POST.get(producer.user_id.first_name + str(producer.crop_id.crop_id))
+                    requested_quantity = float(requested_quantity)
+                    if requested_quantity != 0:
+                        try:
+                            Order.objects.create(user_id = user ,\
+                                                 cart_id = cart ,\
+                                                 crop_id = producer.crop_id ,\
+                                                 seller = producer.user_id ,\
+                                                 weight = requested_quantity)
+
+                            producer.sold = producer.sold + requested_quantity
+                            producer.save()
+                        except Exception as e:
+                            print(e)
+
+                return HttpResponseRedirect('/order')
+
+
 
     cart = Cart.objects.get(cart_id=request.session['cart_id'])
     cart_session = Cart_session.objects.filter(cart_id=cart)
-    producers = []
-    # for item in cart_session:
-    #     entry1 =Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
-    #     producers.append(entry1)
-    # print(producers)
-    outerlist = {}
+
 
     for item in cart_session:
         producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
         item_list = []
         for producer in producers:
-            print(producer)
             machines = Machine.objects.filter(user_id = producer.user_id)
-            row = Produce.objects.filter(machine_id__in = machines, crop_id = producer.crop_id).order_by('date_of_produce')[0]
+            row = Produce.objects.filter(machine_id__in = machines, crop_id = producer.crop_id).order_by('-date_of_produce')[0]
             innerlist = []
             innerlist.append(producer.user_id)
             innerlist.append(producer.crop_id)
-            innerlist.append(producer.weight)
+            innerlist.append(producer.weight - producer.sold)
             innerlist.append(producer.minimum)
             innerlist.append(producer.maximum)
             innerlist.append(row.image)
+
+            quantity = []
+            i = int(producer.minimum)
+            max = min(int(producer.maximum),int(producer.weight-producer.sold))
+            if i<max:
+                while i <= max:
+                    quantity.append(i)
+                    i= i + int(producer.minimum)
+                if quantity[len(quantity)-1] != max:
+                    quantity.append(max)
+            else:
+                quantity.append("Unavailable")
+            print(quantity)
+            innerlist.append(quantity)
+            innerlist.append(producer.user_id.first_name + str(producer.crop_id.crop_id))
             item_list.append(innerlist)
+            print(quantity)
         outerlist[item.crop_id.crop_id] = item_list
-    context = { 'page': 'checkout', 'cart_session': cart_session , 'outerlist':outerlist }
-    print(outerlist)
+    context = { 'page': 'checkout', 'cart_session': cart_session , 'outerlist':outerlist ,'errors':errors ,'form_values':form_values}
     return render(request,'login/checkout.html',context)
+
+def order_summary(request):
+    cart = Cart.objects.get(cart_id=request.session['cart_id'])
+    user = User.objects.get(user_id=request.session['user_id'])
+    order = Order.objects.filter(user_id = user , cart_id = cart)
+    del request.session['cart_id']
+    del request.session['cart_count']
+
+    return render(request,'login/order.html',{'order':order})
 
 
 class TotalProduce(ModelDataSource):

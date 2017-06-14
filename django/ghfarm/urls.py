@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^cart/$', views.view_cart, name='cart'),
     url(r'^graph/$', views.graph, name='graph'),
     url(r'^predict', predict_view.predict, name='predict'),
-    url(r'^checkout/$', views.checkout, name='checkout')
+    url(r'^checkout/$', views.checkout, name='checkout'),\
+    url(r'^order/$', views.order_summary, name='order')
 ]
 

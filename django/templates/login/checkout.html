@@ -2,26 +2,105 @@
 {% load static %}
 {% block content %}
 
+<h2>Order Details:</h2>
+<hr>
+<div class="container-fluid">
 {% for item in cart_session %}
+	{% for error in errors|get_item:item.crop_id.crop_id %}
+	<div class="alert alert-danger alert-dismissible fade show" role="alert">
+	  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+	    <span aria-hidden="true">&times;</span>
+	  </button>
+	  <strong>{{error}}</strong>
+	</div>
+	{% endfor %}
 
-<div class="card" style="width: 20rem;">
-  <img class="card-img-top" src="{% static item.crop_id.imagepath %}" alt="Card image cap">
-  <div class="card-block">
-    <h4 class="card-title">{{item.crop_id.english_name}}</h4>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="mr-2">Sellers:</div>
-  {% for p in outerlist|get_item:item.crop_id.crop_id %}
-  <ul class="list-group list-group-flush">
-    <li class="list-group-item">{{ p.0.email}} <strong>Min:{{ p.3 }}   Max:{{ p.4 }}  Available:{{p.2}}</strong> </li>
-  </ul>
-  {% endfor %}
+	<form action="" method="POST">
+		{% csrf_token %}
+		<div class="card" style="width: 80%; margin-bottom:3% ">
+			<!-- <img src="{% static item.crop_id.imagepath %}" alt="Card image cap" width="300" height="300"> -->
+			<div class="card-header">
+	    		<h4 class="card-title">{{item.crop_id.english_name}}</h4>
+	  		</div>
 
-  <div class="card-block">
-    <a href="#" class="card-link">Card link</a>
-    <a href="#" class="card-link">Another link</a>
-  </div>
-</div>
+			<div class="card-block">
+				<h4 class="card-text">Sellers:</h4>
+			</div>
+			
+			
+			<table class="table table-hover">
+		      <thead>
+		        <tr>
+		          <th>Recent Produce</th>
+		          <th>Name</th>
+		          <th>Maximum Limit</th>
+		          <th>Availability</th>
+		          <th>Quantity</th>
+		        </tr>
+		      </thead>
+		      <tbody>
+		      {% for p in outerlist|get_item:item.crop_id.crop_id %}
+		        <tr class="border-top-0 border-left-0 border-right-0">
+		          <td><a href="#" data-toggle="modal" data-target="#{{p.0.first_name}}{{p.1.crop_id}}"><img src="{% static p.5 %}" class="img-thumbnail"  width=65 height=65></a></td>
+		          <td>{{p.0.first_name}}</td>
+		          <td>{{p.4}}</td>
+		          <td>{{p.2}} g</td>
+		          
+		          <td>
+		          	{% if p.2 < p.3 %}
+		          		Unavailable
+		          	{% else %}
+		          	<select name= "{{p.0.first_name}}{{p.1.crop_id}}">
+		          		{% if form_values|get_item:p.7 %}
+		          		<option value=0 >None</option>
+		          		{% else %}
+		          		<option selected="true" value=0 >None</option>
+		          		{% endif %}
+
+		          		{% for i in p.6 %}
+		          		{% if form_values|get_item:p.7 == i %}
+		          		
+		          		<option selected="true" value={{i}}>{{i}}</option>
+		          		{% else %}
+		          		<option value={{i}}>{{i}}</option>
+		          		{% endif %}
+		          		{% endfor %}
+		          	</select>
+		          	{% endif %}
+		          </td>
+		        </tr>
+
+		        <div class="modal fade hidden" id="{{p.0.first_name}}{{p.1.crop_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				  <div class="modal-dialog modal-lg" role="document">
+				    <div class="modal-content">
+				      <div class="modal-header hidden">
+				        <h5 class="modal-title hidden" id="exampleModalLabel">{{p.1}}</h5>
+				        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				          <span aria-hidden="true">&times;</span>
+				        </button>
+				      </div>
+				      <div class="modal-body">
+				       	<img src="{% static p.5 %}" style="height: inherit; width: 100%">
+				      </div>
+
+				    </div>
+				  </div>
+				</div>
+
+		      {% endfor %}
+		      </tbody>
+		    </table>
+
+		</div>
 
 {% endfor %}
+
+		<div class="row justify-content-end">
+  			<div  class="col-md-4">
+    			<button class="btn btn-warning"> Place Order <span class="fa fa-shopping-cart ml-2"></span></button>
+  			</div>
+		</div>
+
+	</form>
+</div>
 {% endblock content %}
