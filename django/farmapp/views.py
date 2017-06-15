@@ -87,15 +87,19 @@ def login(request):
                         return HttpResponseRedirect('/producer/home/')
                     else:
                         print("A Consumer Logged In")
-                        cart = Cart.objects.get(cart_id=user.last_cart.cart_id)
-                        print(user.last_cart.cart_id)
-                        if request.session.get('cart_id',False):
-                            user.last_cart = cart
-                            user.save()
-                        else:
-                            request.session['cart_id'] = cart.cart_id
+                        try:
+                            cart = Cart.objects.get(cart_id=user.last_cart.cart_id)
+                            print(user.last_cart.cart_id)
+                            if request.session.get('cart_id', False):
+                                user.last_cart = cart
+                                user.save()
+                            else:
+                                request.session['cart_id'] = cart.cart_id
 
-                        return HttpResponseRedirect('/home/')
+                            return HttpResponseRedirect('/home/')
+                        except:
+                            return HttpResponseRedirect('/home/')
+
                 except Exception as e:
                     print(e)
         elif request.POST.get("signup", ""):
@@ -338,11 +342,34 @@ def checkout(request):
 def order_summary(request):
     cart = Cart.objects.get(cart_id=request.session['cart_id'])
     user = User.objects.get(user_id=request.session['user_id'])
+    user.last_cart = None
+    user.save()
     order = Order.objects.filter(user_id = user , cart_id = cart)
     del request.session['cart_id']
     del request.session['cart_count']
 
     return render(request,'login/order.html',{'order':order})
+
+def producer_orders(request):
+    user = User.objects.get(user_id=request.session['user_id'])
+
+    context ={}
+    return render(request,'producer_order.html',context)
+
+def consumer_orders(request):
+    user = User.objects.get(user_id=request.session['user_id'])
+    orders = Order.objects.filter(user_id = user).order_by('timestamp')
+    prev_order = orders[0].cart_id.cart_id
+    all_orders = []
+    individual_order = []
+    for order in orders:
+        if order.cart_id.cart_id == prev_order:
+            individual_order.append(order)
+        else:
+            all_orders.append(individual_order)
+            individual_order = []
+    context ={'page':"orders",'all_orders':all_orders}
+    return render(request,'consumer_order.html',context)
 
 
 class TotalProduce(ModelDataSource):
