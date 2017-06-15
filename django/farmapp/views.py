@@ -396,13 +396,22 @@ def analytics(request):
                     try:
                         user = User.objects.get(pk=request.session['user_id'])
                         machines = Machine.objects.filter(user_id=user)
+                        start_date = form.cleaned_data['start_date']
+                        end_date = form.cleaned_data['end_date']
+                        if not start_date:
+                            start_date = datetime.date(1,1,1)
+                        if not end_date:
+                            end_date = datetime.date.today()
+                        print(start_date,end_date)
                         object = Produce.objects.filter(machine_id__in=machines, crop_id=crop)\
-                            .exclude(date_of_produce__lte=form.cleaned_data['start_date'])\
-                            .exclude(date_of_produce__gte=form.cleaned_data['end_date'])
-                        print(object)
-                        object = object.aggregate(Sum('weight'))
-                        print(object)
-                        data.append([crop.english_name, object.weight])
+                            .exclude(date_of_produce__lt=start_date)\
+                            .exclude(date_of_produce__gt=end_date)
+                        if object.aggregate(Sum('weight')):
+                            weight = object.aggregate(Sum('weight'))['weight__sum']
+                        else:
+                            weight = 0
+
+                        data.append([crop.english_name, weight])
                     except Exception as e:
                         print(e)
                         data.append([crop.english_name, 0])

@@ -1,4 +1,5 @@
 from django.db import models
+import django
 import datetime
 # Create your models here.
 class Cart(models.Model):
@@ -94,7 +95,7 @@ class Inventory(models.Model):
 class Cart_session(models.Model):
     cart_id = models.ForeignKey(Cart,on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
-    time = models.DateTimeField(default=datetime.datetime.now())
+    time = models.DateTimeField(default=django.utils.timezone.now)
     def __str__(self):
         return str(self.cart_id)
     class Meta:
