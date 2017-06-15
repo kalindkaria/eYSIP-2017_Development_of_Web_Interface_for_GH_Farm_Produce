@@ -7,6 +7,9 @@ dataset = load_cached(cache_path='veg.pkl', in_dir='./veg')
 num_classes = dataset.num_classes
 class_names = dataset.class_names
 
+# Make tensorflow shut up
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 import inception
 
 inception.maybe_download()
