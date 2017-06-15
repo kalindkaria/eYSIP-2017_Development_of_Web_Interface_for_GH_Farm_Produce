@@ -1,7 +1,6 @@
 {% extends "producer.html" %}
-{% load static %} 
-{% load bootstrap3 %} 
-
+{% load static %}
+{% load bootstrap3 %}
 
 {% block head %}
 <link rel="stylesheet" type="text/css" href={% static "css/morris.css" %}>
@@ -9,37 +8,30 @@
 <script type="text/javascript" src={% static "js/raphael.min.js" %}></script>
 <script type="text/javascript" src={% static "js/oldjquery.js" %}></script>
 <script type="text/javascript">
-	var oldjQuery = jQuery.noConflict(true);
+var oldjQuery = jQuery.noConflict(true);
 </script>
 <script type="text/javascript" src={% static "js/morris.js" %}></script>
-
 <link rel="stylesheet" type="text/css" href={% static "css/datepicker.css" %}>
 <script type="text/javascript" src={% static "js/moment.js" %}></script>
 <script type="text/javascript" src={% static "js/datepicker.js" %}></script>
-{% endblock head %} 
-
-
+{% endblock head %}
 
 {% block content %}
-<form action="" method="POST">
-    {% csrf_token %}
-    {% if analyticsform.errors %}
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-	  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-	    <span aria-hidden="true">&times;</span>
-	  </button>
-	  {{ analyticsform.errors }}
-	  {{ analyticsform.non_field_errors }}
-	</div>
-    {% endif %}
-    <div id="accordion" role="tablist" aria-multiselectable="true">
+<div class="container-fluid" >
+    <form action="" method="POST">
+        {% csrf_token %} {% if analyticsform.errors %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            {{ analyticsform.errors }} {{ analyticsform.non_field_errors }}
+        </div>
+        {% endif %}
         <div class="card">
-            <div class="card-header" role="tab" id="headingOne">
+            <div class="card-header" role="tab" id="headingOne" data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
                 <h5 class="mb-0">
-	        <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-	          Crops
-	        </a>
-	      </h5>
+	        		<a href="#">Crops</a>
+		      	</h5>
             </div>
             <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne">
                 <div class="card-block">
@@ -60,61 +52,57 @@
             </div>
         </div>
         <div class="card">
-            <div class="card-header" role="tab" id="headingTwo">
+            <div class="card-header" role="tab" id="headingTwo" data-toggle="collapse" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                 <h5 class="mb-0">
-	        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-	          Time Period
-	        </a>
-	      </h5>
+			        <a href="#">Time Period</a>
+		      	</h5>
             </div>
-            <div id="collapseTwo" class="collapse" role="tabpanel" aria-labelledby="headingTwo">
+            <div id="collapseTwo" class="collapse show" role="tabpanel" aria-labelledby="headingTwo">
                 <div class="card-block">
                     <!-- DATE -->
-                    <p>{{ analyticsform.start_date.label }}</p>
-                    <div class='input-group col-md-3 date'>
-                        <input type='text' class="form-control" id='{{ analyticsform.start_date.auto_id }}' 
-                        name='start_date' />
-                    </div>
-                    <p>{{ analyticsform.end_date.label }}</p>
-                    <div class='input-group col-md-3 date'>
-                        <input type='text' class="form-control" id='{{ analyticsform.end_date.auto_id }}'
-                        name='end_date' />
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p>{{ analyticsform.start_date.label }}</p>
+                            <div class='input-group date'>
+                                <input type='text' class="form-control" id='{{ analyticsform.start_date.auto_id }}' name='start_date' />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <p>{{ analyticsform.end_date.label }}</p>
+                            <div class='input-group date'>
+                                <input type='text' class="form-control" id='{{ analyticsform.end_date.auto_id }}' name='end_date' />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="card">
-                <div class="card-header" role="tab" id="headingThree">
+                <div class="card-header" role="tab" id="headingThree" data-toggle="collapse" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
                     <h5 class="mb-0">
-	        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-	          Type
-	        </a>
-	      </h5>
+				        <a href="#">Type</a>
+			     	</h5>
                 </div>
-                <div id="collapseThree" class="collapse" role="tabpanel" aria-labelledby="headingThree">
+                <div id="collapseThree" class="collapse show" role="tabpanel" aria-labelledby="headingThree">
                     <div class="card-block">
                     </div>
                 </div>
             </div>
         </div>
         <div class="row justify-content-end">
-            <input type="submit" name="analyticsform" value="Analyze" class="btn btn-primary mr-4">
+            <input type="submit" name="analyticsform" value="Analyze" class="btn btn-primary mr-4 mt-4">
         </div>
-    </div>
-</form>
+    </form>
 <hr>
-
 {% if chart %} 
 	{{ chart.as_html }} 
 {% else %}
 	<p>NO CHART</p>
-{% endif %} 
-
+{% endif %}
+</div>
 {% endblock content %} 
 
 
-
 {% block scripts %}
-
 <script type="text/javascript">
 $(function() {
     $('#{{ analyticsform.start_date.auto_id }}').datetimepicker({
@@ -154,6 +142,7 @@ $(function() {
     });
 });
 </script>
+
 <script type="text/javascript">
 var select_all = document.getElementById("selectall"); //select all checkbox
 var checkboxes = document.getElementsByClassName("crop_checkbox"); //checkbox items
