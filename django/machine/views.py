@@ -52,7 +52,7 @@ def send_data_for_training(training_data):
         lock.relase()
     except Exception as e:
         lock.acquire()
-        print("Couldn't send data for training because of " + e)
+        print("Couldn't send data for training because of ",e)
         lock.release()
 
 # The main view to handle the data logged by the machine. It checks the machines authentication
