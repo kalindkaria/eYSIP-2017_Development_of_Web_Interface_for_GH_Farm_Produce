@@ -432,8 +432,9 @@ def analytics(request):
                         object = Produce.objects.filter(machine_id__in=machines, crop_id=crop)\
                             .exclude(date_of_produce__lt=start_date)\
                             .exclude(date_of_produce__gt=end_date)
-                        if object.aggregate(Sum('weight')):
-                            weight = object.aggregate(Sum('weight'))['weight__sum']
+                        object = object.aggregate(Sum('weight'))
+                        if object['weight__sum']:
+                            weight = object['weight__sum']
                         else:
                             weight = 0
 
