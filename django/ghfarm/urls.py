@@ -36,7 +36,8 @@ urlpatterns = [
     url(r'^predict', predict_view.predict, name='predict'),
     url(r'^checkout/$', views.checkout, name='checkout'),
     url(r'^order/$', views.order_summary, name='order'),
-    url(r'^producer/analytics/$', views.analytics, name='analytics')
-
+    url(r'^producer/analytics/$', views.analytics, name='analytics'),
+    url(r'^producer/orders/$', views.producer_orders, name='producer_orders'),
+    url(r'^consumer/orders/$', views.consumer_orders, name='consumer_orders'),
 ]
 
