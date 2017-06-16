@@ -93,8 +93,8 @@ def get_list_item(list, key):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def index(request):
     redirect, loginform, signupform = handle_login_signup(request)
-    if redirect:
-        return redirect
+    # if redirect:
+    #     return redirect
     if request.session.get('logged_in', False):
         if request.session.get('user_type', "") == "Producer":
             return HttpResponseRedirect('/producer/home/')
@@ -132,8 +132,6 @@ def logout(request):
 
 def login(request):
     redirect, loginform, signupform = handle_login_signup(request)
-    if redirect:
-        return redirect
     return HttpResponseRedirect(request.session.get('page','/'))
 
 
@@ -146,7 +144,6 @@ def producer_home(request):
         return render(request, 'producer.html', {'page': "home", 'produce': produce})
     return HttpResponseRedirect('/')
 
-
 def producer_inventory(request):
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
         user = User.objects.get(pk = request.session['user_id'])
@@ -154,12 +151,10 @@ def producer_inventory(request):
         return render(request, 'producer_inventory.html', {'page': "inventory",'inventory':inventory})
     return HttpResponseRedirect('/')
 
-
 def about(request):
     request.session['page'] = '/about'
     redirect, loginform, signupform = handle_login_signup(request)
-    if redirect:
-        return redirect
+
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
         context = {'page': 'about'}
         return render(request, 'login/about.html', context)
@@ -172,8 +167,6 @@ def crops(request):
     errors = []
     request.session['page'] = "/crops"
     redirect, loginform, signupform = handle_login_signup(request)
-    if redirect:
-        return redirect
     if request.session.get('cart_id',False):
         cart = Cart.objects.get(cart_id = request.session['cart_id'])
         cart_items = Cart_session.objects.filter(cart_id = cart)
@@ -239,8 +232,7 @@ def remove_from_cart(request,crop_id):
 def view_cart(request):
     request.session['page'] = "/cart"
     redirect, loginform, signupform = handle_login_signup(request)
-    if redirect:
-        return redirect
+
     cart = Cart.objects.get(cart_id = request.session['cart_id'])
     cart_session = Cart_session.objects.filter(cart_id = cart)
     errors=[]
@@ -387,27 +379,25 @@ def order_summary(request):
 
 def producer_orders(request):
     user = User.objects.get(user_id=request.session['user_id'])
-    orders = Order.objects.get(seller = user).order_by('-cart_id')
-    all_orders = []
-    individual_order = []
-    for order in orders:
-        if order.cart_id.cart_id != prev_order:
-            all_orders.append(individual_order)
-            individual_order = []
-            prev_order = order.cart_id.cart_id
-            print(prev_order)
+    orders = Order.objects.filter(seller = user).order_by('-cart_id')
 
+    all_orders = {}
+    crop_order = []
+
+    for order in orders:
+        if all_orders.get(order.crop_id.crop_id,False):
+            print("")
+        else:
+            all_orders[order.crop_id.crop_id]=[]
         item_order = {}
-        item_order['crop_id']=order.crop_id
-        item_order['seller']=order.seller
-        item_order['weight']=order.weight
-        item_order['time']=order.time
-        individual_order.append(item_order)
-    all_orders.append(individual_order)
+        item_order['crop_id'] = order.crop_id
+        item_order['user_id'] = order.user_id
+        item_order['weight'] = order.weight
+        item_order['time'] = order.time
+        all_orders[order.crop_id.crop_id].append(item_order)
     print(all_orders)
+    print(len(all_orders))
     context ={'page':"orders",'all_orders':all_orders}
-    return render(request,'consumerOrder.html',context)
-    context ={}
     return render(request,'producerOrder.html',context)
 
 def consumer_orders(request):
