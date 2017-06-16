@@ -4,7 +4,14 @@
 {% block content%}
 <h2>Our Crops:</h2>
 <hr>
-
+  {% for error in errors %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <strong>{{error}}</strong>
+  </div>
+  {% endfor %}
 <div class="row">
 {% for crop in added_crops %}
 <div class="col-md-3 col-sm-6 col-xs-12">

@@ -3,6 +3,14 @@
 
 {% block content%}
 <div class="container-fluid">
+  {% for error in errors %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <strong>{{error}}</strong>
+  </div>
+  {% endfor %}
     <h2>My Cart:</h2>
     <br>
     <table class="table table-hover">

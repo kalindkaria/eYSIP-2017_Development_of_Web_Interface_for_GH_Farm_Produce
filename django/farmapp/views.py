@@ -152,10 +152,15 @@ def crops(request):
     if request.session.get('cart_id',False):
         cart = Cart.objects.get(cart_id = request.session['cart_id'])
         cart_items = Cart_session.objects.filter(cart_id = cart)
-        id=[]
-        print(cart_items)
+        errors = []
+        id = []
         for crop in cart_items:
-            id.append(crop.crop_id.crop_id)
+            if (crop.crop_id.availability > 0):
+                id.append(crop.crop_id.crop_id)
+            else:
+                message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
+                errors.append(message)
+                Cart_session.objects.get(cart_id=cart, crop_id=crop.crop_id).delete()
         print(id)
         added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
         request.session['cart_count'] = added_crops.count()
@@ -177,16 +182,17 @@ def add_to_cart(request,crop_id):
     try:
         input_crop = Crop.objects.get(crop_id = crop_id)
         cart_session = Cart_session()
-        if request.session.get('cart_id', False):
-            cart = Cart.objects.get(cart_id = request.session['cart_id'])
-            cart_session.cart_id = cart
-        else:
-            cart = Cart.objects.create()
-            cart_session.cart_id = cart
-            request.session['cart_id'] = cart.cart_id
-        print(request.session['cart_id'])
-        cart_session.crop_id = input_crop
-        cart_session.save()
+        if input_crop.availability > 0:
+            if request.session.get('cart_id', False):
+                cart = Cart.objects.get(cart_id = request.session['cart_id'])
+                cart_session.cart_id = cart
+            else:
+                cart = Cart.objects.create()
+                cart_session.cart_id = cart
+                request.session['cart_id'] = cart.cart_id
+            print(request.session['cart_id'])
+            cart_session.crop_id = input_crop
+            cart_session.save()
 
         return HttpResponseRedirect('/crops')
     except:
@@ -211,22 +217,29 @@ def view_cart(request):
     signupform = SignUpForm()
     cart = Cart.objects.get(cart_id = request.session['cart_id'])
     cart_session = Cart_session.objects.filter(cart_id = cart)
+    errors=[]
 
     id=[]
     for crop in cart_session:
-        id.append(crop.crop_id.crop_id)
-    added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+        if(crop.crop_id.availability > 0):
+            id.append(crop.crop_id.crop_id)
+        else:
+            message = "Sorry "+crop.crop_id.english_name+" is no longer available!"
+            errors.append(message)
+            Cart_session.objects.get(cart_id = cart ,crop_id = crop.crop_id).delete()
+    added_crops = Crop.objects.filter(crop_id__in=id,availability__gt =0).order_by('-availability')
     request.session['cart_count'] = added_crops.count()
     if request.session['cart_count']==0:
         return HttpResponseRedirect('/crops')
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
-        context = {'page':'cart','crops': crops,'cart_session':cart_session}
+        context = {'page':'cart','crops': crops,'cart_session':cart_session , 'errors':errors}
         return render(request, 'login/cart.html', context)
     else:
-        context = {'loginform': loginform, 'signupform': signupform, 'page': 'cart', 'cart_session': cart_session}
+        context = {'loginform': loginform, 'signupform': signupform, 'page': 'cart', 'cart_session': cart_session,'errors':errors}
         return render(request, 'cart.html', context)
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
+
 def checkout(request):
     outerlist = {}
     errors = {}
@@ -234,60 +247,67 @@ def checkout(request):
     form_values = {}
 
     if request.method == "POST":
-        with transaction.atomic():
-            cart = Cart.objects.get(cart_id=request.session['cart_id'])
-            cart_session = Cart_session.objects.filter(cart_id=cart)
-            valid_producers = []
-            for item in cart_session:
-                producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
-                item_errors =[]
-                for producer in producers:
-                    requested_quantity = request.POST.get(producer.user_id.first_name +  str(producer.crop_id.crop_id))
-                    form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = int(requested_quantity)
-                    requested_quantity = float(requested_quantity)
-                    print(requested_quantity)
-                    if requested_quantity!= 0:
-                        if (producer.weight - producer.sold) < requested_quantity and (producer.weight - producer.sold) >= producer.minimum:
-                            message = "Sorry "+producer.crop_id.english_name+" is  unavailable as requested quantity of "\
-                                      +str(requested_quantity)+"gm is greater than available quantity of "\
-                                      +str(producer.weight - producer.sold)+"gm !"
-                            form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = 0
-                            error_flag =1
-                            item_errors.append(message)
-                        elif (producer.weight - producer.sold) < producer.minimum:
-                            message = "Sorry "+producer.user_id.first_name+" does not have enough "+producer.crop_id.english_name+"!"
-                            form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = 0
-                            error_flag =1
-                            item_errors.append(message)
-                        else:
-                            valid_producers.append(producer)
-                errors[item.crop_id.crop_id] = item_errors
-                print("Crop:"+item.crop_id.english_name)
-                print("Producers : "+str(valid_producers))
-                print("Errors : "+str(errors))
-                print(len(errors))
-            if error_flag==0:
-                user = User.objects.get(user_id = request.session['user_id'])
-                for producer in valid_producers:
-                    requested_quantity = request.POST.get(producer.user_id.first_name + str(producer.crop_id.crop_id))
-                    requested_quantity = float(requested_quantity)
-                    if requested_quantity != 0:
-                        try:
-                            Order.objects.create(user_id = user ,\
-                                                 cart_id = cart ,\
-                                                 crop_id = producer.crop_id ,\
-                                                 seller = producer.user_id ,\
-                                                 weight = requested_quantity)
+        try:
+            with transaction.atomic():
+                cart = Cart.objects.get(cart_id=request.session['cart_id'])
+                cart_session = Cart_session.objects.filter(cart_id=cart)
+                valid_producers = []
+                for item in cart_session:
+                    producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
+                    item_errors =[]
+                    for producer in producers:
+                        requested_quantity = request.POST.get(producer.user_id.first_name +  str(producer.crop_id.crop_id))
+                        form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = int(requested_quantity)
+                        requested_quantity = float(requested_quantity)
+                        print(requested_quantity)
+                        if requested_quantity!= 0:
+                            if (producer.weight - producer.sold) < requested_quantity and (producer.weight - producer.sold) >= producer.minimum:
+                                message = "Sorry "+producer.crop_id.english_name+" is  unavailable as requested quantity of "\
+                                          +str(requested_quantity)+"gm is greater than available quantity of "\
+                                          +str(producer.weight - producer.sold)+"gm !"
+                                form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = 0
+                                error_flag =1
+                                item_errors.append(message)
+                            elif (producer.weight - producer.sold) < producer.minimum:
+                                message = "Sorry "+producer.user_id.first_name+" does not have enough "+producer.crop_id.english_name+"!"
+                                form_values[producer.user_id.first_name +  str(producer.crop_id.crop_id)] = 0
+                                error_flag =1
+                                item_errors.append(message)
+                            else:
+                                valid_producers.append(producer)
+                    errors[item.crop_id.crop_id] = item_errors
+                    print("Crop:"+item.crop_id.english_name)
+                    print("Producers : "+str(valid_producers))
+                    print("Errors : "+str(errors))
+                    print(len(errors))
+                if error_flag==0:
+                    user = User.objects.get(user_id = request.session['user_id'])
+                    for producer in valid_producers:
+                        requested_quantity = request.POST.get(producer.user_id.first_name + str(producer.crop_id.crop_id))
+                        requested_quantity = float(requested_quantity)
+                        if requested_quantity != 0:
+                            try:
+                                order = Order(user_id = user ,\
+                                             cart_id = cart ,\
+                                             crop_id = producer.crop_id ,\
+                                             seller = producer.user_id ,\
+                                             weight = requested_quantity)
 
-                            producer.sold = producer.sold + requested_quantity
-                            producer.crop_id.availability -= requested_quantity
-                            producer.save()
-                        except Exception as e:
-                            print(e)
+                                producer.sold = producer.sold + requested_quantity
+                                crop = Crop.objects.get(crop_id  = producer.crop_id.crop_id)
+                                crop.availability = crop.availability - requested_quantity
+                                with transaction.atomic():
+                                    producer.save()
+                                    order.save()
+                                    crop.save()
+                            except Exception as e:
+                                print(e)
+                                return HttpResponseRedirect('/checkout')
 
-                return HttpResponseRedirect('/order')
-
-
+                    return HttpResponseRedirect('/order')
+        except Exception as e:
+            print(e)
+            return HttpResponseRedirect('/checkout')
 
     cart = Cart.objects.get(cart_id=request.session['cart_id'])
     cart_session = Cart_session.objects.filter(cart_id=cart)
@@ -346,7 +366,7 @@ def producer_orders(request):
 
 def consumer_orders(request):
     user = User.objects.get(user_id=request.session['user_id'])
-    orders = Order.objects.filter(user_id = user).order_by('cart_id')
+    orders = Order.objects.filter(user_id = user).order_by('-cart_id')
     print(orders)
     prev_order = orders[0].cart_id.cart_id
     print(prev_order)
