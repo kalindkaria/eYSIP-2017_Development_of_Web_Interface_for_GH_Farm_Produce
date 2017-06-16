@@ -41,7 +41,7 @@
             {% if error_message %}
             <p><strong>{{ error_message }}</strong></p>
             {% endif %}
-            <form action="/login/" method="POST">
+            <form action="" method="POST">
             {% csrf_token %} 
             {% bootstrap_form signupform show_help=False %} 
             <input type="submit" name="signup" value="Sign Up" class="btn btn-primary">
@@ -63,8 +63,8 @@
             {% if error_message %}
             <p><strong>{{ error_message }}</strong></p>
             {% endif %}
-            <form action="/login/" method="POST">
-            {% csrf_token %} 
+            <form action="" method="POST">
+            {% csrf_token %}
             {% bootstrap_form loginform show_help=False %}    
             <input type="submit" name="login" value="Login"  class="btn btn-primary">
             </form>
@@ -75,6 +75,39 @@
     {% endblock modal %}
     {% block sidebar %}
     {% endblock sidebar %}
+    
+    {% block alerts %}
+      {% if loginform.errors %}
+        {% for field in loginform %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in loginform.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if signupform.errors %}
+        {% for field in signupform %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in signupform.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+      {% endif %}
+
+    {% endblock alerts %}
 
     {% block content%}
     <div class="jumbotron jumbotron-fluid">

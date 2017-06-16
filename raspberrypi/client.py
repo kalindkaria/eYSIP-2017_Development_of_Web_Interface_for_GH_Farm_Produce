@@ -23,7 +23,7 @@ if os.path.getsize("/home/pi/ghfarm/details.txt") > 0:
 		with open(imagepath + values['imagename'], 'rb') as img:
 			image = img.read()
 			image = str(image,"latin-1")
-			print("Image Size: "+len(image)/1024+" KB")
+			print("Image Size: ",len(image)/1024," KB")
 		values['image']=image
 		i=i+1
 		try:

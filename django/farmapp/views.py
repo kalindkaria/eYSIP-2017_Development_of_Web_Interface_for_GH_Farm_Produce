@@ -15,6 +15,71 @@ from django.template.defaulttags import register
 import datetime
 
 
+def handle_login_signup(request):
+    loginform = LoginForm()
+    signupform = SignUpForm()
+
+    # If user is already logged in.
+    if request.session.get('logged_in', False):
+        if request.session.get('user_type', "").upper() == "PRODUCER":
+            return HttpResponseRedirect('/producer/home/'), loginform, signupform
+        else:
+            return HttpResponseRedirect('/home/'), loginform, signupform
+
+    # Handling the form submitted
+    if request.method == "POST":
+        # If the login form is submitted
+        if request.POST.get("login", ""):
+            # recreating the login form via the request data
+            loginform = LoginForm(request.POST)
+            # if the form is valid
+            if loginform.is_valid():
+                print(loginform.cleaned_data)
+                # checking the details from the database
+                try:
+                    user = User.objects.get(email=loginform.cleaned_data['email'],
+                                            password=loginform.cleaned_data['password'])
+                    # storing the details into the session
+                    request.session['logged_in'] = True
+                    request.session['user_id'] = user.user_id
+                    request.session['email'] = user.email
+                    request.session['user_type'] = user.user_type
+                    # if the logged in user is a producer
+                    if request.session['user_type'] == "Producer":
+                        print("A Producer Logged In")
+                        # redirect to producer home
+                        return None, loginform, signupform
+                    # if the logged in user is a consumer
+                    else:
+                        print("A Consumer Logged In")
+                        # trying to restore last cart session
+                        try:
+                            cart = Cart.objects.get(cart_id=user.last_cart.cart_id)
+                            print(user.last_cart.cart_id)
+                            if request.session.get('cart_id', False):
+                                user.last_cart = cart
+                                user.save()
+                            else:
+                                request.session['cart_id'] = cart.cart_id
+
+                            return None, loginform, signupform
+                        except:
+                            return None, loginform, signupform
+
+                except Exception as e:
+                    loginform.add_error(None, "The username and password do not match!")
+                    print(e)
+        # If the signup form is submitted
+        if request.POST.get("signup", ""):
+            signupform = SignUpForm(request.POST)
+            print(signupform)
+            if signupform.is_valid():
+                print(signupform.cleaned_data)
+                return HttpResponseRedirect('/home/'), loginform, signupform
+
+    return None,loginform,signupform
+
+
 @register.filter
 def get_item(dictionary, key):
     print(key)
@@ -27,13 +92,15 @@ def get_list_item(list, key):
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def index(request):
-    loginform = LoginForm()
-    signupform = SignUpForm()
+    redirect, loginform, signupform = handle_login_signup(request)
+    if redirect:
+        return redirect
     if request.session.get('logged_in', False):
         if request.session.get('user_type', "") == "Producer":
             return HttpResponseRedirect('/producer/home/')
         else:
             return HttpResponseRedirect('/home/')
+    print(loginform)
     return render(request, 'index.html', {'loginform': loginform, 'signupform': signupform, 'page': 'index'})
 
 
@@ -64,53 +131,10 @@ def logout(request):
 
 
 def login(request):
-    print("In LOGIN")
-    print(request.session.get("logged_in", False))
-    if request.session.get('logged_in', False):
-        if request.session.get('user_type', "").upper() == "PRODUCER":
-            return HttpResponseRedirect('/producer/home/')
-        else:
-            return HttpResponseRedirect('/home/')
-    if request.method == "POST":
-        if request.POST.get("login", ""):
-            loginform = LoginForm(request.POST)
-            if loginform.is_valid():
-                print(loginform.cleaned_data)
-                try:
-                    user = User.objects.get(email=loginform.cleaned_data['email'], password=loginform.cleaned_data['password'])
-                    request.session['logged_in'] = True
-                    request.session['user_id'] = user.user_id
-                    request.session['email'] = user.email
-                    request.session['user_type'] = user.user_type
-                    if request.session['user_type'] == "Producer":
-                        print("A Producer Logged In")
-                        return HttpResponseRedirect('/producer/home/')
-                    else:
-                        print("A Consumer Logged In")
-                        try:
-                            cart = Cart.objects.get(cart_id=user.last_cart.cart_id)
-                            print(user.last_cart.cart_id)
-                            if request.session.get('cart_id', False):
-                                user.last_cart = cart
-                                user.save()
-                            else:
-                                request.session['cart_id'] = cart.cart_id
-
-                            return HttpResponseRedirect('/home/')
-                        except:
-                            return HttpResponseRedirect('/home/')
-
-                except Exception as e:
-                    print(e)
-        elif request.POST.get("signup", ""):
-            signupform = SignUpForm(request.POST)
-            print(signupform)
-            if signupform.is_valid():
-                print(signupform.cleaned_data)
-                return HttpResponseRedirect('/home/')
-        else:
-            print(request.POST)
-    return HttpResponseRedirect('/')
+    redirect, loginform, signupform = handle_login_signup(request)
+    if redirect:
+        return redirect
+    return HttpResponseRedirect(request.session.get('page','/'))
 
 
 def producer_home(request):
@@ -118,7 +142,6 @@ def producer_home(request):
         user = User.objects.get(pk=request.session['user_id'])
         machines = Machine.objects.filter(user_id=user)
         produce = list(Produce.objects.filter(machine_id__in=machines))
-
         print(produce)
         return render(request, 'producer.html', {'page': "home", 'produce': produce})
     return HttpResponseRedirect('/')
@@ -133,10 +156,10 @@ def producer_inventory(request):
 
 
 def about(request):
-    loginform = LoginForm()
-    signupform = SignUpForm()
     request.session['page'] = '/about'
-
+    redirect, loginform, signupform = handle_login_signup(request)
+    if redirect:
+        return redirect
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
         context = {'page': 'about'}
         return render(request, 'login/about.html', context)
@@ -146,9 +169,10 @@ def about(request):
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def crops(request):
-    loginform = LoginForm()
-    signupform = SignUpForm()
     request.session['page'] = "/crops"
+    redirect, loginform, signupform = handle_login_signup(request)
+    if redirect:
+        return redirect
     if request.session.get('cart_id',False):
         cart = Cart.objects.get(cart_id = request.session['cart_id'])
         cart_items = Cart_session.objects.filter(cart_id = cart)
@@ -220,8 +244,9 @@ def remove_from_cart(request,crop_id):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def view_cart(request):
     request.session['page'] = "/cart"
-    loginform = LoginForm()
-    signupform = SignUpForm()
+    redirect, loginform, signupform = handle_login_signup(request)
+    if redirect:
+        return redirect
     cart = Cart.objects.get(cart_id = request.session['cart_id'])
     cart_session = Cart_session.objects.filter(cart_id = cart)
 
@@ -451,5 +476,6 @@ def analytics(request):
             else:
                 print("Not Valid")
         context['analyticsform']=form
+        context['page']="analytics"
         return render(request, 'analytics.html', context)
     return HttpResponseRedirect("/")

@@ -12,12 +12,13 @@ import urllib.request
 import requests
 
 #NETWORK Constants
-URL = "http://192.168.0.66:8000/machine/"
-PREDICT_URL = "http://192.168.0.66:8000/predict/"
+URL = "http://192.168.0.111:8000/machine/"
+PREDICT_URL = "http://192.168.0.111:8000/predict/"
 USER_ID = 1
 PASSWORD = "random"
 imagepath = "/home/pi/ghfarm/images/"
 crop_offline = "/home/pi/ghfarm/crop_offline.txt"
+data_offline = "/home/pi/ghfarm/details.txt"
 
 
 #address constant for lines in lcd display
@@ -84,7 +85,8 @@ def tare():
 
 # Take a picture of the Crop from the webcam
 def takePicture():
-	lcd.string("Taking picture...", LINE_2)
+	lcd.clear()
+	lcd.string("Taking picture...", LINE_1)
 	if os.path.exists('/dev/video0'):
 		#create image file name with current date
 		imgName = "image-"+ datetime.datetime.now().isoformat()+str(USER_ID)+".jpg"
@@ -107,7 +109,7 @@ def storeData(data):
 	lcd.string("Weight: "+str(data['weight']), LINE_2)
 	lcd.string("CropID: "+str(data['crop_id']), LINE_3)
 	lcd.string("TroughID: "+str(data['troughid']), LINE_4)
-	f = open('/home/pi/ghfarm/details.txt','a')
+	f = open(data_offline,'a')
 	t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	crops = {'weight':data['weight'],'crop_id':data['crop_id'],'time': t, 'imagename':data['imagename'], 'troughid':data['troughid']}
 	crop_details = json.dumps(crops)
@@ -281,9 +283,9 @@ def is_connected(url):
 # Send the crop image and other data to the server for preidction and return the predicted crop name and id
 def predict(data):
 	lcd.clear()
-	lcd.string("Nostradamus is", LINE_1)
-	lcd.string("thinking.", LINE_2)
-	lcd.string("Keep calm.", LINE_3)
+	lcd.string("       Asking", LINE_2)
+	lcd.string("    Nostradamus", LINE_3)
+	lcd.string("   Please wait...", LINE_4)
 	data['user_id']=USER_ID
 	data['password']=PASSWORD
 	with open(imagepath + data['imagename'], 'rb') as img:
@@ -321,13 +323,11 @@ def send_all_data(data):
 		r = requests.post(URL, data=json.dumps(data))
 		print(r.text)
 		if(r.text != "Done"):
-			with open('/home/pi/ghfarm/details.txt', 'w') as detail_file:
-				detail_file.write(json.dumps(data))
+			storeData(data)
 			return False
 		return True
 	except:
-		with open('/home/pi/ghfarm/details.txt', 'w') as detail_file:
-				detail_file.write(json.dumps(data))
+		storeData(data)
 		return False
 
 
@@ -373,6 +373,7 @@ def show_choices(names,percentages,primary_keys,display_percentages=True,short_n
 
 			for i in range(1,len(option)+1):
 				if key == str(i):
+					time.sleep(0.1)
 					return pks[curr_start_idx][i-1]
 
 			if key == '*':
