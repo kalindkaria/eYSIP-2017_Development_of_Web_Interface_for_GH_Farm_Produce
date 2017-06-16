@@ -148,11 +148,12 @@ def about(request):
 def crops(request):
     loginform = LoginForm()
     signupform = SignUpForm()
+    errors = []
     request.session['page'] = "/crops"
     if request.session.get('cart_id',False):
         cart = Cart.objects.get(cart_id = request.session['cart_id'])
         cart_items = Cart_session.objects.filter(cart_id = cart)
-        errors = []
+
         id = []
         for crop in cart_items:
             if (crop.crop_id.availability > 0):
@@ -160,7 +161,8 @@ def crops(request):
             else:
                 message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
                 errors.append(message)
-                Cart_session.objects.get(cart_id=cart, crop_id=crop.crop_id).delete()
+                print(errors)
+                Cart_session.objects.get(cart_id=crop.cart_id).delete()
         print(id)
         added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
         request.session['cart_count'] = added_crops.count()
@@ -172,10 +174,10 @@ def crops(request):
         crops = Crop.objects.all().order_by('-availability')
         added_crops = []
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
-        context = {'page':'home','crops': crops,'added_crops': added_crops}
+        context = {'page':'home','crops': crops,'added_crops': added_crops ,'errors':errors}
         return render(request, 'login/shop.html', context)
     else:
-        context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,'added_crops': added_crops}
+        context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,'added_crops': added_crops,'errors':errors}
         return render(request, 'shop.html', context)
 
 def add_to_cart(request,crop_id):
@@ -226,7 +228,8 @@ def view_cart(request):
         else:
             message = "Sorry "+crop.crop_id.english_name+" is no longer available!"
             errors.append(message)
-            Cart_session.objects.get(cart_id = cart ,crop_id = crop.crop_id).delete()
+            print(errors)
+            Cart_session.objects.get(cart_id = crop.cart_id).delete()
     added_crops = Crop.objects.filter(crop_id__in=id,availability__gt =0).order_by('-availability')
     request.session['cart_count'] = added_crops.count()
     if request.session['cart_count']==0:
