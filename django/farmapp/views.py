@@ -166,7 +166,6 @@ def crops(request):
         print(id)
         added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
         request.session['cart_count'] = added_crops.count()
-
         crops = Crop.objects.exclude(crop_id__in = id).order_by('-availability')
         print(crops)
 
@@ -363,7 +362,26 @@ def order_summary(request):
 
 def producer_orders(request):
     user = User.objects.get(user_id=request.session['user_id'])
+    orders = Order.objects.get(seller = user).order_by('-cart_id')
+    all_orders = []
+    individual_order = []
+    for order in orders:
+        if order.cart_id.cart_id != prev_order:
+            all_orders.append(individual_order)
+            individual_order = []
+            prev_order = order.cart_id.cart_id
+            print(prev_order)
 
+        item_order = {}
+        item_order['crop_id']=order.crop_id
+        item_order['seller']=order.seller
+        item_order['weight']=order.weight
+        item_order['time']=order.time
+        individual_order.append(item_order)
+    all_orders.append(individual_order)
+    print(all_orders)
+    context ={'page':"orders",'all_orders':all_orders}
+    return render(request,'consumerOrder.html',context)
     context ={}
     return render(request,'producerOrder.html',context)
 
