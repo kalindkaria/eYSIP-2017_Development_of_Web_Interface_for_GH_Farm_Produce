@@ -21,7 +21,7 @@ class User(models.Model):
     country = models.CharField(max_length=100)
     pin_code = models.CharField(max_length=20)
     user_type = models.CharField(max_length=20)
-    last_cart = models.ForeignKey(Cart,null=True,on_delete=models.CASCADE)
+    last_cart = models.ForeignKey(Cart,null=True,blank=True,on_delete=models.CASCADE)
     contact = models.TextField()
     def __str__(self):
         return self.email
@@ -95,7 +95,6 @@ class Inventory(models.Model):
 class Cart_session(models.Model):
     cart_id = models.ForeignKey(Cart,on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
-    time = models.DateTimeField(default=django.utils.timezone.now)
     def __str__(self):
         return str(self.cart_id)
     class Meta:
@@ -107,7 +106,8 @@ class Order(models.Model):
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     seller = models.ForeignKey(User, on_delete=models.CASCADE,related_name='Producer')
     weight = models.FloatField(default=0)
-    delivery_date = models.DateTimeField(null=True)
+    time = models.DateTimeField(default=django.utils.timezone.now)
+    delivery_date = models.DateTimeField(null=True,blank=True)
     def __str__(self):
         return str(self.user_id.first_name+"-"+self.seller.first_name)
     class Meta:
