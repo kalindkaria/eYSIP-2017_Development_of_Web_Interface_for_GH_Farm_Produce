@@ -382,19 +382,18 @@ def producer_orders(request):
     orders = Order.objects.filter(seller = user).order_by('-cart_id')
 
     all_orders = {}
-    crop_order = []
 
     for order in orders:
-        if all_orders.get(order.crop_id.crop_id,False):
+        if all_orders.get(order.crop_id.english_name,False):
             print("")
         else:
-            all_orders[order.crop_id.crop_id]=[]
+            all_orders[order.crop_id.english_name]=[]
         item_order = {}
         item_order['crop_id'] = order.crop_id
         item_order['user_id'] = order.user_id
         item_order['weight'] = order.weight
         item_order['time'] = order.time
-        all_orders[order.crop_id.crop_id].append(item_order)
+        all_orders[order.crop_id.english_name].append(item_order)
     print(all_orders)
     print(len(all_orders))
     context ={'page':"orders",'all_orders':all_orders}
