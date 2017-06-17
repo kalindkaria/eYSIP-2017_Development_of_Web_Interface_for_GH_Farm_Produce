@@ -582,3 +582,11 @@ def analytics(request):
         context['page']="analytics"
         return render(request, 'analytics.html', context)
     return HttpResponseRedirect("/")
+
+def profile(request):
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
+        try:
+            user = User.objects.get(user_id=request.session.get('user_id',False))
+            
+        except Exception as e:
+            print(e)
