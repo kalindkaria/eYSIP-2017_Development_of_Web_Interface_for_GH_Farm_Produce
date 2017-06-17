@@ -108,6 +108,7 @@ class Order(models.Model):
     weight = models.FloatField(default=0)
     time = models.DateTimeField(default=django.utils.timezone.now)
     delivery_date = models.DateTimeField(null=True,blank=True)
+    status = models.CharField(max_length=20,default="pending")
     def __str__(self):
         return str(self.user_id.first_name+"-"+self.seller.first_name)
     class Meta:
