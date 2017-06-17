@@ -18,7 +18,7 @@
         Orders
       </a>
       <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-        <a class="dropdown-item" href="#">Pending Orders</a>
+        <a class="dropdown-item" href="/producer/pendingorders">Pending Orders</a>
         <a class="dropdown-item" href="/producer/orders">All Orders</a>
       </div>
     </li>
@@ -53,6 +53,7 @@
       <th>Trough</th>
       <th>Date of Produce</th>
       <th>Date of Expiry</th>
+      <th>Sold</th>
       <th>Image</th>
     </tr>
   </thead>
@@ -66,6 +67,7 @@
       <td>{{entry.trough_id}}</td>
       <td>{{entry.date_of_produce}}</td>
       <td>{{entry.date_of_expiry}}</td>
+      <td>{{entry.sold}}</td>
       <td><a href="#" data-toggle="modal" data-target="#{{forloop.counter}}"><img src="{% static entry.image %}"  width=28 height=28></a></td>
     </tr> 
     {%endfor%}

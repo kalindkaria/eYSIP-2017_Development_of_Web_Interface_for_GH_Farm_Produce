@@ -112,3 +112,8 @@ class Order(models.Model):
         return str(self.user_id.first_name+"-"+self.seller.first_name)
     class Meta:
         verbose_name_plural = "orders"
+
+class Alert(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    timestamp = models.DateTimeField(default=django.utils.timezone.now)

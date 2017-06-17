@@ -1,12 +1,13 @@
 from django.shortcuts import render, HttpResponseRedirect
 from .forms import LoginForm, SignUpForm,CartForm, AnalyticsForm
-from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order
+from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order,Alert
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
 from django.db.models import F, Q
 from graphos.sources.model import ModelDataSource
 from django.db import transaction
 from graphos.sources.simple import SimpleDataSource
+import django
 
 
 from graphos.renderers.morris import DonutChart, BarChart, AreaChart
@@ -312,6 +313,7 @@ def checkout(request):
                                              seller = producer.user_id ,\
                                              weight = requested_quantity)
 
+
                                 producer.sold = producer.sold + requested_quantity
                                 crop = Crop.objects.get(crop_id  = producer.crop_id.crop_id)
                                 crop.availability = crop.availability - requested_quantity
@@ -319,6 +321,21 @@ def checkout(request):
                                     producer.save()
                                     order.save()
                                     crop.save()
+                                    machines = Machine.objects.filter(user_id=producer.user_id)
+                                    produce = Produce.objects.filter(machine_id__in=machines,
+                                                                     date_of_expiry__gt=django.utils.timezone.now,
+                                                                     weight__gt=F('sold')).order_by('date_of_expiry')
+                                    quantity_left = requested_quantity
+                                    for entry in produce:
+                                        if quantity_left > 0:
+                                            if entry.weight - entry.sold >= quantity_left:
+                                                entry.sold = quantity_left
+                                                entry.save()
+                                                break
+                                            else:
+                                                quantity_left = quantity_left - (entry.weight - entry.sold)
+                                                entry.sold = entry.weight - entry.sold
+                                                entry.save()
                             except Exception as e:
                                 print(e)
                                 return HttpResponseRedirect('/checkout')
@@ -399,6 +416,28 @@ def producer_orders(request):
     context ={'page':"orders",'all_orders':all_orders}
     return render(request,'producerOrder.html',context)
 
+def producer_pending_orders(request):
+    user = User.objects.get(user_id=request.session['user_id'])
+    orders = Order.objects.filter(seller = user,status = "Pending").order_by('-cart_id')
+
+    all_orders = {}
+
+    for order in orders:
+        if all_orders.get(order.crop_id.english_name,False):
+            print("")
+        else:
+            all_orders[order.crop_id.english_name]=[]
+        item_order = {}
+        item_order['crop_id'] = order.crop_id
+        item_order['user_id'] = order.user_id
+        item_order['weight'] = order.weight
+        item_order['time'] = order.time
+        all_orders[order.crop_id.english_name].append(item_order)
+    print(all_orders)
+    print(len(all_orders))
+    context ={'page':"orders",'all_orders':all_orders}
+    return render(request,'producerPendingOrder.html',context)
+
 def consumer_orders(request):
     user = User.objects.get(user_id=request.session['user_id'])
     orders = Order.objects.filter(user_id = user).order_by('-cart_id')
@@ -425,6 +464,41 @@ def consumer_orders(request):
     context ={'page':"orders",'all_orders':all_orders}
     return render(request,'consumerOrder.html',context)
 
+def consumer_order_cancel(request,cart_id, seller , crop_id):
+    try:
+        user = User.objects.get(user_id=request.session['user_id'])
+        seller = User.objects.get(user_id=seller)
+        cart = Cart.objects.get(cart_id = cart_id)
+        crop = Crop.objects.get(crop_id = crop_id)
+        order = Order.objects.get(user_id=user,cart_id =cart,crop_id=crop ,seller = seller)
+        order.status = "Cancelled"
+        producer_message = order.user_id.first_name+" has cancelled his order for "+order.weight+" grams of "\
+                           +order.crop_id.english_name+"placed on "+order.time
+        Alert.objects.create(user_id = seller , message = producer_message)
+        order.save()
+        return HttpResponseRedirect(request.session['page'])
+    except:
+        return HttpResponseRedirect(request.session['page'])
+
+def producer_order_reject(request,cart_id, buyer , crop_id):
+    try:
+        user = User.objects.get(user_id=request.session['user_id'])
+        buyer = User.objects.get(user_id=buyer)
+        cart = Cart.objects.get(cart_id = cart_id)
+        crop = Crop.objects.get(crop_id = crop_id)
+        order = Order.objects.get(user_id=user,cart_id =cart,crop_id=crop ,buyer=buyer)
+        order.status = "Rejected"
+        producer_message = order.seller.first_name+" has rejected your order for "+order.weight+" grams of "\
+                           +order.crop_id.english_name+"placed on "+order.time
+        Alert.objects.create(user_id = buyer , message = producer_message)
+        order.save()
+        return HttpResponseRedirect(request.session['page'])
+    except:
+        return HttpResponseRedirect(request.session['page'])
+
+def alerts(request):
+    user = User.objects.get(user_id=request.session['user_id'])
+    alerts = Alert.objects.filter(user_id = user).order_by
 
 class TotalProduce(ModelDataSource):
     def get_data(self):
