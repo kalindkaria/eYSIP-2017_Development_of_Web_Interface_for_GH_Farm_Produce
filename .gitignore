@@ -115,5 +115,5 @@ django/checkpoints/
 django/inception/
 
 #media
-django/media/
+django/media/*
 
