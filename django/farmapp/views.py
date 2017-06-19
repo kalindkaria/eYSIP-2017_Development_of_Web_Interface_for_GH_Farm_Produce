@@ -596,14 +596,14 @@ def analytics(request):
                             end_date = datetime.date.today()
                         print(start_date,end_date)
                         object = Produce.objects.filter(machine_id__in=machines, crop_id=crop)\
-                            .exclude(date_of_produce__lt=start_date)\
-                            .exclude(date_of_produce__gt=end_date)
+                            .exclude(date_of_produce__date__lt=start_date)\
+                            .exclude(date_of_produce__date__gt=end_date)
+                        print(object)
                         object = object.aggregate(Sum('weight'))
                         if object['weight__sum']:
                             weight = object['weight__sum']
                         else:
                             weight = 0
-
                         data.append([crop.english_name, weight])
                     except Exception as e:
                         print(e)

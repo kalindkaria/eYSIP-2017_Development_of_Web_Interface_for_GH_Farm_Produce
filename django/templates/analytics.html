@@ -18,6 +18,16 @@ var oldjQuery = jQuery.noConflict(true);
 
 {% block content %}
 <div class="container-fluid" >
+	<div class="flex">
+	{% if chart %} 
+		{{ chart.as_html }} 
+	{% else %}
+		<p>NO CHART</p>
+	{% endif %}
+	</div>
+	
+	<hr>
+
     <form action="" method="POST">
         {% csrf_token %} {% if analyticsform.errors %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -76,7 +86,7 @@ var oldjQuery = jQuery.noConflict(true);
                     </div>
                 </div>
             </div>
-            <div class="card">
+            <!-- <div class="card">
                 <div class="card-header" role="tab" id="headingThree" data-toggle="collapse" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
                     <h5 class="mb-0">
 				        <a href="#">Type</a>
@@ -86,21 +96,15 @@ var oldjQuery = jQuery.noConflict(true);
                     <div class="card-block">
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
         <div class="row justify-content-end">
             <input type="submit" name="analyticsform" value="Analyze" class="btn btn-primary mr-4 mt-4">
         </div>
     </form>
-<hr>
-{% if chart %} 
-	{{ chart.as_html }} 
-{% else %}
-	<p>NO CHART</p>
-{% endif %}
+
 </div>
 {% endblock content %} 
-
 
 {% block scripts %}
 <script type="text/javascript">
