@@ -102,6 +102,7 @@ def index(request):
         else:
             return HttpResponseRedirect('/home/')
     print(loginform)
+    #return HttpResponseRedirect('/crops')
     return render(request, 'index.html', {'loginform': loginform, 'signupform': signupform, 'page': 'index'})
 
 
@@ -324,26 +325,7 @@ def checkout(request):
                                     producer.save()
                                     order.save()
                                     crop.save()
-                                    try:
-                                        machines = Machine.objects.filter(user_id=producer.user_id)
-                                        produce = Produce.objects.filter(machine_id__in=machines,
-                                                                         crop_id = producer.crop_id,
-                                                                         date_of_expiry__gt=datetime.datetime.now(),
-                                                                         weight__gt=F('sold')).order_by('date_of_expiry')
-                                    except Exception as e:
-                                        print(e)
-                                        return HttpResponseRedirect('/checkout')
-                                    quantity_left = requested_quantity
-                                    for entry in produce:
-                                        if quantity_left > 0:
-                                            if entry.weight - entry.sold >= quantity_left:
-                                                entry.sold = entry.sold + quantity_left
-                                                entry.save()
-                                                break
-                                            else:
-                                                quantity_left = quantity_left - (entry.weight - entry.sold)
-                                                entry.sold = entry.weight
-                                                entry.save()
+
                             except Exception as e:
                                 return HttpResponseRedirect('/checkout')
 
@@ -395,8 +377,33 @@ def order_summary(request):
     user = User.objects.get(user_id=request.session['user_id'])
     user.last_cart = None
     user.save()
-    order = Order.objects.filter(user_id = user , cart_id = cart)
-    if order:
+    orders = Order.objects.filter(user_id = user , cart_id = cart)
+
+    for order in orders:
+        try:
+            machines = Machine.objects.filter(user_id=order.seller.user_id)
+            produce = Produce.objects.filter(machine_id__in=machines,
+                                             crop_id=order.crop_id,
+                                             date_of_expiry__gt=datetime.datetime.now(),
+                                             weight__gt=F('sold')).order_by('date_of_expiry')
+        except Exception as e:
+            print(e)
+            return HttpResponseRedirect('/checkout')
+        quantity_left = order.weight
+        for entry in produce:
+            if quantity_left > 0:
+                if entry.weight - entry.sold >= quantity_left:
+                    entry.sold = entry.sold + quantity_left
+                    with transaction.atomic():
+                        entry.save()
+                    break
+                else:
+                    quantity_left = quantity_left - (entry.weight - entry.sold)
+                    entry.sold = entry.weight
+                    with transaction.atomic():
+                        entry.save()
+
+    if orders:
         del request.session['cart_id']
         del request.session['cart_count']
 
@@ -405,6 +412,7 @@ def order_summary(request):
         return HttpResponseRedirect('/crops')
 
 def producer_orders(request):
+    request.session['page'] = "/producer/orders"
     user = User.objects.get(user_id=request.session['user_id'])
     orders = Order.objects.filter(seller = user).order_by('-cart_id')
 
@@ -416,19 +424,21 @@ def producer_orders(request):
         else:
             all_orders[order.crop_id.english_name]=[]
         item_order = {}
+        item_order['cart_id'] = order.cart_id
         item_order['crop_id'] = order.crop_id
         item_order['user_id'] = order.user_id
         item_order['weight'] = order.weight
         item_order['time'] = order.time
+        item_order['status'] = order.status.upper()
         all_orders[order.crop_id.english_name].append(item_order)
-    print(all_orders)
-    print(len(all_orders))
+
     context ={'page':"orders",'all_orders':all_orders}
     return render(request,'producerOrder.html',context)
 
 def producer_pending_orders(request):
+    request.session['page'] = "/producer/pendingorders"
     user = User.objects.get(user_id=request.session['user_id'])
-    orders = Order.objects.filter(seller = user,status = "Pending").order_by('-cart_id')
+    orders = Order.objects.filter(seller = user,status__iexact ='pending').order_by('-cart_id')
 
     all_orders = {}
 
@@ -438,14 +448,14 @@ def producer_pending_orders(request):
         else:
             all_orders[order.crop_id.english_name]=[]
         item_order = {}
+        item_order['cart_id'] = order.cart_id
         item_order['crop_id'] = order.crop_id
         item_order['user_id'] = order.user_id
         item_order['weight'] = order.weight
         item_order['time'] = order.time
         item_order['status'] = order.status.upper()
         all_orders[order.crop_id.english_name].append(item_order)
-    print(all_orders)
-    print(len(all_orders))
+
     context ={'page':"orders",'all_orders':all_orders}
     return render(request,'producerPendingOrder.html',context)
 
@@ -480,7 +490,6 @@ def consumer_orders(request):
 
 def consumer_order_cancel(request,cart_id, seller , crop_id):
     try:
-        print("h1+++++++++++++++++++++++++++++++++++++++")
         user = User.objects.get(user_id=request.session['user_id'])
 
         seller = User.objects.get(user_id=seller)
@@ -490,48 +499,82 @@ def consumer_order_cancel(request,cart_id, seller , crop_id):
         order = Order.objects.get(user_id=user,cart_id =cart,crop_id=crop ,seller = seller)
         order.status = "cancelled"
         producer_message = order.user_id.first_name+" has cancelled his order for "+str(order.weight)+" grams of "\
-                           +order.crop_id.english_name+"placed on "+str(order.time)
+                           +order.crop_id.english_name+" placed on "+str(order.time.date())
 
-
+        crop.availability = crop.availability + order.weight
+        inventory = Inventory.objects.get(user_id = seller , crop_id = crop)
+        inventory.sold = inventory.sold - order.weight
         Alert.objects.create(user_id = seller , message = producer_message)
-        order.save()
 
-        machines = Machine.objects.filter(user_id=seller)
-        produce = Produce.objects.filter(machine_id__in=machines,
-                                         crop_id=crop,
-                                         date_of_expiry__gt=datetime.datetime.now(),
-                                        ).exclude(sold=0).order_by('-date_of_expiry')
+        with transaction.atomic():
+            order.save()
+            inventory.save()
+            crop.save()
 
-        quantity_left = order.weight
-        for entry in produce:
-            if quantity_left > 0:
-                if entry.sold >= quantity_left:
-                    entry.sold = entry.sold - quantity_left
-                    entry.save()
-                    break
-                else:
-                    quantity_left = quantity_left - entry.sold
-                    entry.sold = 0
-                    entry.save()
-        return HttpResponseRedirect(request.session['page'])
+            machines = Machine.objects.filter(user_id=seller)
+            produce = Produce.objects.filter(machine_id__in=machines,
+                                             crop_id=crop,
+                                             date_of_expiry__gt=datetime.datetime.now(),
+                                            ).exclude(sold=0).order_by('-date_of_expiry')
+
+            quantity_left = order.weight
+            for entry in produce:
+                if quantity_left > 0:
+                    if entry.sold >= quantity_left:
+                        entry.sold = entry.sold - quantity_left
+                        entry.save()
+                        break
+                    else:
+                        quantity_left = quantity_left - entry.sold
+                        entry.sold = 0
+                        entry.save()
+            return HttpResponseRedirect(request.session['page'])
     except Exception as e:
         print(e)
         return HttpResponseRedirect(request.session['page'])
 
-def producer_order_reject(request,cart_id, buyer , crop_id):
+def producer_order_reject(request, cart_id, buyer , crop_id):
     try:
         user = User.objects.get(user_id=request.session['user_id'])
         buyer = User.objects.get(user_id=buyer)
         cart = Cart.objects.get(cart_id = cart_id)
         crop = Crop.objects.get(crop_id = crop_id)
-        order = Order.objects.get(user_id=user,cart_id =cart,crop_id=crop ,buyer=buyer)
-        order.status = "Rejected"
-        producer_message = order.seller.first_name+" has rejected your order for "+order.weight+" grams of "\
-                           +order.crop_id.english_name+"placed on "+order.time
+        order = Order.objects.get(seller=user,cart_id =cart,crop_id=crop ,user_id=buyer)
+        order.status = "rejected"
+        producer_message = order.seller.first_name+" has rejected your order for "+str(order.weight)+" grams of "\
+                           +order.crop_id.english_name+" placed on "+ str(order.time.date())
+
+
         Alert.objects.create(user_id = buyer , message = producer_message)
-        order.save()
+        crop.availability = crop.availability + order.weight
+        inventory = Inventory.objects.get(user_id = user , crop_id = crop)
+        inventory.sold = inventory.sold - order.weight
+
+        with transaction.atomic():
+            order.save()
+            inventory.save()
+            crop.save()
+
+            machines = Machine.objects.filter(user_id=user)
+            produce = Produce.objects.filter(machine_id__in=machines,
+                                             crop_id=crop,
+                                             date_of_expiry__gt=datetime.datetime.now(),
+                                            ).exclude(sold=0).order_by('-date_of_expiry')
+
+            quantity_left = order.weight
+            for entry in produce:
+                if quantity_left > 0:
+                    if entry.sold >= quantity_left:
+                        entry.sold = entry.sold - quantity_left
+                        entry.save()
+                        break
+                    else:
+                        quantity_left = quantity_left - entry.sold
+                        entry.sold = 0
+                        entry.save()
         return HttpResponseRedirect(request.session['page'])
-    except:
+    except Exception as e:
+        print(e)
         return HttpResponseRedirect(request.session['page'])
 
 def alerts(request):

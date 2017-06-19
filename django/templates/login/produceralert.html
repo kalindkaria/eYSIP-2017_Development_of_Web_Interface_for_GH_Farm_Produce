@@ -5,12 +5,14 @@
  
 <h2>Alerts:</h2>
 <hr>
-<table>
+<table class="table table-inverse table-bordered">
+<tbody>
 {% for alert in alerts %}
 <tr>
-	<td>alert.message</td>
+	<td style="text-align: left;">{{alert.message}}</td>
 </tr>
 {% endfor %}
+</tbody>
 </table>
 
 {% endblock content %}

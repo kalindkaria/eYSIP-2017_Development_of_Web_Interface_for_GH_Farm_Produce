@@ -110,7 +110,7 @@ class Order(models.Model):
     delivery_date = models.DateTimeField(null=True,blank=True)
     status = models.CharField(max_length=20,default="pending")
     def __str__(self):
-        return str(self.user_id.first_name+"-"+self.seller.first_name)
+        return str(self.user_id.first_name+"-"+self.seller.first_name+"-"+self.crop_id.english_name)
     class Meta:
         verbose_name_plural = "orders"
 
@@ -118,3 +118,5 @@ class Alert(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
     timestamp = models.DateTimeField(default=django.utils.timezone.now)
+    def __str__(self):
+        return str(self.user_id.first_name)

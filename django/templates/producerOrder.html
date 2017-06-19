@@ -13,6 +13,8 @@
       <th>Buyer</th>
       <th>Weight</th>
       <th>Order Date</th>
+      <th>Status</th>
+      <th></th>
       <!-- <th>Date of Delivery</th> -->
       <!-- <th>Image</th> -->
     </tr>
@@ -24,6 +26,13 @@
       <td>{{entry.user_id.first_name}}</td>
       <td>{{entry.weight}}g</td>
       <td>{{entry.time}}</td>
+      <td>{{entry.status}}</td>
+      {% if entry.status == "PENDING" %}
+      <td><a href="{% url 'producer_order_reject' entry.cart_id entry.user_id.user_id entry.crop_id.crop_id %}"><button class="btn btn-danger">Reject Order <span class="fa fa-trash ml-2"></span></button></a></td>
+      {% else %}
+      <td></td>
+      {% endif %}
+    </tr>
     </tr>
   {% endfor %}
   </tbody>
