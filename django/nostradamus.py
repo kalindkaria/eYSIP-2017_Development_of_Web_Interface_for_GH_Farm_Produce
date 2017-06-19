@@ -19,16 +19,19 @@ transfer_len = model.transfer_len
 x = tf.placeholder(tf.float32, shape=[None, transfer_len], name='x')
 y_true = tf.placeholder(tf.float32, shape=[None, num_classes], name='y_true')
 y_true_cls = tf.argmax(y_true,dimension=1)
-
+is_Training = False
 x_pretty = pt.wrap(x)
 
 with pt.defaults_scope(activation_fn=tf.nn.relu):
     y_pred,loss = x_pretty.\
-        fully_connected(size=1024,name='layer_fc1').\
+        fully_connected(size=4096,name='layer_fc1').\
+        fully_connected(size=2048,name='layer_fc2').\
+        dropout(keep_prob=0.5,phase=is_Training).\
+        fully_connected(size=1024,name='layer_fc3').\
         softmax_classifier(num_classes=num_classes,labels=y_true)
 
 global_step = tf.Variable(initial_value=0,name='global_step',trainable=False)
-optimizer = tf.train.AdamOptimizer(learning_rate=1e-5).minimize(loss, global_step)
+optimizer = tf.train.AdamOptimizer(learning_rate=(1e-5)).minimize(loss, global_step)
 y_pred_cls = tf.argmax(y_pred,dimension=1)
 correct_prediction = tf.equal(y_pred_cls, y_true_cls)
 accuracy = tf.reduce_mean(tf.cast(correct_prediction,tf.float32))
