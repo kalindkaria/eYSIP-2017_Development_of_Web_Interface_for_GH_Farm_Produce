@@ -76,7 +76,6 @@ def handle_login_signup(request):
         # If the signup form is submitted
         if request.POST.get("signup", ""):
             signupform = SignUpForm(request.POST)
-            print(signupform)
             if signupform.is_valid():
                 print(signupform.cleaned_data)
                 return HttpResponseRedirect('/home/'), loginform, signupform
@@ -158,7 +157,8 @@ def producer_inventory(request):
 def about(request):
     request.session['page'] = '/about'
     redirect, loginform, signupform = handle_login_signup(request)
-
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
+        return HttpResponseRedirect("/")
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
         context = {'page': 'about'}
         return render(request, 'login/about.html', context)
@@ -171,6 +171,8 @@ def crops(request):
     errors = []
     request.session['page'] = "/crops"
     redirect, loginform, signupform = handle_login_signup(request)
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
+        return HttpResponseRedirect("/")
     if request.session.get('cart_id',False):
         cart = Cart.objects.get(cart_id = request.session['cart_id'])
         cart_items = Cart_session.objects.filter(cart_id = cart)

@@ -114,3 +114,6 @@ django/checkpoints/
 #ml
 django/inception/
 
+#media
+django/media/
+
