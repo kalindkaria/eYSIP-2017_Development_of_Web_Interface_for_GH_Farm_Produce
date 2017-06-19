@@ -105,6 +105,9 @@ ENV/
 images/
 server/images/
 
+#checkpoints
+django/checkpoints/
+
 .idea/
 .vscode/
 
