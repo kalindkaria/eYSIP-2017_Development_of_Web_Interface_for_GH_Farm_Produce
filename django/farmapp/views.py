@@ -8,7 +8,10 @@ from graphos.sources.model import ModelDataSource
 from django.db import transaction
 from graphos.sources.simple import SimpleDataSource
 import django
-
+import csv
+import os
+from django.conf import settings
+from django.http import HttpResponse
 
 from graphos.renderers.morris import DonutChart, BarChart, AreaChart
 from django.template.defaulttags import register
@@ -555,7 +558,8 @@ def analytics(request):
             print(request.POST)
             if form.is_valid():
                 print("Printing Data:"+str(form.cleaned_data))
-                selected_crops =  Crop.objects.filter(pk__in=form.cleaned_data['crops'])
+                selected_crops = Crop.objects.filter(pk__in=form.cleaned_data['crops'])
+                selected_crops_name = []
                 data = []
                 for crop in selected_crops:
                     try:
@@ -571,21 +575,32 @@ def analytics(request):
                         object = Produce.objects.filter(machine_id__in=machines, crop_id=crop)\
                             .exclude(date_of_produce__date__lt=start_date)\
                             .exclude(date_of_produce__date__gt=end_date)
-                        print(object)
                         object = object.aggregate(Sum('weight'))
                         if object['weight__sum']:
                             weight = object['weight__sum']
                         else:
                             weight = 0
                         data.append([crop.english_name, weight])
+                        selected_crops_name.append(crop.english_name)
                     except Exception as e:
                         print(e)
                         data.append([crop.english_name, 0])
+                        selected_crops_name.append(crop.english_name)
                 sorted_data = list(sorted(data, key=lambda data: data[1], reverse=True))
                 sorted_data.insert(0,['Crop Name', 'Weight'])
                 data = SimpleDataSource(sorted_data)
+                print(sorted_data)
                 chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
                 context['chart']=chart
+                context['data']=form.cleaned_data
+                context['crop_names']=selected_crops_name
+
+                # Write to a CSV file
+                file_name = "media/"+ str(request.session['user_id'])+"_output.csv"
+                context['csv_filename'] = file_name
+                with open(settings.MEDIA_ROOT+file_name, "w") as f:
+                    writer = csv.writer(f)
+                    writer.writerows(sorted_data)
             else:
                 print("Not Valid")
         context['analyticsform']=form
@@ -600,3 +615,14 @@ def profile(request):
             
         except Exception as e:
             print(e)
+
+def download(request, file_name):
+    if request.session.get("user_id", None):
+        file_name = "media/"+ str(request.session['user_id']) + "_output.csv"
+        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                response = HttpResponse(f.read(), content_type="text/csv")
+                response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
+                return response
+    return HttpResponseRedirect(request.session.get('page',"/"))

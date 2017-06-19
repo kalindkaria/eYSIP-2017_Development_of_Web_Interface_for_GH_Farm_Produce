@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^producer/pendingorders/$', views.producer_orders, name='producer_orders'),
     url(r'^consumer/orders/$', views.consumer_orders, name='consumer_orders'),
     url(r'^consumer/cancel_order/(?P<cart_id>[0-9]+)/(?P<seller>[0-9]+)/(?P<crop_id>[0-9]+)$', views.consumer_order_cancel, name='consumer_order_cancel'),
-    url(r'^consumer/cancel_order/(?P<cart_id>[0-9]+)/(?P<buyer>[0-9]+)/(?P<crop_id>[0-9]+)$', views.consumer_order_cancel, name='consumer_order_cancel')
+    url(r'^consumer/cancel_order/(?P<cart_id>[0-9]+)/(?P<buyer>[0-9]+)/(?P<crop_id>[0-9]+)$', views.consumer_order_cancel, name='consumer_order_cancel'),
+    url(r'^producer/download/(?P<file_name>)', views.download, name='download')
 ]
 
