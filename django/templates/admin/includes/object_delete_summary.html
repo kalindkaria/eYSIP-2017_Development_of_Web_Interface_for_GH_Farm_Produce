@@ -1,7 +1,9 @@
 {% load i18n %}
-<h3>{% trans "Summary" %}</h3>
-<ul class="list-group">
+<div class="col-md-4">
+	<h3>{% trans "Summary" %}</h3>
+	<ul class="list-group">
     {% for model_name, object_count in model_count %}
     <li class="list-group-item">{{ model_name|capfirst }}: {{ object_count }}</li>
     {% endfor %}
-</ul>
+	</ul>
+</div>
