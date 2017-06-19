@@ -93,17 +93,41 @@ def get_list_item(list, key):
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def index(request):
+    errors = []
+    request.session['page'] = "/crops"
     redirect, loginform, signupform = handle_login_signup(request)
-    # if redirect:
-    #     return redirect
-    if request.session.get('logged_in', False):
-        if request.session.get('user_type', "") == "Producer":
-            return HttpResponseRedirect('/producer/home/')
-        else:
-            return HttpResponseRedirect('/home/')
-    print(loginform)
-    #return HttpResponseRedirect('/crops')
-    return render(request, 'index.html', {'loginform': loginform, 'signupform': signupform, 'page': 'index'})
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
+        return HttpResponseRedirect("/producer/home/")
+    if request.session.get('cart_id', False):
+        cart = Cart.objects.get(cart_id=request.session['cart_id'])
+        cart_items = Cart_session.objects.filter(cart_id=cart)
+
+        id = []
+        for crop in cart_items:
+            if (crop.crop_id.availability > 0):
+                id.append(crop.crop_id.crop_id)
+            else:
+                message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
+                errors.append(message)
+                print(errors)
+                Cart_session.objects.get(cart_id=crop.cart_id).delete()
+        print(id)
+        added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+        request.session['cart_count'] = added_crops.count()
+        crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
+        print(crops)
+
+    else:
+        crops = Crop.objects.all().order_by('-availability')
+        added_crops = []
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
+        context = {'page': 'home', 'crops': crops, 'added_crops': added_crops, 'errors': errors}
+        return render(request, 'login/shop.html', context)
+    else:
+        context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,
+                   'added_crops': added_crops, 'errors': errors}
+        return render(request, 'shop.html', context)
+
 
 
 def home(request):
@@ -167,39 +191,7 @@ def about(request):
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def crops(request):
-    errors = []
-    request.session['page'] = "/crops"
-    redirect, loginform, signupform = handle_login_signup(request)
-    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
         return HttpResponseRedirect("/")
-    if request.session.get('cart_id',False):
-        cart = Cart.objects.get(cart_id = request.session['cart_id'])
-        cart_items = Cart_session.objects.filter(cart_id = cart)
-
-        id = []
-        for crop in cart_items:
-            if (crop.crop_id.availability > 0):
-                id.append(crop.crop_id.crop_id)
-            else:
-                message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
-                errors.append(message)
-                print(errors)
-                Cart_session.objects.get(cart_id=crop.cart_id).delete()
-        print(id)
-        added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
-        request.session['cart_count'] = added_crops.count()
-        crops = Crop.objects.exclude(crop_id__in = id).order_by('-availability')
-        print(crops)
-
-    else:
-        crops = Crop.objects.all().order_by('-availability')
-        added_crops = []
-    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
-        context = {'page':'home','crops': crops,'added_crops': added_crops ,'errors':errors}
-        return render(request, 'login/shop.html', context)
-    else:
-        context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,'added_crops': added_crops,'errors':errors}
-        return render(request, 'shop.html', context)
 
 def add_to_cart(request,crop_id):
     try:
