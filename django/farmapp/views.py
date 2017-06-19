@@ -389,10 +389,13 @@ def order_summary(request):
     user.last_cart = None
     user.save()
     order = Order.objects.filter(user_id = user , cart_id = cart)
-    del request.session['cart_id']
-    del request.session['cart_count']
+    if order:
+        del request.session['cart_id']
+        del request.session['cart_count']
 
-    return render(request,'login/order.html',{'order':order})
+        return render(request,'login/order.html',{'order':order})
+    else:
+        return HttpResponseRedirect('/crops')
 
 def producer_orders(request):
     user = User.objects.get(user_id=request.session['user_id'])
@@ -498,8 +501,12 @@ def producer_order_reject(request,cart_id, buyer , crop_id):
 
 def alerts(request):
     user = User.objects.get(user_id=request.session['user_id'])
-    alerts = Alert.objects.filter(user_id = user).order_by
-
+    alerts = Alert.objects.filter(user_id = user).order_by('-timestamp')
+    if user.user_type.upper()=="PRODUCER":
+        return render(request, 'login/produceralert.html', {'alerts': alerts})
+    else:
+        return render(request,'login/consumeralert.html',{'alerts': alerts})
+    
 class TotalProduce(ModelDataSource):
     def get_data(self):
         data = super(TotalProduce, self).get_data()

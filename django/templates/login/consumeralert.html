@@ -1,0 +1,15 @@
+{% extends "home.html" %}
+{% load static %}
+{% block content %}
+ 
+<h2>Alerts:</h2>
+<hr>
+<table>
+{% for alert in alerts %}
+<tr>
+	<td>alert.message</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock content %}
