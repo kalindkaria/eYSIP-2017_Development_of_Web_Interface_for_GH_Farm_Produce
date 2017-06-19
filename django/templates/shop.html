@@ -72,7 +72,7 @@
 			</a>
 		  <div class="card-block">
 		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availability == 0.0 %}
+		    {% if crop.availability <= 0.0 %}
 		    	<p class="card-text">Unavailable</p>
 		    {% else  %}
 		    	<p class="card-text">Available: {{ crop.availability }}</p>
