@@ -11,17 +11,19 @@
       <th>Crop</th>
       <th>Seller</th>
       <th>Weight</th>
+      <th>Order Date</th>
       <!-- <th>Date of Delivery</th> -->
       <!-- <th>Image</th> -->
     </tr>
   </thead>
   <tbody>
-  	{%for entry in order%}
+  	{%for entry in orders%}
     <tr>
       <td>{{forloop.counter}}</td>
       <td>{{entry.crop_id}}</td>
       <td>{{entry.seller.first_name}}</td>
       <td>{{entry.weight}}g</td>
+      <td>{{entry.time}}</td>
     {%endfor%}
   </tbody>
 </table>

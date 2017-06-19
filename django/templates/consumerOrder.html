@@ -33,7 +33,7 @@
       {% if entry.status == "PENDING" %}
       <td><a href="{% url 'consumer_order_cancel' entry.cart_id.cart_id entry.seller.user_id entry.crop_id.crop_id %}"><button class="btn btn-danger">Cancel Order <span class="fa fa-trash ml-2"></span></button></a></td>
       {% else %}
-
+      <td></td>
       {% endif %}
     </tr>
   {% endfor %}
