@@ -88,8 +88,8 @@ def data_entry(request):
                                 image=crop['imagename'],
                                 weight=crop['weight'],
                                 date_of_produce=time,
-                                timestamp=datetime.datetime.now(),
-                                status=0)
+                                timestamp=datetime.datetime.now()
+                                )
                 input_crop = Crop.objects.get(crop_id=crop['crop_id'])
                 entry.date_of_expiry = entry.date_of_produce + datetime.timedelta(hours=input_crop.shelf_life)
                 entry.save()
