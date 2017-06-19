@@ -73,7 +73,7 @@ class Produce(models.Model):
     timestamp = models.DateTimeField()
     date_of_produce = models.DateTimeField()
     date_of_expiry = models.DateTimeField()
-    status = models.FloatField()
+    sold = models.FloatField(default=0)
     def __str__(self):
         # user = Machine.objects.get(machine_id = self.machine_id.machine_id)
         return str(self.machine_id.user_id.first_name +" - "+ self.crop_id.english_name)

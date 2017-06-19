@@ -444,28 +444,31 @@ def producer_pending_orders(request):
 def consumer_orders(request):
     user = User.objects.get(user_id=request.session['user_id'])
     orders = Order.objects.filter(user_id = user).order_by('-cart_id')
-    print(orders)
-    prev_order = orders[0].cart_id.cart_id
-    print(prev_order)
-    all_orders = []
-    individual_order = []
-    for order in orders:
-        if order.cart_id.cart_id != prev_order:
-            all_orders.append(individual_order)
-            individual_order = []
-            prev_order = order.cart_id.cart_id
-            print(prev_order)
+    if orders:
+        prev_order = orders[0].cart_id.cart_id
+        print(prev_order)
+        all_orders = []
+        individual_order = []
+        for order in orders:
+            if order.cart_id.cart_id != prev_order:
+                all_orders.append(individual_order)
+                individual_order = []
+                prev_order = order.cart_id.cart_id
+                print(prev_order)
 
-        item_order = {}
-        item_order['crop_id']=order.crop_id
-        item_order['seller']=order.seller
-        item_order['weight']=order.weight
-        item_order['time']=order.time
-        individual_order.append(item_order)
-    all_orders.append(individual_order)
-    print(all_orders)
-    context ={'page':"orders",'all_orders':all_orders}
-    return render(request,'consumerOrder.html',context)
+            item_order = {}
+            item_order['crop_id']=order.crop_id
+            item_order['seller']=order.seller
+            item_order['weight']=order.weight
+            item_order['time']=order.time
+            individual_order.append(item_order)
+        all_orders.append(individual_order)
+        print(all_orders)
+        context ={'page':"orders",'all_orders':all_orders}
+        return render(request,'consumerOrder.html',context)
+    else:
+        context ={'page':"orders"}
+        return render(request,'consumerOrder.html',context)
 
 def consumer_order_cancel(request,cart_id, seller , crop_id):
     try:
