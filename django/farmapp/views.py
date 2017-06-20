@@ -187,7 +187,7 @@ def producer_home(request):
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
         user = User.objects.get(pk=request.session['user_id'])
         machines = Machine.objects.filter(user_id=user)
-        produce = list(Produce.objects.filter(machine_id__in=machines))
+        produce = list(Produce.objects.filter(machine_id__in=machines).order_by('-timestamp'))
         print(produce)
         return render(request, 'producer.html', {'page': "home", 'produce': produce})
     return HttpResponseRedirect('/')
@@ -690,7 +690,7 @@ def analytics(request):
                 sorted_data.insert(0,['Crop Name', 'Weight'])
                 data = SimpleDataSource(sorted_data)
                 print(sorted_data)
-                chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
+                chart = BarChart(data, html_id='graph', options={'postUnits':' g', 'formatter': 'function(y){return y+" gm"}'})
                 context['chart']=chart
                 context['data']=form.cleaned_data
                 context['crop_names']=selected_crops_name
