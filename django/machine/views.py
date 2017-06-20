@@ -8,7 +8,7 @@ from django.http import HttpResponse
 import requests
 from threading import Thread, Lock
 
-TRAIN_URL = 'http://192.168.0.66:6969'
+TRAIN_URL = 'http://10.129.11.17:1111'
 TRAIN_SECRET_KEY = 'El-Psy-Kongroo'
 
 

@@ -125,7 +125,7 @@ CREATE TABLE `auth_user` (
 
 LOCK TABLES `auth_user` WRITE;
 /*!40000 ALTER TABLE `auth_user` DISABLE KEYS */;
-INSERT INTO `auth_user` VALUES (1,'pbkdf2_sha256$36000$TR6YgJsS4tGX$Ka6u5PWZdj1Jy4kNmYWUqLiHsMRz1DddfMk3x/zzg/w=','2017-06-19 21:36:26.100780',1,'keivan','','','keivan@gmail.com',1,1,'2017-06-17 15:42:24.068396');
+INSERT INTO `auth_user` VALUES (1,'pbkdf2_sha256$36000$TR6YgJsS4tGX$Ka6u5PWZdj1Jy4kNmYWUqLiHsMRz1DddfMk3x/zzg/w=','2017-06-20 10:16:44.931165',1,'keivan','','','keivan@gmail.com',1,1,'2017-06-17 15:42:24.068396');
 /*!40000 ALTER TABLE `auth_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -206,7 +206,7 @@ CREATE TABLE `django_admin_log` (
   KEY `django_admin_log_user_id_c564eba6_fk_auth_user_id` (`user_id`),
   CONSTRAINT `django_admin_log_content_type_id_c4bce8eb_fk_django_co` FOREIGN KEY (`content_type_id`) REFERENCES `django_content_type` (`id`),
   CONSTRAINT `django_admin_log_user_id_c564eba6_fk_auth_user_id` FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -215,7 +215,7 @@ CREATE TABLE `django_admin_log` (
 
 LOCK TABLES `django_admin_log` WRITE;
 /*!40000 ALTER TABLE `django_admin_log` DISABLE KEYS */;
-INSERT INTO `django_admin_log` VALUES (18,'2017-06-19 21:27:24.360294','5','hemang@gmail.com',1,'[{\"added\": {}}]',7,1),(19,'2017-06-19 21:27:43.300341','6','producer@gmail.com',1,'[{\"added\": {}}]',7,1),(20,'2017-06-19 21:35:49.695501','4','Keivan-Tomato',2,'[{\"changed\": {\"fields\": [\"minimum\", \"maximum\"]}}]',11,1),(21,'2017-06-19 21:36:39.301134','5','hemang@gmail.com',2,'[{\"changed\": {\"fields\": [\"user_type\"]}}]',7,1);
+INSERT INTO `django_admin_log` VALUES (18,'2017-06-19 21:27:24.360294','5','hemang@gmail.com',1,'[{\"added\": {}}]',7,1),(19,'2017-06-19 21:27:43.300341','6','producer@gmail.com',1,'[{\"added\": {}}]',7,1),(20,'2017-06-19 21:35:49.695501','4','Keivan-Tomato',2,'[{\"changed\": {\"fields\": [\"minimum\", \"maximum\"]}}]',11,1),(21,'2017-06-19 21:36:39.301134','5','hemang@gmail.com',2,'[{\"changed\": {\"fields\": [\"user_type\"]}}]',7,1),(22,'2017-06-20 09:40:47.905719','7','Keivan-Ladyfinger',2,'[{\"changed\": {\"fields\": [\"minimum\", \"maximum\"]}}]',11,1),(23,'2017-06-20 09:41:01.930012','6','Keivan-Fenugreek',2,'[{\"changed\": {\"fields\": [\"minimum\", \"maximum\"]}}]',11,1),(24,'2017-06-20 09:41:16.733684','5','Keivan-Bottle Gourd',2,'[{\"changed\": {\"fields\": [\"minimum\", \"maximum\"]}}]',11,1),(25,'2017-06-20 09:41:24.719224','4','Keivan-Tomato',2,'[{\"changed\": {\"fields\": [\"maximum\"]}}]',11,1),(26,'2017-06-20 09:41:48.522898','3','Keivan-Cucumber',2,'[{\"changed\": {\"fields\": [\"minimum\", \"maximum\"]}}]',11,1);
 /*!40000 ALTER TABLE `django_admin_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -293,7 +293,7 @@ CREATE TABLE `django_session` (
 
 LOCK TABLES `django_session` WRITE;
 /*!40000 ALTER TABLE `django_session` DISABLE KEYS */;
-INSERT INTO `django_session` VALUES ('3es0z19ohafe2ouqcptcdyytpg08nt35','MDAzNzYzNGY5NDkxYTYyODhkZjY0Y2MzNGJjNzMzMjMwZTkyNTRmZjp7InBhZ2UiOiIvY3JvcHMifQ==','2017-07-03 21:50:44.962919'),('7xrw3xp7exl74z0wqzidgfhwxa7on369','MDAzNzYzNGY5NDkxYTYyODhkZjY0Y2MzNGJjNzMzMjMwZTkyNTRmZjp7InBhZ2UiOiIvY3JvcHMifQ==','2017-07-03 18:21:45.241382');
+INSERT INTO `django_session` VALUES ('3es0z19ohafe2ouqcptcdyytpg08nt35','MDAzNzYzNGY5NDkxYTYyODhkZjY0Y2MzNGJjNzMzMjMwZTkyNTRmZjp7InBhZ2UiOiIvY3JvcHMifQ==','2017-07-04 10:01:07.351784'),('7ckwpwgiy37tb92cg98d18wy95cbu59o','MDAzNzYzNGY5NDkxYTYyODhkZjY0Y2MzNGJjNzMzMjMwZTkyNTRmZjp7InBhZ2UiOiIvY3JvcHMifQ==','2017-07-04 09:40:10.112042'),('7xrw3xp7exl74z0wqzidgfhwxa7on369','MDAzNzYzNGY5NDkxYTYyODhkZjY0Y2MzNGJjNzMzMjMwZTkyNTRmZjp7InBhZ2UiOiIvY3JvcHMifQ==','2017-07-04 10:23:51.305813'),('btb71vgm4hkhx0pl25ox7355tn0cpl74','MDAzNzYzNGY5NDkxYTYyODhkZjY0Y2MzNGJjNzMzMjMwZTkyNTRmZjp7InBhZ2UiOiIvY3JvcHMifQ==','2017-07-04 09:41:52.718596'),('y9pstk4kd5194oitcmvq0d78lfq3bban','MWQxYjg1NjQ2NWE4YjA1OGIwOTBkODc3YThlMzQyNzI3NTEzNDQ4Nzp7Il9hdXRoX3VzZXJfYmFja2VuZCI6ImRqYW5nby5jb250cmliLmF1dGguYmFja2VuZHMuTW9kZWxCYWNrZW5kIiwiX2F1dGhfdXNlcl9oYXNoIjoiZTYzNDM4NTAzZGI1NmZjNzU5MjdhY2ZmMmU4NDFlMjM4NmI5Zjk0MyIsInVzZXJfaWQiOjUsImVtYWlsIjoiaGVtYW5nQGdtYWlsLmNvbSIsInBhZ2UiOiIvY3JvcHMiLCJsb2dnZWRfaW4iOnRydWUsIl9hdXRoX3VzZXJfaWQiOiIxIiwidXNlcl90eXBlIjoiQ29uc3VtZXIifQ==','2017-07-04 10:16:45.010626');
 /*!40000 ALTER TABLE `django_session` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -312,7 +312,7 @@ CREATE TABLE `farmapp_alert` (
   PRIMARY KEY (`id`),
   KEY `farmapp_alert_user_id_id_67c2a510_fk_farmapp_user_user_id` (`user_id_id`),
   CONSTRAINT `farmapp_alert_user_id_id_67c2a510_fk_farmapp_user_user_id` FOREIGN KEY (`user_id_id`) REFERENCES `farmapp_user` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -321,6 +321,7 @@ CREATE TABLE `farmapp_alert` (
 
 LOCK TABLES `farmapp_alert` WRITE;
 /*!40000 ALTER TABLE `farmapp_alert` DISABLE KEYS */;
+INSERT INTO `farmapp_alert` VALUES (1,'Hemang has cancelled his order for 100.0 grams of Tomato placed on 2017-06-20','2017-06-20 09:46:51.373663',1),(2,'Keivan has rejected your order for 200.0 grams of Cucumber placed on 2017-06-20','2017-06-20 09:48:49.017330',5);
 /*!40000 ALTER TABLE `farmapp_alert` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -334,7 +335,7 @@ DROP TABLE IF EXISTS `farmapp_cart`;
 CREATE TABLE `farmapp_cart` (
   `cart_id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`cart_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -343,6 +344,7 @@ CREATE TABLE `farmapp_cart` (
 
 LOCK TABLES `farmapp_cart` WRITE;
 /*!40000 ALTER TABLE `farmapp_cart` DISABLE KEYS */;
+INSERT INTO `farmapp_cart` VALUES (1),(2),(3);
 /*!40000 ALTER TABLE `farmapp_cart` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -362,7 +364,7 @@ CREATE TABLE `farmapp_cart_session` (
   KEY `farmapp_cart_session_crop_id_id_e003bfe0_fk_farmapp_crop_crop_id` (`crop_id_id`),
   CONSTRAINT `farmapp_cart_session_cart_id_id_4dabe9fb_fk_farmapp_cart_cart_id` FOREIGN KEY (`cart_id_id`) REFERENCES `farmapp_cart` (`cart_id`),
   CONSTRAINT `farmapp_cart_session_crop_id_id_e003bfe0_fk_farmapp_crop_crop_id` FOREIGN KEY (`crop_id_id`) REFERENCES `farmapp_crop` (`crop_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -371,6 +373,7 @@ CREATE TABLE `farmapp_cart_session` (
 
 LOCK TABLES `farmapp_cart_session` WRITE;
 /*!40000 ALTER TABLE `farmapp_cart_session` DISABLE KEYS */;
+INSERT INTO `farmapp_cart_session` VALUES (1,1,14),(2,1,30),(3,1,17),(4,1,15),(5,2,30),(6,2,14),(7,3,14),(8,3,30);
 /*!40000 ALTER TABLE `farmapp_cart_session` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -401,7 +404,7 @@ CREATE TABLE `farmapp_crop` (
 
 LOCK TABLES `farmapp_crop` WRITE;
 /*!40000 ALTER TABLE `farmapp_crop` DISABLE KEYS */;
-INSERT INTO `farmapp_crop` VALUES (1,'Amaranthus Green','Amaranthus Green','AmaranthusG','Amaranthus viridis',48,'crops/amaranthus_green.jpg',0,120),(2,'Amaranthus Red','Amaranthus Red','AmaranthusR','Amaranthus cruentus',44,'crops/amaranthus_red.jpg',0,90),(3,'Methi','Baby Fenugreek','BFenugreek','Trigonella foenum-graecum',48,'crops/baby_fenugreek.jpg',0,24),(4,'Tulsi','Basil','Basil','Ocimum basilicum',40,'crops/basil.jpeg',0,200),(5,'Chukandar','Beetroot','Beetroot','Beta vulgaris',120,'crops/beetroot.jpg',0,200),(6,'Karela','Bitter Gourd','BitterGourd','Momordica charantia',120,'crops/bitter_gourd.jpg',0,70),(7,'Lauki','Bottle Gourd','BottleGourd','Lagenaria siceraria',200,'crops/bottle_gourd.jpeg',1452,90),(8,'Baingan','Brinjal','Brinjal','Solanum melongena',72,'crops/brinjal.jpg',0,60),(9,'Gobhee','Cabbage','Cabbage','Brassica oleracea var. capitata',120,'crops/cabbage.jpeg',0,24),(10,'Gobhee','Cauliflower','Cauliflower','Brassica oleracea var. botrytis',120,'crops/cauliflower.jpeg',0,80),(11,'Mirch','Chilli','Chilli','Capsicum frutescens',320,'crops/chilly.jpeg',0,40),(12,'Gavar','Cluster Beans','ClusterBean','Cyamopsis tetragonoloba',48,'crops/cluster_bean.jpg',0,50),(13,'Dhaniya','Coriander','Coriander','Coriandrum sativum',75,'crops/coriander.jpg',0,20),(14,'Kheera','Cucumber','Cucumber','Cucumis sativus',72,'crops/cucumber.jpg',6896,60),(15,'Methi','Fenugreek','Fenugreek','Trigonella foenum-graecum',70,'crops/fenugreek.jpeg',2224,60),(16,'Himashail Sabjee','Iceberg Lettuce','Ice_Lettuce','Lactuca sativa',96,'crops/iceberg_lettuce.jpeg',0,67),(17,'Bhindi','Ladyfinger','Ladyfinger','Abelmoschus esculentus',96,'crops/ladyfinger.jpeg',2302,60),(18,'Lemon Grass','Lemon Grass','Lemon_Grass','Cymbopogon',24,'crops/lemongrass.jpg',0,100),(19,'Lollo Rosso','Lollo Rosso','Lollo_Rosso','Lactuca sativa',100,'crops/lollo_rosso.jpg',0,300),(20,'Makka','Maize','Maize','Zea mays',48,'crops/maize.jpg',0,40),(21,'Sarason','Mustard','Mustard','Brassica',48,'crops/mustard.jpg',0,80),(22,'Pyaaj','Onion','Onion','Allium cepa',96,'crops/onion.jpg',0,50),(23,'Ajamod','Parsley','Parsley','Petroselinum crispum',96,'crops/parsley.jpg',0,70),(24,'Moolee','Radish','Radish','Raphanus raphanistrum subsp. sativus',72,'crops/radish.jpeg',0,70),(25,'Turai','Ridge Gourd','Ridge_Gourd','Luffa',72,'crops/ridge_gourd.jpg',0,120),(26,'Padval','Snake Gourd','Snake_Gourd','Trichosanthes cucumerina',72,'crops/snake_gourd.jpg',0,40),(27,'Palak','Spinach','Spinach','Spinacia oleracea',24,'crops/spinach.jpeg',0,90),(28,'Haldi Paan','Termari Leaf','TurmericL','Curcuma longa',72,'crops/termari_leaf.jpg',0,200),(29,'Haldi','Turmeric','Turmeric','Curcuma longa',960,'crops/turmeric.jpg',0,300),(30,'Tamaatar','Tomato','Tomato','Solanum lycopersicum',72,'crops/tomato.jpg',4002,40);
+INSERT INTO `farmapp_crop` VALUES (1,'Amaranthus Green','Amaranthus Green','AmaranthusG','Amaranthus viridis',48,'crops/amaranthus_green.jpg',0,120),(2,'Amaranthus Red','Amaranthus Red','AmaranthusR','Amaranthus cruentus',44,'crops/amaranthus_red.jpg',0,90),(3,'Methi','Baby Fenugreek','BFenugreek','Trigonella foenum-graecum',48,'crops/baby_fenugreek.jpg',0,24),(4,'Tulsi','Basil','Basil','Ocimum basilicum',40,'crops/basil.jpeg',0,200),(5,'Chukandar','Beetroot','Beetroot','Beta vulgaris',120,'crops/beetroot.jpg',0,200),(6,'Karela','Bitter Gourd','BitterGourd','Momordica charantia',120,'crops/bitter_gourd.jpg',0,70),(7,'Lauki','Bottle Gourd','BottleGourd','Lagenaria siceraria',200,'crops/bottle_gourd.jpeg',2065,90),(8,'Baingan','Brinjal','Brinjal','Solanum melongena',72,'crops/brinjal.jpg',0,60),(9,'Gobhee','Cabbage','Cabbage','Brassica oleracea var. capitata',120,'crops/cabbage.jpeg',0,24),(10,'Gobhee','Cauliflower','Cauliflower','Brassica oleracea var. botrytis',120,'crops/cauliflower.jpeg',0,80),(11,'Mirch','Chilli','Chilli','Capsicum frutescens',320,'crops/chilly.jpeg',0,40),(12,'Gavar','Cluster Beans','ClusterBean','Cyamopsis tetragonoloba',48,'crops/cluster_bean.jpg',0,50),(13,'Dhaniya','Coriander','Coriander','Coriandrum sativum',75,'crops/coriander.jpg',0,20),(14,'Kheera','Cucumber','Cucumber','Cucumis sativus',72,'crops/cucumber.jpg',8420,60),(15,'Methi','Fenugreek','Fenugreek','Trigonella foenum-graecum',70,'crops/fenugreek.jpeg',2174,60),(16,'Himashail Sabjee','Iceberg Lettuce','Ice_Lettuce','Lactuca sativa',96,'crops/iceberg_lettuce.jpeg',0,67),(17,'Bhindi','Ladyfinger','Ladyfinger','Abelmoschus esculentus',96,'crops/ladyfinger.jpeg',2202,60),(18,'Lemon Grass','Lemon Grass','Lemon_Grass','Cymbopogon',24,'crops/lemongrass.jpg',0,100),(19,'Lollo Rosso','Lollo Rosso','Lollo_Rosso','Lactuca sativa',100,'crops/lollo_rosso.jpg',0,300),(20,'Makka','Maize','Maize','Zea mays',48,'crops/maize.jpg',0,40),(21,'Sarason','Mustard','Mustard','Brassica',48,'crops/mustard.jpg',0,80),(22,'Pyaaj','Onion','Onion','Allium cepa',96,'crops/onion.jpg',0,50),(23,'Ajamod','Parsley','Parsley','Petroselinum crispum',96,'crops/parsley.jpg',0,70),(24,'Moolee','Radish','Radish','Raphanus raphanistrum subsp. sativus',72,'crops/radish.jpeg',0,70),(25,'Turai','Ridge Gourd','Ridge_Gourd','Luffa',72,'crops/ridge_gourd.jpg',0,120),(26,'Padval','Snake Gourd','Snake_Gourd','Trichosanthes cucumerina',72,'crops/snake_gourd.jpg',0,40),(27,'Palak','Spinach','Spinach','Spinacia oleracea',24,'crops/spinach.jpeg',0,90),(28,'Haldi Paan','Termari Leaf','TurmericL','Curcuma longa',72,'crops/termari_leaf.jpg',0,200),(29,'Haldi','Turmeric','Turmeric','Curcuma longa',960,'crops/turmeric.jpg',0,300),(30,'Tamaatar','Tomato','Tomato','Solanum lycopersicum',72,'crops/tomato.jpg',3702,40);
 /*!40000 ALTER TABLE `farmapp_crop` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -434,7 +437,7 @@ CREATE TABLE `farmapp_inventory` (
 
 LOCK TABLES `farmapp_inventory` WRITE;
 /*!40000 ALTER TABLE `farmapp_inventory` DISABLE KEYS */;
-INSERT INTO `farmapp_inventory` VALUES (3,6896,0,0,0,14,1),(4,4002,0,100,1000,30,1),(5,1452,0,0,0,7,1),(6,2224,0,0,0,15,1),(7,2302,0,0,0,17,1);
+INSERT INTO `farmapp_inventory` VALUES (3,8820,400,100,700,14,1),(4,4002,300,100,1500,30,1),(5,2065,0,100,800,7,1),(6,2224,50,50,600,15,1),(7,2302,100,100,1200,17,1);
 /*!40000 ALTER TABLE `farmapp_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -456,7 +459,7 @@ CREATE TABLE `farmapp_machine` (
   PRIMARY KEY (`machine_id`),
   KEY `farmapp_machine_user_id_id_3e6c5fdf_fk_farmapp_user_user_id` (`user_id_id`),
   CONSTRAINT `farmapp_machine_user_id_id_3e6c5fdf_fk_farmapp_user_user_id` FOREIGN KEY (`user_id_id`) REFERENCES `farmapp_user` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -495,7 +498,7 @@ CREATE TABLE `farmapp_order` (
   CONSTRAINT `farmapp_order_crop_id_id_81eaee8e_fk_farmapp_crop_crop_id` FOREIGN KEY (`crop_id_id`) REFERENCES `farmapp_crop` (`crop_id`),
   CONSTRAINT `farmapp_order_seller_id_5b7e2bce_fk_farmapp_user_user_id` FOREIGN KEY (`seller_id`) REFERENCES `farmapp_user` (`user_id`),
   CONSTRAINT `farmapp_order_user_id_id_8205f9ff_fk_farmapp_user_user_id` FOREIGN KEY (`user_id_id`) REFERENCES `farmapp_user` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -504,6 +507,7 @@ CREATE TABLE `farmapp_order` (
 
 LOCK TABLES `farmapp_order` WRITE;
 /*!40000 ALTER TABLE `farmapp_order` DISABLE KEYS */;
+INSERT INTO `farmapp_order` VALUES (1,100,'2017-06-20 09:43:27.417968',NULL,'pending',1,14,1,5),(2,100,'2017-06-20 09:43:27.489378',NULL,'cancelled',1,30,1,5),(3,100,'2017-06-20 09:43:27.568252',NULL,'pending',1,17,1,5),(4,50,'2017-06-20 09:43:27.577267',NULL,'pending',1,15,1,5),(5,200,'2017-06-20 09:46:37.741179',NULL,'pending',2,30,1,5),(6,200,'2017-06-20 09:46:37.749914',NULL,'rejected',2,14,1,5),(7,300,'2017-06-20 09:54:11.714153',NULL,'pending',3,14,1,5),(8,100,'2017-06-20 09:54:11.721792',NULL,'pending',3,30,1,5);
 /*!40000 ALTER TABLE `farmapp_order` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -532,7 +536,7 @@ CREATE TABLE `farmapp_produce` (
   CONSTRAINT `farmapp_produce_crop_id_id_d170d24e_fk_farmapp_crop_crop_id` FOREIGN KEY (`crop_id_id`) REFERENCES `farmapp_crop` (`crop_id`),
   CONSTRAINT `farmapp_produce_machine_id_id_b2525ee0_fk_farmapp_m` FOREIGN KEY (`machine_id_id`) REFERENCES `farmapp_machine` (`machine_id`),
   CONSTRAINT `farmapp_produce_trough_id_id_a8e49ad8_fk_farmapp_t` FOREIGN KEY (`trough_id_id`) REFERENCES `farmapp_trough` (`trough_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -541,7 +545,7 @@ CREATE TABLE `farmapp_produce` (
 
 LOCK TABLES `farmapp_produce` WRITE;
 /*!40000 ALTER TABLE `farmapp_produce` DISABLE KEYS */;
-INSERT INTO `farmapp_produce` VALUES (3,'image-2017-06-18T03:25:26.6388371.jpg',1576,'2017-06-19 21:30:53.125842','2017-06-18 03:26:04.000000','2017-06-21 03:26:04.000000',14,1,1,0),(4,'image-2017-06-18T03:27:09.9209621.jpg',2657,'2017-06-19 21:32:25.126628','2017-06-18 03:27:37.000000','2017-06-21 03:27:37.000000',30,1,1,0),(5,'image-2017-06-18T03:27:55.6246041.jpg',1562,'2017-06-19 21:32:55.833240','2017-06-18 03:28:07.000000','2017-06-21 03:28:07.000000',14,1,1,0),(6,'image-2017-06-18T03:24:44.7766431.jpg',1890,'2017-06-19 21:42:13.258450','2017-06-18 03:25:15.000000','2017-06-21 03:25:15.000000',14,1,1,0),(7,'image-2017-06-18T03:25:28.2059221.jpg',1345,'2017-06-19 21:42:40.607978','2017-06-18 03:25:42.000000','2017-06-21 03:25:42.000000',30,1,1,0),(8,'image-2017-06-18T03:25:59.9536611.jpg',1452,'2017-06-19 21:43:18.038924','2017-06-18 03:26:20.000000','2017-06-26 11:26:20.000000',7,1,1,0),(9,'image-2017-06-18T03:25:00.0586191.jpg',1868,'2017-06-19 21:48:35.852239','2017-06-18 03:25:49.000000','2017-06-21 03:25:49.000000',14,1,1,0),(10,'image-2017-06-18T03:26:06.9589231.jpg',880,'2017-06-19 21:49:05.283440','2017-06-18 03:26:19.000000','2017-06-21 01:26:19.000000',15,1,1,0),(11,'image-2017-06-18T03:26:27.8960851.jpg',2302,'2017-06-19 21:49:28.945932','2017-06-18 03:26:42.000000','2017-06-22 03:26:42.000000',17,1,1,0),(12,'image-2017-06-18T03:27:06.0935211.jpg',1344,'2017-06-19 21:50:04.493362','2017-06-18 03:27:18.000000','2017-06-21 01:27:18.000000',15,1,1,0);
+INSERT INTO `farmapp_produce` VALUES (3,'image-2017-06-18T03:25:26.6388371.jpg',1576,'2017-06-19 21:30:53.125842','2017-06-18 03:26:04.000000','2017-06-21 03:26:04.000000',14,1,1,0),(4,'image-2017-06-18T03:27:09.9209621.jpg',2657,'2017-06-19 21:32:25.126628','2017-06-18 03:27:37.000000','2017-06-21 03:27:37.000000',30,1,1,0),(5,'image-2017-06-18T03:27:55.6246041.jpg',1562,'2017-06-19 21:32:55.833240','2017-06-18 03:28:07.000000','2017-06-21 03:28:07.000000',14,1,1,0),(6,'image-2017-06-18T03:24:44.7766431.jpg',1890,'2017-06-19 21:42:13.258450','2017-06-18 03:25:15.000000','2017-06-21 03:25:15.000000',14,1,1,400),(7,'image-2017-06-18T03:25:28.2059221.jpg',1345,'2017-06-19 21:42:40.607978','2017-06-18 03:25:42.000000','2017-06-21 03:25:42.000000',30,1,1,300),(8,'image-2017-06-18T03:25:59.9536611.jpg',1452,'2017-06-19 21:43:18.038924','2017-06-18 03:26:20.000000','2017-06-26 11:26:20.000000',7,1,1,0),(9,'image-2017-06-18T03:25:00.0586191.jpg',1868,'2017-06-19 21:48:35.852239','2017-06-18 03:25:49.000000','2017-06-21 03:25:49.000000',14,1,1,0),(10,'image-2017-06-18T03:26:06.9589231.jpg',880,'2017-06-19 21:49:05.283440','2017-06-18 03:26:19.000000','2017-06-21 01:26:19.000000',15,1,1,50),(11,'image-2017-06-18T03:26:27.8960851.jpg',2302,'2017-06-19 21:49:28.945932','2017-06-18 03:26:42.000000','2017-06-22 03:26:42.000000',17,1,1,100),(12,'image-2017-06-18T03:27:06.0935211.jpg',1344,'2017-06-19 21:50:04.493362','2017-06-18 03:27:18.000000','2017-06-21 01:27:18.000000',15,1,1,0),(13,'image-2017-06-18T03:32:00.3799051.jpg',613,'2017-06-20 09:41:41.514638','2017-06-18 03:32:26.000000','2017-06-26 11:32:26.000000',7,1,1,0),(14,'image-2017-06-18T03:41:30.8008411.jpg',992,'2017-06-20 09:51:06.407203','2017-06-18 03:41:51.000000','2017-06-21 03:41:51.000000',14,1,1,0),(15,'image-2017-06-18T03:42:46.2771501.jpg',512,'2017-06-20 09:52:17.842464','2017-06-18 03:43:03.000000','2017-06-21 03:43:03.000000',14,1,1,0),(16,'image-2017-06-18T03:43:22.7523541.jpg',222,'2017-06-20 09:52:57.061955','2017-06-18 03:43:42.000000','2017-06-21 03:43:42.000000',14,1,1,0),(17,'image-2017-06-18T03:44:00.0694901.jpg',198,'2017-06-20 09:53:31.974302','2017-06-18 03:44:16.000000','2017-06-21 03:44:16.000000',14,1,1,0);
 /*!40000 ALTER TABLE `farmapp_produce` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -558,7 +562,7 @@ CREATE TABLE `farmapp_trough` (
   PRIMARY KEY (`trough_id`),
   KEY `farmapp_trough_machine_id_id_e0fc7ec1_fk_farmapp_m` (`machine_id_id`),
   CONSTRAINT `farmapp_trough_machine_id_id_e0fc7ec1_fk_farmapp_m` FOREIGN KEY (`machine_id_id`) REFERENCES `farmapp_machine` (`machine_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -617,4 +621,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-19 21:50:52
+-- Dump completed on 2017-06-20 10:24:51

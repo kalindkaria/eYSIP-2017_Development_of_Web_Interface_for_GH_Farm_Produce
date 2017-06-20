@@ -17,7 +17,7 @@
 <div class="col-md-3 col-sm-6 col-xs-12">
 		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
 			<div class="card-header" style="border-color: #333">
-		    	{{ crop.local_name }}
+		    	{{ crop.english_name }}
 		  	</div>
 			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
@@ -65,7 +65,7 @@
 <div class="col-md-3 col-sm-6 col-xs-12">
 		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
 			<div class="card-header" style="border-color: #333">
-		    	{{ crop.local_name }}
+		    	{{ crop.english_name }}
 		  	</div>
 			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
