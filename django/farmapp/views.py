@@ -78,6 +78,28 @@ def handle_login_signup(request):
             signupform = SignUpForm(request.POST)
             if signupform.is_valid():
                 print(signupform.cleaned_data)
+                data = signupform.cleaned_data
+                if data['password'] == data['repass']:
+                    user = User.objects.create(email=data['email'],first_name=data['firstname'],last_name=data['lastname'],
+                                        password=data['password'],contact=data['contact'],user_type="Consumer")
+                    request.session['logged_in'] = True
+                    request.session['user_id'] = user.user_id
+                    request.session['email'] = user.email
+                    request.session['user_type'] = user.user_type
+                    print("A Consumer Logged In")
+                    # trying to restore last cart session
+                    try:
+                        cart = Cart.objects.get(cart_id=user.last_cart.cart_id)
+                        print(user.last_cart.cart_id)
+                        if request.session.get('cart_id', False):
+                            user.last_cart = cart
+                            user.save()
+                        else:
+                            request.session['cart_id'] = cart.cart_id
+                    except:
+                        return None,loginform,signupform
+                else:
+                    signupform.add_error(None,"The Passwords do not match!")
                 return HttpResponseRedirect('/home/'), loginform, signupform
 
     return None,loginform,signupform
