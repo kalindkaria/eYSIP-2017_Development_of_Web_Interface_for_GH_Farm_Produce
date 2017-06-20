@@ -395,7 +395,7 @@ def checkout(request):
                     else:
                         max = 0
                     print(max)
-                    if i<max:
+                    if i<=max:
                         while i <= max:
                             quantity.append(i)
                             i= i + int(producer.minimum)

@@ -47,13 +47,13 @@
 		          <td>{{p.2}} g</td>
 		          
 		          <td>
-		          	{% if p.8 <= 0 %}
-		          	<input type="" name="{{p.0.first_name}}{{p.1.crop_id}}" value=0 hidden="true"> 
-		          		<em>Daily Limit Exceeded</em>
-		          	{% else %}
 		          	{% if p.2 < p.3 %}
 		          	<input type="" name="{{p.0.first_name}}{{p.1.crop_id}}" value=0 hidden="true"> 
 		          		<em>Unavailable</em>
+		          	{% else %}
+		          	{% if p.8 <= 0 %}
+		          	<input type="" name="{{p.0.first_name}}{{p.1.crop_id}}" value=0 hidden="true"> 
+		          		<em>Daily Limit Exceeded</em>
 		          	{% else %}
 		          	<select name= "{{p.0.first_name}}{{p.1.crop_id}}">
 		          		{% if form_values|get_item:p.7 %}
