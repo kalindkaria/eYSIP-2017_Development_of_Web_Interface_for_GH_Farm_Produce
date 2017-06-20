@@ -18,8 +18,6 @@
         <tr>
           <th>Image</th>
           <th>Name</th>
-          <th>Maximum Limit</th>
-          <th>Price</th>
           <th>Availability</th>
           <th></th>
         </tr>
@@ -29,8 +27,6 @@
         <tr class="border-top-0 border-left-0 border-right-0">
           <td><img src="{% static item.crop_id.imagepath %}" class="img-thumbnail" width=65 height=65 ></td>
           <td>{{item.crop_id.local_name}} <strong>/</strong><br>{{item.crop_id.english_name}}</td>
-          <td>200 g</td>
-          <td>Rs.{{item.crop_id.price}}/kg</td>
           <td>{{ item.crop_id.availability}} g</td>
           <td><a href="{% url 'remove_from_cart' item.crop_id.crop_id %}"><button class="btn btn-danger">Remove <span class="fa fa-shopping-cart ml-2"></span></button></a></td>
         </tr>
@@ -39,19 +35,14 @@
     </table>
     <br>
     <div class="row justify-content-end">
-      <div  class="col-md-2 mr-3">
-        <a href="/crops"><button class="btn btn-info">Continue Shopping <span class="fa fa-shopping-cart ml-2"></span></button></a>
+      <div class="col-md-2 col-sm-2 mr-2">
+        <a href="/crops"><button class="btn btn-info"><span class="fa fa-arrow-left mr-2"></span>Continue Shopping</button></a>
       </div>
-      {% if request.session.logged_in %}
-      <div  class="col-md-3">
-        <a href="/checkout"><button class="btn btn-warning">Proceed to Checkout <span class="fa fa-shopping-cart ml-2"></span></button></a>
-      </div>
-      {% else %}
-      <div  class="col-md-3">
-        <button class="btn btn-warning" data-toggle="modal" data-target="#login">Proceed to Checkout <span class="fa fa-shopping-cart ml-2"></span></button>
+  
+      <div class="col-md-3 col-sm-3">
+        <button class="btn btn-warning" data-toggle="modal" data-target="#login">Proceed to Checkout <span class="fa fa-arrow-right ml-2"></span></button>
       </div>
 
-      {% endif %}
     </div>
 </div>
 {% endblock content%}
