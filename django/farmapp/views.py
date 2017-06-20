@@ -687,10 +687,10 @@ def analytics(request):
                         data.append([crop.english_name, 0])
                         selected_crops_name.append(crop.english_name)
                 sorted_data = list(sorted(data, key=lambda data: data[1], reverse=True))
-                sorted_data.insert(0,['Crop Name', 'Weight'])
+                sorted_data.insert(0,['Crop Name', 'Weight(g)'])
                 data = SimpleDataSource(sorted_data)
                 print(sorted_data)
-                chart = BarChart(data, html_id='graph', options={'postUnits':' g', 'formatter': 'function(y){return y+" gm"}'})
+                chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
                 context['chart']=chart
                 context['data']=form.cleaned_data
                 context['crop_names']=selected_crops_name
