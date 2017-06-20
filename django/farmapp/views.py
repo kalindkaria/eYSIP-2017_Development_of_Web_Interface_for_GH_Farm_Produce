@@ -298,7 +298,7 @@ def checkout(request):
                                     item_errors.append(message)
                                 else:
                                     valid_producers.append(producer)
-                        errors[item.crop_id.crop_id] = item_errors
+                            errors[item.crop_id.crop_id] = item_errors
                         print("Crop:"+item.crop_id.english_name)
                         print("Producers : "+str(valid_producers))
                         print("Errors : "+str(errors))
