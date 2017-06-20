@@ -321,10 +321,7 @@ def checkout(request):
                                 else:
                                     valid_producers.append(producer)
                             errors[item.crop_id.crop_id] = item_errors
-                        print("Crop:"+item.crop_id.english_name)
-                        print("Producers : "+str(valid_producers))
-                        print("Errors : "+str(errors))
-                        print(len(errors))
+
                     if error_flag==0:
                         user = User.objects.get(user_id = request.session['user_id'])
                         for producer in valid_producers:
