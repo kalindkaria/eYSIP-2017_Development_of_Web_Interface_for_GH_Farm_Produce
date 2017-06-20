@@ -339,13 +339,13 @@ def checkout(request):
                                                  weight = requested_quantity)
 
                                     crop = Crop.objects.get(crop_id=producer.crop_id.crop_id)
-                                    inventory = Inventory.objects.get(user_id=producer.user_id, crop_id=crop)
+                                    inventory = Inventory.objects.select_for_update().get(user_id=producer.user_id, crop_id=crop)
                                     final_inventory = inventory.weight - inventory.sold
-                                    if producer.weight - producer.sold == final_inventory and requested_quantity <= producer.weight - producer.sold:
-                                        producer.sold = F('sold') + requested_quantity
+                                    if requested_quantity <= final_inventory:
+                                        inventory.sold = F('sold') + requested_quantity
                                         crop.availability = F('availability') - requested_quantity
                                         with transaction.atomic():
-                                            producer.save()
+                                            inventory.save()
                                             order.save()
                                             crop.save()
                                     else:
@@ -395,7 +395,7 @@ def checkout(request):
                     else:
                         max = 0
                     print(max)
-                    if i<max:
+                    if i<=max:
                         while i <= max:
                             quantity.append(i)
                             i= i + int(producer.minimum)
