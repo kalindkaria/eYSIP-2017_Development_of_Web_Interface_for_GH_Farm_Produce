@@ -85,8 +85,8 @@ class Inventory(models.Model):
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     weight = models.FloatField()
     sold = models.FloatField(default=0)
-    minimum = models.FloatField(default=0)
-    maximum = models.FloatField(default=0)
+    minimum = models.FloatField(default=50)
+    maximum = models.FloatField(default=600)
     def __str__(self):
         return str(self.user_id.first_name+"-"+self.crop_id.english_name)
     class Meta:
