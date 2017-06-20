@@ -379,20 +379,36 @@ def checkout(request):
 
                 quantity = []
                 i = int(producer.minimum)
-                max = min(int(producer.maximum),int(producer.weight-producer.sold))
-                if i<max:
-                    while i <= max:
-                        quantity.append(i)
-                        i= i + int(producer.minimum)
-                    if quantity[len(quantity)-1] != max:
-                        quantity.append(max)
-                else:
-                    quantity.append("Unavailable")
-                print(quantity)
-                innerlist.append(quantity)
-                innerlist.append(producer.user_id.first_name + str(producer.crop_id.crop_id))
-                item_list.append(innerlist)
-                print(quantity)
+                user = User.objects.get(user_id  = request.session['user_id'])
+                order_sum = 0
+                try:
+                    order_sum = Order.objects.filter(user_id = user ,crop_id = producer.crop_id, time__date = datetime.date.today(),status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                    order_sum = int(order_sum)
+                    print(order_sum)
+                except:
+                    order_sum = 0
+                finally :
+                    max = min(int(producer.maximum),int(producer.weight-producer.sold))
+                    print(max)
+                    if max - order_sum >0:
+                        max = max - order_sum
+                    else:
+                        max = 0
+                    print(max)
+                    if i<max:
+                        while i <= max:
+                            quantity.append(i)
+                            i= i + int(producer.minimum)
+                        if quantity[len(quantity)-1] != max:
+                            quantity.append(max)
+                    else:
+                        quantity.append("Unavailable")
+                    print(quantity)
+                    innerlist.append(quantity)
+                    innerlist.append(producer.user_id.first_name + str(producer.crop_id.crop_id))
+                    innerlist.append(max)
+                    item_list.append(innerlist)
+                    print(quantity)
             outerlist[item.crop_id.crop_id] = item_list
         context = { 'page': 'checkout', 'cart_session': cart_session , 'outerlist':outerlist ,'errors':errors ,'form_values':form_values}
         return render(request,'login/checkout.html',context)
