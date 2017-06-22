@@ -16,6 +16,12 @@ var morris_dict = {
   // post units
   postUnits: '{{ chart.get_options.postUnits|safe }}',
   preUnits: '{{ chart.get_options.preUnits|safe }}',
+  {% if chart.get_options.stacked %}
+  stacked: true,
+  {% endif %}
+  barColors: ['#1437b7','#ff9900'],//#0B62A4, #7A92A3
+  resize: true,
+  xLabelAngle: 30,
 };
 
 for(option in options) {
