@@ -2,9 +2,37 @@
 {% load static %}
 {% load bootstrap3 %}
 
+{% block head %}
+    <link rel="stylesheet" type="text/css" href={% static "datatables/datatables.bootstrap.css" %}>
+    <link rel="stylesheet" type="text/css" href={% static "datatables/buttons.datatables.min.css" %}>
+    <script type="text/javascript" src={% static "datatables/datatables.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/datatables.buttons.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.html5.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.print.min.js" %}></script> 
+    <script type="text/javascript" src={% static "datatables/datatables.bootstrap.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.bootstrap.min.js" %}></script>             
+  
+{% endblock head %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function(){
+        $('#data-table').DataTable({
+          dom: 'Bfrtip',
+          lengthMenu: [
+              [ 10, 25, 50, -1 ],
+              [ '10 rows', '25 rows', '50 rows', 'Show all' ]
+          ],
+          buttons: ['pageLength','csv']
+      } );
+  });
+  </script>
+{% endblock scripts %}
+
+
 {% block content %}
 <h1>Inventory:</h1>
-<table class="table table-striped table-bordered" style="width:75%; text-align:center;">
+<table class="table table-striped table-bordered" style="width:75%; text-align:center;" id="data-table">
   <thead class="thead-inverse mx-auto">
     <tr>
       <th>#</th>

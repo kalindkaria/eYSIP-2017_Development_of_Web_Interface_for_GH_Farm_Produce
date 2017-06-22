@@ -1,7 +1,34 @@
 {% extends "producer.html" %}
 {% load static %}
-{% block content %}
 
+{% block head %}
+    <link rel="stylesheet" type="text/css" href={% static "datatables/datatables.bootstrap.css" %}>
+    <link rel="stylesheet" type="text/css" href={% static "datatables/buttons.datatables.min.css" %}>
+    <script type="text/javascript" src={% static "datatables/datatables.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/datatables.buttons.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.html5.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.print.min.js" %}></script> 
+    <script type="text/javascript" src={% static "datatables/datatables.bootstrap.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.bootstrap.min.js" %}></script>             
+  
+{% endblock head %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function(){
+        $('.table').DataTable({
+          dom: 'Bfrtip',
+          lengthMenu: [
+              [ 5, 10, 25, -1 ],
+              [ '5 rows', '10 rows', '25 rows', 'Show all' ]
+          ],
+          buttons: ['pageLength','csv']
+      } );
+  });
+  </script>
+{% endblock scripts %}
+
+{% block content %}
 <h2>Orders:</h2>
 <hr>
 {% for order in all_orders %}
