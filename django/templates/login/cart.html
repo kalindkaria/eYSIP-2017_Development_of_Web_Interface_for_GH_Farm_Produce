@@ -27,7 +27,7 @@
         <tr class="border-top-0 border-left-0 border-right-0">
           <td><img src="{% static item.crop_id.imagepath %}" class="img-thumbnail" width=65 height=65 ></td>
           <td>{{item.crop_id.local_name}} <strong>/</strong><br>{{item.crop_id.english_name}}</td>
-          <td>{{ item.crop_id.availability}} g</td>
+          <td>{{availability|get_item:item.crop_id.crop_id}} g</td>
           <td><a href="{% url 'remove_from_cart' item.crop_id.crop_id %}"><button class="btn btn-danger">Remove <span class="fa fa-times ml-2"></span></button></a></td>
         </tr>
       {% endfor %}

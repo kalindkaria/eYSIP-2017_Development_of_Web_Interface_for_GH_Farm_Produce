@@ -138,15 +138,16 @@ def index(request):
                     maximum_sum = 0
                     for producer in producers:
                         maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold)))
-
+                    print("maximum sum:  ",maximum_sum)
                     try:
-                        order_sum = Order.objects.filter(user_id=user, crop_id=crop, time__date=datetime.date.today(),
+                        order_sum = Order.objects.filter(user_id=user, crop_id=crop.crop_id, time__date=datetime.date.today(),
                                                          status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
                         order_sum = int(order_sum)
+                        print("order sum:  ",order_sum)
                     except:
                         order_sum = 0
                     availability[crop.crop_id.crop_id] = maximum_sum - order_sum
-
+                    print("Availability  ",availability[crop.crop_id.crop_id])
                     if availability[crop.crop_id.crop_id]>10:
                         id.append(crop.crop_id.crop_id)
                     else:
@@ -160,6 +161,7 @@ def index(request):
                     print(errors)
                     crop.delete()
             added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+            print(added_crops)
             request.session['cart_count'] = added_crops.count()
             crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
 
@@ -324,35 +326,84 @@ def remove_from_cart(request,crop_id):
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def view_cart(request):
-    try:
-        request.session['page'] = "/cart"
-        redirect, loginform, signupform = handle_login_signup(request)
+    errors = []
+    request.session['page'] = "/crops"
+    redirect, loginform, signupform = handle_login_signup(request)
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
+        return HttpResponseRedirect("/producer/home/")
 
-        cart = Cart.objects.get(cart_id = request.session['cart_id'])
-        cart_session = Cart_session.objects.filter(cart_id = cart)
-        errors=[]
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
+        availability = {}
+        if request.session.get('cart_id', False):
+            cart = Cart.objects.get(cart_id=request.session['cart_id'])
+            cart_items = Cart_session.objects.filter(cart_id=cart)
 
-        id=[]
-        for crop in cart_session:
-            if(crop.crop_id.availability > 0):
-                id.append(crop.crop_id.crop_id)
-            else:
-                message = "Sorry "+crop.crop_id.english_name+" is no longer available!"
-                errors.append(message)
-                print(errors)
-                Cart_session.objects.get(cart_id = crop.cart_id).delete()
-        added_crops = Crop.objects.filter(crop_id__in=id,availability__gt =0).order_by('-availability')
-        request.session['cart_count'] = added_crops.count()
-        if request.session['cart_count']==0:
-            return HttpResponseRedirect('/crops')
-        if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
-            context = {'page':'cart','crops': crops,'cart_session':cart_session , 'errors':errors}
+            id = []
+            for crop in cart_items:
+                if (crop.crop_id.availability > 10):
+                    user = User.objects.get(user_id=request.session['user_id'])
+                    producers = Inventory.objects.filter(crop_id=crop.crop_id)
+                    maximum_sum = 0
+                    for producer in producers:
+                        maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold)))
+                    print("maximum sum:  ",maximum_sum)
+                    try:
+                        order_sum = Order.objects.filter(user_id=user, crop_id=crop.crop_id, time__date=datetime.date.today(),
+                                                         status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                        order_sum = int(order_sum)
+                        print("order sum:  ",order_sum)
+                    except:
+                        order_sum = 0
+                    availability[crop.crop_id.crop_id] = maximum_sum - order_sum
+                    print("Availability  ",availability[crop.crop_id.crop_id])
+                    if availability[crop.crop_id.crop_id]>10:
+                        id.append(crop.crop_id.crop_id)
+                    else:
+                        message = "Sorry you have exceeded your daily limit for purchasing " + crop.crop_id.english_name
+                        errors.append(message)
+                        print(errors)
+                        crop.delete()
+                else:
+                    message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
+                    errors.append(message)
+                    print(errors)
+                    crop.delete()
+            added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+            request.session['cart_count'] = added_crops.count()
+            if request.session['cart_count'] == 0:
+                return HttpResponseRedirect('/crops')
+
+            cart_items = Cart_session.objects.filter(cart_id=cart)
+            context = {'page': 'cart', 'cart_session': cart_items, 'availability': availability,'errors': errors}
             return render(request, 'login/cart.html', context)
-        else:
+
+    else:
+        try:
+            request.session['page'] = "/cart"
+            redirect, loginform, signupform = handle_login_signup(request)
+
+            cart = Cart.objects.get(cart_id = request.session['cart_id'])
+            cart_session = Cart_session.objects.filter(cart_id = cart)
+            errors=[]
+
+            id=[]
+            for crop in cart_session:
+                if(crop.crop_id.availability > 0):
+                    id.append(crop.crop_id.crop_id)
+                else:
+                    message = "Sorry "+crop.crop_id.english_name+" is no longer available!"
+                    errors.append(message)
+                    print(errors)
+                    Cart_session.objects.get(cart_id = crop.cart_id).delete()
+            added_crops = Crop.objects.filter(crop_id__in=id,availability__gt =0).order_by('-availability')
+            request.session['cart_count'] = added_crops.count()
+            if request.session['cart_count']==0:
+                return HttpResponseRedirect('/crops')
+
             context = {'loginform': loginform, 'signupform': signupform, 'page': 'cart', 'cart_session': cart_session,'errors':errors}
             return render(request, 'cart.html', context)
-    except:
-        return HttpResponseRedirect('/crops')
+        except:
+            return HttpResponseRedirect('/crops')
 
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
@@ -517,8 +568,9 @@ def order_summary(request):
                         with transaction.atomic():
                             entry.save()
         except Exception as e:
-            return HttpResponseRedirect('/crops')
             print(e)
+            return HttpResponseRedirect('/crops')
+
 
     if orders:
         del request.session['cart_id']
