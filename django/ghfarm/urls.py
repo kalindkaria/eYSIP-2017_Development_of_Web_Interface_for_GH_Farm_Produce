@@ -45,5 +45,6 @@ urlpatterns = [
     url(r'^producer/download/', views.download, name='download'),
     url(r'^producer/alerts/$', views.alerts, name='produceralerts'),
     url(r'^consumer/alerts/$', views.alerts, name='consumeralerts'),
+    url(r'^producer/analytics/crop/$', views.crop_analytics, name='crop_analytics')
 ]
 

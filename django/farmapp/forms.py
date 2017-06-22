@@ -39,10 +39,12 @@ class CropAnalyticsForm(forms.Form):
         crop_list.append([str(crop.crop_id), crop.english_name])
     start_date = forms.DateField(label="Start Date", input_formats=['%d.%m.%Y'], required=False)
     end_date = forms.DateField(label="End Date", input_formats=['%d.%m.%Y'], required=False)
+    time_frame = forms.ChoiceField([('weekly','Weekly'),('monthly','Monthly'),('quaterly','Quaterly')])
     crops = forms.ChoiceField(crop_list)
+
 
     def __init__(self, *args, **kwargs):
         crop_list = kwargs.pop('crop_list', None)
-        super(AnalyticsForm, self).__init__(*args, **kwargs)
+        super(CropAnalyticsForm, self).__init__(*args, **kwargs)
         self.fields['crops'].choices = crop_list
 
