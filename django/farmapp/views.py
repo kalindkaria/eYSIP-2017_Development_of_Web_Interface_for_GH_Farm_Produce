@@ -7,6 +7,7 @@ from django.db.models import F, Q
 from graphos.sources.model import ModelDataSource
 from django.db import transaction
 from graphos.sources.simple import SimpleDataSource
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import django
 import csv
 import os
@@ -109,9 +110,11 @@ def handle_login_signup(request):
 def get_item(dictionary, key):
     return dictionary.get(key)
 
+
 @register.filter
 def get_list_item(list, key):
     return list[key]
+
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def index(request):
@@ -120,36 +123,93 @@ def index(request):
     redirect, loginform, signupform = handle_login_signup(request)
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
         return HttpResponseRedirect("/producer/home/")
-    if request.session.get('cart_id', False):
-        cart = Cart.objects.get(cart_id=request.session['cart_id'])
-        cart_items = Cart_session.objects.filter(cart_id=cart)
 
-        id = []
-        for crop in cart_items:
-            if (crop.crop_id.availability > 0):
-                id.append(crop.crop_id.crop_id)
-            else:
-                message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
-                errors.append(message)
-                print(errors)
-                Cart_session.objects.get(cart_id=crop.cart_id).delete()
-        print(id)
-        added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
-        request.session['cart_count'] = added_crops.count()
-        crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
-        print(crops)
-
-    else:
-        crops = Crop.objects.all().order_by('-availability')
-        added_crops = []
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
-        context = {'page': 'home', 'crops': crops, 'added_crops': added_crops, 'errors': errors}
+        availability = {}
+        if request.session.get('cart_id', False):
+            cart = Cart.objects.get(cart_id=request.session['cart_id'])
+            cart_items = Cart_session.objects.filter(cart_id=cart)
+
+            id = []
+            for crop in cart_items:
+                if (crop.crop_id.availability > 10):
+                    user = User.objects.get(user_id=request.session['user_id'])
+                    producers = Inventory.objects.filter(crop_id=crop.crop_id)
+                    maximum_sum = 0
+                    for producer in producers:
+                        maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold)))
+
+                    try:
+                        order_sum = Order.objects.filter(user_id=user, crop_id=crop, time__date=datetime.date.today(),
+                                                         status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                        order_sum = int(order_sum)
+                    except:
+                        order_sum = 0
+                    availability[crop.crop_id.crop_id] = maximum_sum - order_sum
+
+                    if availability[crop.crop_id.crop_id]>10:
+                        id.append(crop.crop_id.crop_id)
+                    else:
+                        message = "Sorry you have exceeded your daily limit for purchasing " + crop.crop_id.english_name
+                        errors.append(message)
+                        print(errors)
+                        crop.delete()
+                else:
+                    message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
+                    errors.append(message)
+                    print(errors)
+                    crop.delete()
+            added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+            request.session['cart_count'] = added_crops.count()
+            crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
+
+        else:
+            crops = Crop.objects.all().order_by('-availability')
+            added_crops = []
+
+        for crop in crops:
+            user = User.objects.get(user_id=request.session['user_id'])
+            producers = Inventory.objects.filter(crop_id=crop)
+            maximum_sum = 0
+            for producer in producers:
+                maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold)))
+
+            try:
+                order_sum = Order.objects.filter(user_id=user, crop_id=crop, time__date=datetime.date.today(),
+                                                 status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                order_sum = int(order_sum)
+            except:
+                order_sum = 0
+            availability[crop.crop_id] = maximum_sum - order_sum
+
+        context = {'page': 'home', 'crops': crops, 'added_crops': added_crops, 'errors': errors , 'availability':availability}
         return render(request, 'login/shop.html', context)
+
     else:
+        if request.session.get('cart_id', False):
+            cart = Cart.objects.get(cart_id=request.session['cart_id'])
+            cart_items = Cart_session.objects.filter(cart_id=cart)
+
+            id = []
+            for crop in cart_items:
+                if (crop.crop_id.availability > 10):
+                    id.append(crop.crop_id.crop_id)
+                else:
+                    message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
+                    errors.append(message)
+                    print(errors)
+                    Cart_session.objects.get(cart_id=crop.cart_id).delete()
+            added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+            request.session['cart_count'] = added_crops.count()
+            crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
+
+        else:
+            crops = Crop.objects.all().order_by('-availability')
+            added_crops = []
+
         context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,
                    'added_crops': added_crops, 'errors': errors}
         return render(request, 'shop.html', context)
-
 
 
 def home(request):
@@ -192,12 +252,14 @@ def producer_home(request):
         return render(request, 'producer.html', {'page': "home", 'produce': produce})
     return HttpResponseRedirect('/')
 
+
 def producer_inventory(request):
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
         user = User.objects.get(pk = request.session['user_id'])
         inventory = Inventory.objects.filter(user_id = user)
         return render(request, 'producer_inventory.html', {'page': "inventory",'inventory':inventory})
     return HttpResponseRedirect('/')
+
 
 def about(request):
     request.session['page'] = '/about'
@@ -214,6 +276,7 @@ def about(request):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def crops(request):
         return HttpResponseRedirect("/")
+
 
 def add_to_cart(request,crop_id):
     try:
@@ -237,10 +300,10 @@ def add_to_cart(request,crop_id):
             print(request.session['cart_id'])
             cart_session.crop_id = input_crop
             cart_session.save()
-
         return HttpResponseRedirect('/crops')
     except:
         return HttpResponseRedirect('/crops')
+
 
 def remove_from_cart(request,crop_id):
     try:
@@ -248,40 +311,49 @@ def remove_from_cart(request,crop_id):
         if request.session.get('cart_id',False):
             cart = Cart.objects.get(cart_id = request.session['cart_id'])
             Cart_session.objects.get(cart_id = cart,crop_id = input_crop).delete()
-
-        return HttpResponseRedirect(request.session['page'])
-
+        if request.session.get('page',False):
+            return HttpResponseRedirect(request.session['page'])
+        else:
+            return HttpResponseRedirect(request.session['page'])
     except:
-        return HttpResponseRedirect(request.session['page'])
+        if request.session.get('page',False):
+            return HttpResponseRedirect(request.session['page'])
+        else:
+            return HttpResponseRedirect(request.session['page'])
+
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def view_cart(request):
-    request.session['page'] = "/cart"
-    redirect, loginform, signupform = handle_login_signup(request)
+    try:
+        request.session['page'] = "/cart"
+        redirect, loginform, signupform = handle_login_signup(request)
 
-    cart = Cart.objects.get(cart_id = request.session['cart_id'])
-    cart_session = Cart_session.objects.filter(cart_id = cart)
-    errors=[]
+        cart = Cart.objects.get(cart_id = request.session['cart_id'])
+        cart_session = Cart_session.objects.filter(cart_id = cart)
+        errors=[]
 
-    id=[]
-    for crop in cart_session:
-        if(crop.crop_id.availability > 0):
-            id.append(crop.crop_id.crop_id)
+        id=[]
+        for crop in cart_session:
+            if(crop.crop_id.availability > 0):
+                id.append(crop.crop_id.crop_id)
+            else:
+                message = "Sorry "+crop.crop_id.english_name+" is no longer available!"
+                errors.append(message)
+                print(errors)
+                Cart_session.objects.get(cart_id = crop.cart_id).delete()
+        added_crops = Crop.objects.filter(crop_id__in=id,availability__gt =0).order_by('-availability')
+        request.session['cart_count'] = added_crops.count()
+        if request.session['cart_count']==0:
+            return HttpResponseRedirect('/crops')
+        if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
+            context = {'page':'cart','crops': crops,'cart_session':cart_session , 'errors':errors}
+            return render(request, 'login/cart.html', context)
         else:
-            message = "Sorry "+crop.crop_id.english_name+" is no longer available!"
-            errors.append(message)
-            print(errors)
-            Cart_session.objects.get(cart_id = crop.cart_id).delete()
-    added_crops = Crop.objects.filter(crop_id__in=id,availability__gt =0).order_by('-availability')
-    request.session['cart_count'] = added_crops.count()
-    if request.session['cart_count']==0:
+            context = {'loginform': loginform, 'signupform': signupform, 'page': 'cart', 'cart_session': cart_session,'errors':errors}
+            return render(request, 'cart.html', context)
+    except:
         return HttpResponseRedirect('/crops')
-    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
-        context = {'page':'cart','crops': crops,'cart_session':cart_session , 'errors':errors}
-        return render(request, 'login/cart.html', context)
-    else:
-        context = {'loginform': loginform, 'signupform': signupform, 'page': 'cart', 'cart_session': cart_session,'errors':errors}
-        return render(request, 'cart.html', context)
+
 
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def checkout(request):
@@ -415,6 +487,7 @@ def checkout(request):
     else:
         return HttpResponseRedirect('/crops')
 
+
 def order_summary(request):
     cart = Cart.objects.get(cart_id=request.session['cart_id'])
     user = User.objects.get(user_id=request.session['user_id'])
@@ -455,6 +528,7 @@ def order_summary(request):
     else:
         return HttpResponseRedirect('/crops')
 
+
 def producer_orders(request):
     request.session['page'] = "/producer/orders"
     user = User.objects.get(user_id=request.session['user_id'])
@@ -476,8 +550,21 @@ def producer_orders(request):
         item_order['status'] = order.status.upper()
         all_orders[order.crop_id.english_name].append(item_order)
 
+    # paginator = Paginator(all_orders, 5) # Show 5 contacts per page
+    #
+    # page = request.GET.get('page')
+    # try:
+    #     all_orders = paginator.page(page)
+    # except PageNotAnInteger:
+    #     # If page is not an integer, deliver first page.
+    #     all_orders = paginator.page(1)
+    # except EmptyPage:
+    #     # If page is out of range (e.g. 9999), deliver last page of results.
+    #     all_orders = paginator.page(paginator.num_pages)
+
     context ={'page':"orders",'all_orders':all_orders}
     return render(request,'producerOrder.html',context)
+
 
 def producer_pending_orders(request):
     request.session['page'] = "/producer/pendingorders"
@@ -503,6 +590,7 @@ def producer_pending_orders(request):
     context ={'page':"orders",'all_orders':all_orders}
     return render(request,'producerPendingOrder.html',context)
 
+
 def consumer_orders(request):
     request.session['page'] = "/consumer/orders"
     user = User.objects.get(user_id=request.session['user_id'])
@@ -526,11 +614,29 @@ def consumer_orders(request):
             item_order['status'] = order.status.upper()
             individual_order.append(item_order)
         all_orders.append(individual_order)
-        context ={'page':"orders",'all_orders':all_orders}
+
+        paginator = Paginator(all_orders, 5)  # Show 5 orders per page
+
+        page = request.GET.get('page')
+        try:
+            orders = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            orders = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            orders = paginator.page(paginator.num_pages)
+
+        pagelist = []
+        for i in range(1,orders.paginator.num_pages +1):
+            pagelist.append(i)
+        print(paginator.num_pages)
+        context ={'page':"orders",'all_orders':orders ,'pagelist':pagelist}
         return render(request,'consumerOrder.html',context)
     else:
         context ={'page':"orders"}
         return render(request,'consumerOrder.html',context)
+
 
 def consumer_order_cancel(request,cart_id, seller , crop_id):
     try:
@@ -572,10 +678,17 @@ def consumer_order_cancel(request,cart_id, seller , crop_id):
                         quantity_left = quantity_left - entry.sold
                         entry.sold = 0
                         entry.save()
-            return HttpResponseRedirect(request.session['page'])
+            if request.session.get('page', False):
+                return HttpResponseRedirect(request.session['page'])
+            else:
+                return HttpResponseRedirect(request.session['page'])
     except Exception as e:
         print(e)
-        return HttpResponseRedirect(request.session['page'])
+        if request.session.get('page',False):
+            return HttpResponseRedirect(request.session['page'])
+        else:
+            return HttpResponseRedirect(request.session['page'])
+
 
 def producer_order_reject(request, cart_id, buyer , crop_id):
     try:
@@ -616,10 +729,17 @@ def producer_order_reject(request, cart_id, buyer , crop_id):
                         quantity_left = quantity_left - entry.sold
                         entry.sold = 0
                         entry.save()
-        return HttpResponseRedirect(request.session['page'])
+        if request.session.get('page',False):
+            return HttpResponseRedirect(request.session['page'])
+        else:
+            return HttpResponseRedirect(request.session['page'])
     except Exception as e:
         print(e)
-        return HttpResponseRedirect(request.session['page'])
+        if request.session.get('page',False):
+            return HttpResponseRedirect(request.session['page'])
+        else:
+            return HttpResponseRedirect(request.session['page'])
+
 
 def alerts(request):
     user = User.objects.get(user_id=request.session['user_id'])
@@ -628,7 +748,8 @@ def alerts(request):
         return render(request, 'login/produceralert.html', {'alerts': alerts})
     else:
         return render(request,'login/consumeralert.html',{'alerts': alerts})
-    
+
+
 class TotalProduce(ModelDataSource):
     def get_data(self):
         data = super(TotalProduce, self).get_data()
@@ -641,7 +762,6 @@ class TotalProduce(ModelDataSource):
             print(row[1])
         data_without_header.insert(0, header)
         return data_without_header
-
 
 def graph(request):
     queryset = Inventory.objects.all()
