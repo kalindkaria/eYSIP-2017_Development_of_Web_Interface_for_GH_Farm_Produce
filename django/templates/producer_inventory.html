@@ -17,14 +17,35 @@
 {% block scripts %}
   <script>
     $(document).ready(function(){
-        $('#data-table').DataTable({
+    // Setup - add a text input to each footer cell
+    $('#data-table tfoot th').each( function () {
+        var title = $(this).text();
+        $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+    } );
+ 
+    // DataTable
+    var table = $('#data-table').DataTable({
           dom: 'Bfrtip',
           lengthMenu: [
               [ 10, 25, 50, -1 ],
               [ '10 rows', '25 rows', '50 rows', 'Show all' ]
           ],
           buttons: ['pageLength','csv']
-      } );
+      });
+ 
+    // Apply the search
+    table.columns().every( function () {
+        var that = this;
+ 
+        $( 'input', this.footer() ).on( 'keyup change', function () {
+            if ( that.search() !== this.value ) {
+                that
+                    .search( this.value )
+                    .draw();
+            }
+        } );
+    } );
+
   });
   </script>
 {% endblock scripts %}
@@ -41,6 +62,14 @@
       <th>Sold</th>
     </tr>
   </thead>
+  <tfoot class="tfoot-inverse mx-auto">
+    <tr>
+      <th>#</th>
+      <th>Crop</th>
+      <th>Weight</th>
+      <th>Sold</th>
+    </tr>
+  </tfoot>
   <tbody>
   	{%for entry in inventory%}
     <tr>

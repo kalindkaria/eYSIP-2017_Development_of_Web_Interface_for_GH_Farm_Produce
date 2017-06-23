@@ -952,7 +952,7 @@ def crop_analytics(request):
                                 sold = sum_sold['sold__sum']
                             else:
                                 sold = 0
-                            data.append([first_date, weight, sold])
+                            data.append([first_date.strftime('%e %b\'%y'), weight, sold])
                             first_date = first_date + datetime.timedelta(weeks=1)
                             second_date = second_date + datetime.timedelta(weeks=1)
                         data.insert(0,['Date','Weight (g)', 'Sold(g)'])

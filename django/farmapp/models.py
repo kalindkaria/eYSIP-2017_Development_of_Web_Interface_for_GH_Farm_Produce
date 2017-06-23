@@ -14,7 +14,7 @@ class User(models.Model):
     email = models.EmailField()
     first_name= models.CharField(max_length=100,null=True)
     last_name= models.CharField(max_length=100,null=True)
-    password = models.CharField(max_length=20)
+    password = models.CharField(max_length=256)
     address_line1 = models.CharField(null=True,blank=True,max_length=100)
     address_line2 = models.CharField(max_length=100,null=True,blank=True,)
     state = models.CharField(max_length=100,null=True,blank=True,)

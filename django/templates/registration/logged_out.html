@@ -1,12 +1,20 @@
 {% extends "admin/base_site.html" %}
 {% load i18n %}
 
-{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></div>{% endblock %}
+{% block breadcrumbs %}
+<div class="breadcrumb">
+	<div class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></div>
+</div>
+{% endblock %}
 
 {% block content %}
 
-<p>{% trans "Thanks for spending some quality time with the Web site today." %}</p>
-
-<p><a href="{% url 'admin:index' %}">{% trans 'Log in again' %}</a></p>
+<div class="jumbotron jumbotron-fluid">
+  <div class="container">
+    <h1 class="display-3">Thanks for Visiting!</h1>
+    <p class="lead">Hope to see you again soon!</p>
+    <a class="btn btn-primary" href="{% url 'admin:index' %}" role="button">Login Again?</a>
+  </div>
+</div>
 
 {% endblock %}
