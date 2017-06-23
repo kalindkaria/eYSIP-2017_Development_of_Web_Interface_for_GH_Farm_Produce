@@ -917,56 +917,56 @@ def crop_analytics(request):
         if request.method == "POST":
             form = CropAnalyticsForm(request.POST, crop_list=crop_list)
             print(request.POST)
-            # if form.is_valid():
-            #     print("Printing Data:" + str(form.cleaned_data))
-            #     crop = form.cleaned_data['crops']
-            #     try:
-            #         user = User.objects.get(pk=request.session['user_id'])
-            #         machines = Machine.objects.filter(user_id=user)
-            #         start_date = form.cleaned_data['start_date']
-            #         end_date = form.cleaned_data['end_date']
-            #         if not start_date:
-            #             start_date = datetime.date(1, 1, 1)
-            #         if not end_date:
-            #             end_date = datetime.date.today()
-            #         print(start_date, end_date)
-            #         object = Produce.objects.filter(machine_id__in=machines, crop_id=crop) \
-            #             .exclude(date_of_produce__date__lt=start_date)\
-            #             .exclude(date_of_produce__date__gt=end_date)
-            #         sum_weight = object.aggregate(Sum('weight'))
-            #         sum_sold = object.aggregate(Sum('sold'))
-            #         print("SOLD", sum_sold)
-            #         if sum_weight['weight__sum']:
-            #             weight = sum_weight['weight__sum']
-            #         else:
-            #             weight = 0
-            #         if sum_sold['sold__sum']:
-            #             sold = sum_sold['sold__sum']
-            #         else:
-            #             sold = 0
-            #         data.append([crop.short_name, weight, sold])
-            #         selected_crops_name.append(crop.english_name)
-            #     except Exception as e:
-            #         print(e)
-            #         data.append([crop.short_name, 0])
-            #         selected_crops_name.append(crop.english_name)
-            #     sorted_data = list(sorted(data, key=lambda data: data[1], reverse=True))
-            #     sorted_data.insert(0, ['Crop Name', 'Weight (g)', 'Sold (g)'])
-            #     data = SimpleDataSource(sorted_data)
-            #     print(sorted_data)
-            #     chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
-            #     context['chart'] = chart
-            #     context['data'] = form.cleaned_data
-            #     context['crop_names'] = selected_crops_name
-            #
+            if form.is_valid():
+                print("Printing Data:" + str(form.cleaned_data))
+                data = form.cleaned_data
+                try:
+                    user = User.objects.get(pk=request.session['user_id'])
+                    machines = Machine.objects.filter(user_id=user)
+                    object = Produce.objects.filter(machine_id__in=machines, crop_id=form.cleaned_data['crops'])
+                    start_date = form.cleaned_data['start_date']
+                    end_date = form.cleaned_data['end_date']
+                    if not start_date:
+                        start_date = datetime.date(datetime.date.today().year, 1, 1)
+                    if not end_date:
+                        end_date = datetime.date.today()
+                    time_frame = form.cleaned_data['time_frame']
+                    data = []
+
+                    if time_frame == "weekly":
+                        first_date = start_date
+                        second_date = start_date + datetime.timedelta(weeks=1)
+                        while second_date <= end_date:
+                            temp = object.exclude(date_of_produce__date__lt=first_date) \
+                                    .exclude(date_of_produce__date__gt=second_date)
+                            sum_weight = temp.aggregate(Sum('weight'))
+                            sum_sold = temp.aggregate(Sum('sold'))
+                            if sum_weight['weight__sum']:
+                                weight = sum_weight['weight__sum']
+                            else:
+                                weight = 0
+                            if sum_sold['sold__sum']:
+                                sold = sum_sold['sold__sum']
+                            else:
+                                sold = 0
+                            data.append([first_date, weight, sold])
+                            first_date = first_date + datetime.timedelta(weeks=1)
+                            second_date = second_date + datetime.timedelta(weeks=1)
+                        data.insert(0,['Date','Weight (g)', 'Sold(g)'])
+                        data = SimpleDataSource(data)
+                        print(data)
+                        chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
+                        context['chart'] = chart
+                        context['data'] = form.cleaned_data
+                except Exception as e:
+                    print(e)
             #     # Write to a CSV file
             #     file_name = "media/" + str(request.session['user_id']) + "_output.csv"
             #     context['csv_filename'] = file_name
             #     with open(settings.MEDIA_ROOT + file_name, "w") as f:
             #         writer = csv.writer(f)
             #         writer.writerows(sorted_data)
-            # else:
-            #     print("Not Valid")
+
         context['analyticsform'] = form
         context['page'] = "analytics"
         return render(request, 'crop_analytics.html', context)

@@ -37,8 +37,8 @@ class CropAnalyticsForm(forms.Form):
     allcrops = Crop.objects.all()
     for crop in allcrops:
         crop_list.append([str(crop.crop_id), crop.english_name])
-    start_date = forms.DateField(label="Start Date", input_formats=['%d.%m.%Y'], required=False)
-    end_date = forms.DateField(label="End Date", input_formats=['%d.%m.%Y'], required=False)
+    start_date = forms.DateField(label="Start Date", input_formats=['%m.%Y','%Y'], required=False)
+    end_date = forms.DateField(label="End Date", input_formats=['%m.%Y','%Y'], required=False)
     time_frame = forms.ChoiceField([('weekly','Weekly'),('monthly','Monthly'),('quaterly','Quaterly')])
     crops = forms.ChoiceField(crop_list)
 

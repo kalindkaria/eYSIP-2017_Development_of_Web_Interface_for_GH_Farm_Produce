@@ -62,12 +62,14 @@
 	{% endif %}
 
     <form action="" method="POST">
-        {% csrf_token %} {% if analyticsform.errors %}
+        {% csrf_token %} 
+        {% if analyticsform.errors %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
-            {{ analyticsform.errors }} {{ analyticsform.non_field_errors }}
+            {{ analyticsform.errors }} 
+            {{ analyticsform.non_field_errors }}
         </div>
         {% endif %}
         <div class="card">
