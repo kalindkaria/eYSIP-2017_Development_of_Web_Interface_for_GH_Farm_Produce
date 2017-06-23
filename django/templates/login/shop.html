@@ -17,7 +17,8 @@
 <div class="col-md-3 col-sm-6 col-xs-12">
 		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
 			<div class="card-header" style="border-color: #333">
-		    	{{ crop.english_name }}
+		    	<span style="font-size: 110%"><strong>{{ crop.english_name }}  </strong></span>
+		    	<span style="font-size: 120%"><strong><em>| {{crop.local_name}}</em></strong></span>
 		  	</div>
 			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
@@ -27,7 +28,7 @@
 		    	<p class="card-text">Unavailable</p>
 		    {% else  %}
 		    {% if availability|get_item:crop.crop_id > 10 %}
-		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }}</p>
+		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
 		    	<div class="text-right">
 		    		<a href="{% url 'remove_from_cart' crop.crop_id %}"><button class="btn btn-danger">Remove from cart<span class="fa fa-times ml-2"></span></button></a>
 		  		</div>
@@ -67,7 +68,8 @@
 <div class="col-md-3 col-sm-6 col-xs-12">
 		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
 			<div class="card-header" style="border-color: #333">
-		    	{{ crop.english_name }}
+		    	<span style="font-size: 110%"><strong>{{ crop.english_name }}  </strong></span>
+		    	<span style="font-size: 120%"><strong><em>| {{crop.local_name}}</em></strong></span>
 		  	</div>
 			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
@@ -78,7 +80,7 @@
 		    	<p class="card-text">Unavailable</p>
 		    {% else  %}
 		    {% if availability|get_item:crop.crop_id > 10 %}
-		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }}</p>
+		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
 		    	<div class="text-right">
 		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart <span class="fa fa-cart-plus ml-2"></span></button></a>
 		  		</div>
