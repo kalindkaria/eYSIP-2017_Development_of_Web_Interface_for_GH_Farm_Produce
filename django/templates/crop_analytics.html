@@ -3,28 +3,37 @@
 {% load bootstrap3 %}
 
 {% block head %}
-<link rel="stylesheet" type="text/css" href={% static "css/morris.css" %}>
-<!-- Scripts -->
-<script type="text/javascript" src={% static "js/raphael.min.js" %}></script>
-<script type="text/javascript" src={% static "js/oldjquery.js" %}></script>
-<script type="text/javascript">
-    var oldjQuery = jQuery.noConflict(true);
-</script>
-<script type="text/javascript" src={% static "js/morris.js" %}></script>
-<link rel="stylesheet" type="text/css" href={% static "css/datepicker.css" %}>
-<script type="text/javascript" src={% static "js/moment.js" %}></script>
-<script type="text/javascript" src={% static "js/datepicker.js" %}></script>
+    <link rel="stylesheet" type="text/css" href={% static "css/morris.css" %}>
+    <link rel="stylesheet" type="text/css" href={% static "datatables/datatables.bootstrap.css" %}>
+    <link rel="stylesheet" type="text/css" href={% static "datatables/buttons.datatables.min.css" %}>
+    <link rel="stylesheet" type="text/css" href={% static "css/datepicker.css" %}>
+
+    <!-- Scripts -->
+    <script type="text/javascript" src={% static "js/raphael.min.js" %}></script>
+    <script type="text/javascript" src={% static "js/oldjquery.js" %}></script>
+    <script type="text/javascript">
+        var oldjQuery = jQuery.noConflict(true);
+    </script>
+    <script type="text/javascript" src={% static "js/morris.js" %}></script>
+    <script type="text/javascript" src={% static "js/moment.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/datatables.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/datatables.buttons.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.html5.min.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.print.min.js" %}></script> 
+    <script type="text/javascript" src={% static "datatables/datatables.bootstrap.js" %}></script>
+    <script type="text/javascript" src={% static "datatables/buttons.bootstrap.min.js" %}></script>
+    <script type="text/javascript" src={% static "js/datepicker.js" %}></script>
 {% endblock head %}
 
 {% block content %}
 <div class="container-fluid" >
 	{% if chart %}
 	<div class="container-fluid">
-		<p>Showing Graph for</p>
+		<p><h5>Showing Graph for</h5></p>
 		<table class="table table-hover">
 			<thead class="thead-inverse">
 				<tr>
-					<th>Crops</th>
+					<th>Crop</th>
 					<th>Start Date</th>
 					<th>End Date</th>
 				</tr>
@@ -32,7 +41,7 @@
 			<tbody>
 				<tr class="table-active">
 					<th>
-						{{ data.crops }}
+						{{ crop }}
 					</th>
 					<th>
 						{{ data.start_date }}
@@ -48,12 +57,31 @@
 			{{ chart.as_html }} 
 		</div>
 	</div>
-	<div class="row justify-content-end">
-		<div class="col-md-2">
-			<a href="/producer/download/" target="_blank" class="btn btn-primary"> Download CSV</a>
-		</div>
 	</div>
-	</div>
+
+    <hr>
+
+    <h4>Data</h4>
+    <table class="table" style="width:75%; text-align:center;" id="data-table">
+      <thead class="thead-inverse mx-auto">
+        <tr>
+          <th>#</th>
+          <th>Date</th>
+          <th>Weight (g)</th>
+          <th>Sold (g)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%for entry in table %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ entry.0 }}</td>
+          <td>{{ entry.1 }}</td>
+          <td>{{ entry.2 }}</td>
+        </tr> 
+        {%endfor%}
+      </tbody>
+    </table>
 
     <hr>
 	{% endif %}
@@ -270,5 +298,18 @@ $(function() {
       
     });
 </script>
+
+<script>
+    $(document).ready(function(){
+        $('#data-table').DataTable({
+          dom: 'Bfrtip',
+          lengthMenu: [
+              [ 10, 25, 50, -1 ],
+              [ '10 rows', '25 rows', '50 rows', 'Show all' ]
+          ],
+          buttons: ['pageLength','csv']
+      } );
+  });
+  </script>
 
 {% endblock scripts %}

@@ -1019,6 +1019,7 @@ def analytics(request):
         return render(request, 'analytics.html', context)
     return HttpResponseRedirect("/")
 
+
 def crop_analytics(request):
     context = {}
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
@@ -1036,7 +1037,7 @@ def crop_analytics(request):
             print(request.POST)
             if form.is_valid():
                 print("Printing Data:" + str(form.cleaned_data))
-                data = form.cleaned_data
+                context['data'] = form.cleaned_data
                 try:
                     user = User.objects.get(pk=request.session['user_id'])
                     machines = Machine.objects.filter(user_id=user)
@@ -1049,13 +1050,15 @@ def crop_analytics(request):
                         end_date = datetime.date.today()
                     time_frame = form.cleaned_data['time_frame']
                     data = []
+                    context['crop'] = Crop.objects.get(crop_id=form.cleaned_data['crops'])
 
                     if time_frame == "weekly":
                         first_date = start_date
                         second_date = start_date + datetime.timedelta(weeks=1)
-                        while second_date <= end_date:
+                        while first_date <= end_date:
                             temp = object.exclude(date_of_produce__date__lt=first_date) \
-                                    .exclude(date_of_produce__date__gt=second_date)
+                                    .exclude(date_of_produce__date__gte=second_date)
+                            print(temp)
                             sum_weight = temp.aggregate(Sum('weight'))
                             sum_sold = temp.aggregate(Sum('sold'))
                             if sum_weight['weight__sum']:
@@ -1066,24 +1069,84 @@ def crop_analytics(request):
                                 sold = sum_sold['sold__sum']
                             else:
                                 sold = 0
-                            data.append([first_date, weight, sold])
+                            data.append([first_date.strftime('%e %b\'%y'), weight, sold])
                             first_date = first_date + datetime.timedelta(weeks=1)
                             second_date = second_date + datetime.timedelta(weeks=1)
                         data.insert(0,['Date','Weight (g)', 'Sold(g)'])
+                        context['table'] = data[1:]
                         data = SimpleDataSource(data)
                         print(data)
                         chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
                         context['chart'] = chart
-                        context['data'] = form.cleaned_data
+                    elif time_frame =="monthly":
+                        cur_month = start_date.month
+                        cur_year = start_date.year
+                        while datetime.date(cur_year,cur_month,1)<end_date:
+                            if cur_month ==12:
+                                temp = object.exclude(date_of_produce__date__lt=datetime.date(cur_year, cur_month, 1)) \
+                                    .exclude(date_of_produce__date__gte=datetime.date(cur_year+1, 1, 1))
+                            else:
+                                temp = object.exclude(date_of_produce__date__lt=datetime.date(cur_year,cur_month,1)) \
+                                .exclude(date_of_produce__date__gte=datetime.date(cur_year,cur_month+1,1))
+                            print(temp)
+                            sum_weight = temp.aggregate(Sum('weight'))
+                            sum_sold = temp.aggregate(Sum('sold'))
+                            if sum_weight['weight__sum']:
+                                weight = sum_weight['weight__sum']
+                            else:
+                                weight = 0
+                            if sum_sold['sold__sum']:
+                                sold = sum_sold['sold__sum']
+                            else:
+                                sold = 0
+                            data.append([datetime.date(cur_year,cur_month,1).strftime("%b %Y"), weight, sold])
+                            if cur_month == 12:
+                                cur_year+=1
+                                cur_month=1
+                            else:
+                                cur_month+=1
+                        data.insert(0, ['Date', 'Weight (g)', 'Sold(g)'])
+                        context['table'] = data[1:]
+                        data = SimpleDataSource(data)
+                        print(data)
+                        chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
+                        context['chart'] = chart
+                    elif time_frame =="quaterly":
+                        cur_month = start_date.month
+                        cur_year = start_date.year
+                        while datetime.date(cur_year,cur_month,1)<end_date:
+                            if cur_month ==10:
+                                temp = object.exclude(date_of_produce__date__lt=datetime.date(cur_year, cur_month, 1)) \
+                                    .exclude(date_of_produce__date__gte=datetime.date(cur_year+1, 1, 1))
+                            else:
+                                temp = object.exclude(date_of_produce__date__lt=datetime.date(cur_year,cur_month,1)) \
+                                .exclude(date_of_produce__date__gte=datetime.date(cur_year,cur_month+3,1))
+                            print(temp)
+                            sum_weight = temp.aggregate(Sum('weight'))
+                            sum_sold = temp.aggregate(Sum('sold'))
+                            if sum_weight['weight__sum']:
+                                weight = sum_weight['weight__sum']
+                            else:
+                                weight = 0
+                            if sum_sold['sold__sum']:
+                                sold = sum_sold['sold__sum']
+                            else:
+                                sold = 0
+                            data.append([datetime.date(cur_year,cur_month,1).strftime("%B %Y"), weight, sold])
+                            if cur_month == 10:
+                                cur_year+=1
+                                cur_month=1
+                            else:
+                                cur_month+=3
+                        data.insert(0, ['Date', 'Weight (g)', 'Sold(g)'])
+                        context['table'] = data[1:]
+                        data = SimpleDataSource(data)
+                        print(data)
+                        chart = BarChart(data, html_id='graph', options={'formatter': 'function(y){return y+" gm"}'})
+                        context['chart'] = chart
+
                 except Exception as e:
                     print(e)
-            #     # Write to a CSV file
-            #     file_name = "media/" + str(request.session['user_id']) + "_output.csv"
-            #     context['csv_filename'] = file_name
-            #     with open(settings.MEDIA_ROOT + file_name, "w") as f:
-            #         writer = csv.writer(f)
-            #         writer.writerows(sorted_data)
-
         context['analyticsform'] = form
         context['page'] = "analytics"
         return render(request, 'crop_analytics.html', context)
