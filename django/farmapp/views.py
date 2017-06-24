@@ -42,6 +42,7 @@ def handle_login_signup(request):
                 print(loginform.cleaned_data)
                 # checking the details from the database
                 try:
+
                     user = User.objects.get(email=loginform.cleaned_data['email'],
                                             password=loginform.cleaned_data['password'])
                     # storing the details into the session
