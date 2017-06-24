@@ -541,244 +541,260 @@ def checkout(request):
 
 
 def order_summary(request):
-    cart = Cart.objects.get(cart_id=request.session['cart_id'])
-    user = User.objects.get(user_id=request.session['user_id'])
-    user.last_cart = None
-    user.save()
-    orders = Order.objects.filter(user_id = user , cart_id = cart)
+    try:
+        cart = Cart.objects.get(cart_id=request.session['cart_id'])
+        user = User.objects.get(user_id=request.session['user_id'])
+        user.last_cart = None
+        user.save()
+        orders = Order.objects.filter(user_id = user , cart_id = cart)
 
-    for order in orders:
-        try:
-            machines = Machine.objects.filter(user_id=order.seller.user_id)
-            produce = Produce.objects.filter(machine_id__in=machines,
-                                             crop_id=order.crop_id,
-                                             date_of_expiry__gt=datetime.datetime.now(),
-                                             weight__gt=F('sold')).order_by('date_of_expiry')
+        for order in orders:
+            try:
+                machines = Machine.objects.filter(user_id=order.seller.user_id)
+                produce = Produce.objects.filter(machine_id__in=machines,
+                                                 crop_id=order.crop_id,
+                                                 date_of_expiry__gt=datetime.datetime.now(),
+                                                 weight__gt=F('sold')).order_by('date_of_expiry')
 
-            quantity_left = order.weight
-            for entry in produce:
-                if quantity_left > 0:
-                    if entry.weight - entry.sold >= quantity_left:
-                        entry.sold = entry.sold + quantity_left
-                        with transaction.atomic():
-                            entry.save()
-                        break
-                    else:
-                        quantity_left = quantity_left - (entry.weight - entry.sold)
-                        entry.sold = entry.weight
-                        with transaction.atomic():
-                            entry.save()
-        except Exception as e:
-            print(e)
+                quantity_left = order.weight
+                for entry in produce:
+                    if quantity_left > 0:
+                        if entry.weight - entry.sold >= quantity_left:
+                            entry.sold = entry.sold + quantity_left
+                            with transaction.atomic():
+                                entry.save()
+                            break
+                        else:
+                            quantity_left = quantity_left - (entry.weight - entry.sold)
+                            entry.sold = entry.weight
+                            with transaction.atomic():
+                                entry.save()
+            except Exception as e:
+                print(e)
+                return HttpResponseRedirect('/crops')
+
+
+        if orders:
+            del request.session['cart_id']
+            del request.session['cart_count']
+
+            return render(request,'login/order.html',{'orders':orders})
+        else:
             return HttpResponseRedirect('/crops')
-
-
-    if orders:
-        del request.session['cart_id']
-        del request.session['cart_count']
-
-        return render(request,'login/order.html',{'orders':orders})
-    else:
-        return HttpResponseRedirect('/crops')
-
+    except:
+        return HttpResponseRedirect('/')
 
 def producer_orders(request):
-    request.session['page'] = "/producer/orders"
-    user = User.objects.get(user_id=request.session['user_id'])
-    orders = Order.objects.filter(seller = user).order_by('-cart_id')
+    try:
+        request.session['page'] = "/producer/orders"
+        user = User.objects.get(user_id=request.session['user_id'])
+        orders = Order.objects.filter(seller = user).order_by('-cart_id')
 
-    if orders:
-        all_orders = {}
+        if orders:
+            all_orders = {}
 
-        for order in orders:
-            if all_orders.get(order.crop_id.english_name,False):
-                print("")
-            else:
-                all_orders[order.crop_id.english_name]=[]
-            item_order = {}
-            item_order['cart_id'] = order.cart_id
-            item_order['crop_id'] = order.crop_id
-            item_order['user_id'] = order.user_id
-            item_order['weight'] = order.weight
-            item_order['time'] = order.time
-            item_order['status'] = order.status.upper()
-            all_orders[order.crop_id.english_name].append(item_order)
+            for order in orders:
+                if all_orders.get(order.crop_id.english_name,False):
+                    print("")
+                else:
+                    all_orders[order.crop_id.english_name]=[]
+                item_order = {}
+                item_order['cart_id'] = order.cart_id
+                item_order['crop_id'] = order.crop_id
+                item_order['user_id'] = order.user_id
+                item_order['weight'] = order.weight
+                item_order['time'] = order.time
+                item_order['status'] = order.status.upper()
+                all_orders[order.crop_id.english_name].append(item_order)
 
-        context ={'page':"orders",'all_orders':all_orders}
-        return render(request,'producerOrder.html',context)
-    else:
-        context = {'page': "orders"}
-        return render(request, 'producerOrder.html', context)
-
+            context ={'page':"orders",'all_orders':all_orders}
+            return render(request,'producerOrder.html',context)
+        else:
+            context = {'page': "orders"}
+            return render(request, 'producerOrder.html', context)
+    except:
+        return HttpResponseRedirect('/')
 
 def producer_pending_orders(request):
-    request.session['page'] = "/producer/pendingorders"
-    user = User.objects.get(user_id=request.session['user_id'])
-    orders = Order.objects.filter(seller = user,status__iexact ='pending').order_by('-cart_id')
-    if orders:
-        all_orders = {}
+    try:
+        request.session['page'] = "/producer/pendingorders"
+        user = User.objects.get(user_id=request.session['user_id'])
+        orders = Order.objects.filter(seller = user,status__iexact ='pending').order_by('-cart_id')
+        if orders:
+            all_orders = {}
 
-        for order in orders:
-            if all_orders.get(order.crop_id.english_name,False):
-                print("")
-            else:
-                all_orders[order.crop_id.english_name]=[]
-            item_order = {}
-            item_order['cart_id'] = order.cart_id
-            item_order['crop_id'] = order.crop_id
-            item_order['user_id'] = order.user_id
-            item_order['weight'] = order.weight
-            item_order['time'] = order.time
-            item_order['status'] = order.status.upper()
-            all_orders[order.crop_id.english_name].append(item_order)
+            for order in orders:
+                if all_orders.get(order.crop_id.english_name,False):
+                    print("")
+                else:
+                    all_orders[order.crop_id.english_name]=[]
+                item_order = {}
+                item_order['cart_id'] = order.cart_id
+                item_order['crop_id'] = order.crop_id
+                item_order['user_id'] = order.user_id
+                item_order['weight'] = order.weight
+                item_order['time'] = order.time
+                item_order['status'] = order.status.upper()
+                all_orders[order.crop_id.english_name].append(item_order)
 
-        context ={'page':"orders",'all_orders':all_orders}
-        return render(request,'producerPendingOrder.html',context)
-    else:
-        context ={'page':"orders"}
-        return render(request,'producerPendingOrder.html',context)
+            context ={'page':"orders",'all_orders':all_orders}
+            return render(request,'producerPendingOrder.html',context)
+        else:
+            context ={'page':"orders"}
+            return render(request,'producerPendingOrder.html',context)
+    except:
+        return HttpResponseRedirect('/')
 
-
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def producer_delivery(request):
-    request.session['page'] = "/producer/delivery"
-    user = User.objects.get(user_id = request.session['user_id'])
-    orders = Order.objects.filter(seller = user , status = "pending").order_by('cart_id')
+    try:
+        request.session['page'] = "/producer/delivery"
+        user = User.objects.get(user_id = request.session['user_id'])
+        orders = Order.objects.filter(seller = user , status = "pending").order_by('cart_id')
 
-    if orders:
-        prev_order = orders[0].cart_id.cart_id
-        all_orders = []
-        individual_order = []
-        for order in orders:
-            if order.cart_id.cart_id != prev_order:
-                all_orders.append(individual_order)
-                individual_order = []
-                prev_order = order.cart_id.cart_id
+        if orders:
+            prev_order = orders[0].cart_id.cart_id
+            all_orders = []
+            individual_order = []
+            for order in orders:
+                if order.cart_id.cart_id != prev_order:
+                    all_orders.append(individual_order)
+                    individual_order = []
+                    prev_order = order.cart_id.cart_id
 
-            item_order = {}
-            item_order['cart_id'] = order.cart_id
-            item_order['crop_id']=order.crop_id
-            item_order['buyer']=order.user_id
-            item_order['weight']=order.weight
-            item_order['time']=order.time
-            item_order['status'] = order.status.upper()
-            individual_order.append(item_order)
-        all_orders.append(individual_order)
+                item_order = {}
+                item_order['cart_id'] = order.cart_id
+                item_order['crop_id']=order.crop_id
+                item_order['buyer']=order.user_id
+                item_order['weight']=order.weight
+                item_order['time']=order.time
+                item_order['status'] = order.status.upper()
+                individual_order.append(item_order)
+            all_orders.append(individual_order)
 
-        paginator = Paginator(all_orders, 5)  # Show 5 orders per page
+            paginator = Paginator(all_orders, 5)  # Show 5 orders per page
 
-        page = request.GET.get('page')
-        try:
-            orders = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            orders = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            orders = paginator.page(paginator.num_pages)
+            page = request.GET.get('page')
+            try:
+                orders = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                orders = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                orders = paginator.page(paginator.num_pages)
 
-        pagelist = []
-        for i in range(1,orders.paginator.num_pages +1):
-            pagelist.append(i)
-        print(paginator.num_pages)
-        context ={'page':"delivery",'all_orders':orders ,'pagelist':pagelist}
-        return render(request,'producerDelivery.html',context)
-    else:
-        context ={'page':"orders"}
-        return render(request,'producerDelivery.html',context)
+            pagelist = []
+            for i in range(1,orders.paginator.num_pages +1):
+                pagelist.append(i)
+            print(paginator.num_pages)
+            context ={'page':"delivery",'all_orders':orders ,'pagelist':pagelist}
+            return render(request,'producerDelivery.html',context)
+        else:
+            context ={'page':"orders"}
+            return render(request,'producerDelivery.html',context)
+    except:
+        return HttpResponseRedirect('/')
 
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def producer_delivered(request):
+    try:
+        user = User.objects.get(user_id = request.session['user_id'])
+        orders = Order.objects.filter(seller = user , status__iexact = "delivered").order_by('-delivery_date')
 
-    user = User.objects.get(user_id = request.session['user_id'])
-    orders = Order.objects.filter(seller = user , status__iexact = "delivered").order_by('-delivery_date')
+        if orders:
+            prev_order = orders[0].cart_id.cart_id
+            all_orders = []
+            individual_order = []
+            for order in orders:
+                if order.cart_id.cart_id != prev_order:
+                    all_orders.append(individual_order)
+                    individual_order = []
+                    prev_order = order.cart_id.cart_id
 
-    if orders:
-        prev_order = orders[0].cart_id.cart_id
-        all_orders = []
-        individual_order = []
-        for order in orders:
-            if order.cart_id.cart_id != prev_order:
-                all_orders.append(individual_order)
-                individual_order = []
-                prev_order = order.cart_id.cart_id
+                item_order = {}
+                item_order['cart_id'] = order.cart_id
+                item_order['crop_id']=order.crop_id
+                item_order['buyer']=order.user_id
+                item_order['weight']=order.weight
+                item_order['time']=order.time
+                item_order['delivery_date'] = order.delivery_date
+                item_order['status'] = order.status.upper()
+                individual_order.append(item_order)
+            all_orders.append(individual_order)
 
-            item_order = {}
-            item_order['cart_id'] = order.cart_id
-            item_order['crop_id']=order.crop_id
-            item_order['buyer']=order.user_id
-            item_order['weight']=order.weight
-            item_order['time']=order.time
-            item_order['delivery_date'] = order.delivery_date
-            item_order['status'] = order.status.upper()
-            individual_order.append(item_order)
-        all_orders.append(individual_order)
+            paginator = Paginator(all_orders, 5)  # Show 5 orders per page
 
-        paginator = Paginator(all_orders, 5)  # Show 5 orders per page
+            page = request.GET.get('page')
+            try:
+                orders = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                orders = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                orders = paginator.page(paginator.num_pages)
 
-        page = request.GET.get('page')
-        try:
-            orders = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            orders = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            orders = paginator.page(paginator.num_pages)
-
-        pagelist = []
-        for i in range(1,orders.paginator.num_pages +1):
-            pagelist.append(i)
-        print(paginator.num_pages)
-        context ={'page':"orders",'all_orders':orders ,'pagelist':pagelist}
-        return render(request,'producerDelivered.html',context)
-    else:
-        context ={'page':"orders"}
-        return render(request,'producerDelivered.html',context)
+            pagelist = []
+            for i in range(1,orders.paginator.num_pages +1):
+                pagelist.append(i)
+            print(paginator.num_pages)
+            context ={'page':"orders",'all_orders':orders ,'pagelist':pagelist}
+            return render(request,'producerDelivered.html',context)
+        else:
+            context ={'page':"orders"}
+            return render(request,'producerDelivered.html',context)
+    except:
+        return HttpResponseRedirect('/')
 
 def consumer_orders(request):
-    request.session['page'] = "/consumer/orders"
-    user = User.objects.get(user_id=request.session['user_id'])
-    orders = Order.objects.filter(user_id = user).order_by('-cart_id')
-    if orders:
-        prev_order = orders[0].cart_id.cart_id
-        all_orders = []
-        individual_order = []
-        for order in orders:
-            if order.cart_id.cart_id != prev_order:
-                all_orders.append(individual_order)
-                individual_order = []
-                prev_order = order.cart_id.cart_id
+    try:
+        request.session['page'] = "/consumer/orders"
+        user = User.objects.get(user_id=request.session['user_id'])
+        orders = Order.objects.filter(user_id = user).order_by('-cart_id')
+        if orders:
+            prev_order = orders[0].cart_id.cart_id
+            all_orders = []
+            individual_order = []
+            for order in orders:
+                if order.cart_id.cart_id != prev_order:
+                    all_orders.append(individual_order)
+                    individual_order = []
+                    prev_order = order.cart_id.cart_id
 
-            item_order = {}
-            item_order['cart_id'] = order.cart_id
-            item_order['crop_id']=order.crop_id
-            item_order['seller']=order.seller
-            item_order['weight']=order.weight
-            item_order['time']=order.time
-            item_order['status'] = order.status.upper()
-            individual_order.append(item_order)
-        all_orders.append(individual_order)
+                item_order = {}
+                item_order['cart_id'] = order.cart_id
+                item_order['crop_id']=order.crop_id
+                item_order['seller']=order.seller
+                item_order['weight']=order.weight
+                item_order['time']=order.time
+                item_order['status'] = order.status.upper()
+                individual_order.append(item_order)
+            all_orders.append(individual_order)
 
-        paginator = Paginator(all_orders, 5)  # Show 5 orders per page
+            paginator = Paginator(all_orders, 5)  # Show 5 orders per page
 
-        page = request.GET.get('page')
-        try:
-            orders = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            orders = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            orders = paginator.page(paginator.num_pages)
+            page = request.GET.get('page')
+            try:
+                orders = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                orders = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                orders = paginator.page(paginator.num_pages)
 
-        pagelist = []
-        for i in range(1,orders.paginator.num_pages +1):
-            pagelist.append(i)
-        print(paginator.num_pages)
-        context ={'page':"orders",'all_orders':orders ,'pagelist':pagelist}
-        return render(request,'consumerOrder.html',context)
-    else:
-        context ={'page':"orders"}
-        return render(request,'consumerOrder.html',context)
+            pagelist = []
+            for i in range(1,orders.paginator.num_pages +1):
+                pagelist.append(i)
+            print(paginator.num_pages)
+            context ={'page':"orders",'all_orders':orders ,'pagelist':pagelist}
+            return render(request,'consumerOrder.html',context)
+        else:
+            context ={'page':"orders"}
+            return render(request,'consumerOrder.html',context)
+    except:
+        return HttpResponseRedirect('/')
 
 
 def consumer_order_cancel(request,cart_id, seller , crop_id):
@@ -895,7 +911,6 @@ def producer_order_deliver(request, cart_id, buyer):
             order.delivery_date = datetime.datetime.now()
             producer_message = order.seller.first_name+" has delivered your order for "+str(order.weight)+" grams of "\
                                +order.crop_id.english_name+" placed on "+ str(order.time.date())
-
 
             Alert.objects.create(user_id = buyer , message = producer_message)
 
