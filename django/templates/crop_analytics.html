@@ -34,6 +34,7 @@
 			<thead class="thead-inverse">
 				<tr>
 					<th>Crop</th>
+                    <th>Time Frame</th>
 					<th>Start Date</th>
 					<th>End Date</th>
 				</tr>
@@ -43,6 +44,9 @@
 					<th>
 						{{ crop }}
 					</th>
+                    <th>
+                        {{ data.time_frame | capfirst }}
+                    </th>
 					<th>
 						{{ data.start_date }}
 					</th>
