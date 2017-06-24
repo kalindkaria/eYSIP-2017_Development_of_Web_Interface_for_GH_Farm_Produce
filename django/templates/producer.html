@@ -65,7 +65,11 @@
       <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
         <a class="dropdown-item" href="/producer/pendingorders">Pending Orders</a>
         <a class="dropdown-item" href="/producer/orders">All Orders</a>
+        <a class="dropdown-item" href="/producer/deliveredorders">Delivered Orders</a>
       </div>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if page == "delivery" %}active{% endif %}" href="/producer/delivery">Delivery</a>
     </li>
   </ul>
   <ul class="navbar-nav">

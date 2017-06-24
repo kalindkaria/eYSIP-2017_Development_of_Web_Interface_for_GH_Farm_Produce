@@ -45,6 +45,9 @@ urlpatterns = [
     url(r'^producer/download/', views.download, name='download'),
     url(r'^producer/alerts/$', views.alerts, name='produceralerts'),
     url(r'^consumer/alerts/$', views.alerts, name='consumeralerts'),
-    url(r'^producer/analytics/crop/$', views.crop_analytics, name='crop_analytics')
+    url(r'^producer/analytics/crop/$', views.crop_analytics, name='crop_analytics'),
+    url(r'^producer/delivery/$', views.producer_delivery, name='producer_delivery'),
+    url(r'^producer/reject_order/(?P<cart_id>[0-9]+)/(?P<buyer>[0-9]+)/$', views.producer_order_deliver, name='producer_order_deliver'),
+    url(r'^producer/deliveredorders/$', views.producer_delivered, name='producer_delivered')
 ]
 
