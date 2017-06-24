@@ -34,7 +34,7 @@ class Crop(models.Model):
     english_name = models.CharField(max_length=100,null=True)
     short_name = models.CharField(max_length=11,null=False,default='Unknown')
     scientific_name = models.CharField(max_length=100,null=True)
-    shelf_life = models.FloatField()
+    shelf_life = models.IntegerField(default=48)
     imagepath = models.CharField(max_length=100,null=True)
     availability = models.FloatField(default=0)
     price = models.FloatField()
@@ -74,6 +74,7 @@ class Produce(models.Model):
     date_of_produce = models.DateTimeField()
     date_of_expiry = models.DateTimeField()
     sold = models.FloatField(default=0)
+    wasted = models.FloatField(default=0)
     def __str__(self):
         # user = Machine.objects.get(machine_id = self.machine_id.machine_id)
         return str(self.machine_id.user_id.first_name +" - "+ self.crop_id.english_name)
@@ -85,8 +86,11 @@ class Inventory(models.Model):
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     weight = models.FloatField()
     sold = models.FloatField(default=0)
+    wasted = models.FloatField(default=0)
     minimum = models.FloatField(default=50)
     maximum = models.FloatField(default=600)
+    price = models.FloatField(default=0.0)
+    shelf_life = models.IntegerField(default=48)
     def __str__(self):
         return str(self.user_id.first_name+"-"+self.crop_id.english_name)
     class Meta:

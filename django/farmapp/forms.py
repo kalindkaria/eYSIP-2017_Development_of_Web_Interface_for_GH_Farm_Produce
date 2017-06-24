@@ -1,5 +1,5 @@
 from django import forms
-from .models import Crop, Produce
+from .models import Crop, Produce, Inventory
 
 class LoginForm(forms.Form):
     email = forms.EmailField(label="Email ID", max_length=100, help_text="Enter your email id", label_suffix=":")
@@ -48,3 +48,7 @@ class CropAnalyticsForm(forms.Form):
         super(CropAnalyticsForm, self).__init__(*args, **kwargs)
         self.fields['crops'].choices = crop_list
 
+class InventoryForm(forms.ModelForm):
+    class Meta:
+        model = Inventory
+        fields = ['minimum','maximum','price','shelf_life']

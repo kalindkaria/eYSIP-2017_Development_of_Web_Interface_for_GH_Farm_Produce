@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponseRedirect
-from .forms import LoginForm, SignUpForm,CartForm, AnalyticsForm, CropAnalyticsForm
+from .forms import LoginForm, SignUpForm,CartForm, AnalyticsForm, CropAnalyticsForm, InventoryForm
 from farmapp.models import User,Produce,Machine,Trough,Inventory,Crop,Cart,Cart_session,Order,Alert
 from django.views.decorators.cache import cache_control
 from django.db.models import Sum,Count
@@ -1160,6 +1160,33 @@ def profile(request):
 
         except Exception as e:
             print(e)
+
+
+def edit_inventory(request, crop_id):
+    context = {}
+    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
+        user = User.objects.get(pk=request.session['user_id'])
+        crop = Crop.objects.get(pk=crop_id)
+        inventory = Inventory.objects.get(crop_id=crop, user_id=user)
+        form = InventoryForm(instance=inventory)
+        print("Form\n")
+        if request.method == "POST":
+            form = InventoryForm(request.POST)
+            if form.is_valid():
+                print("DATA\n",form.cleaned_data)
+                o = InventoryForm(request.POST,inventory)
+                o.save()
+        context['form'] = form
+        context['page'] = "edit_inventory"
+        return render(request, "edit_inventory.html", context)
+        # except Exception as e:
+        #     print(e)
+        #     return HttpResponseRedirect(request.session.get("page","/"))
+    return HttpResponseRedirect("/")
+
+
+
+
 
 def download(request):
     if request.session.get("user_id", None):
