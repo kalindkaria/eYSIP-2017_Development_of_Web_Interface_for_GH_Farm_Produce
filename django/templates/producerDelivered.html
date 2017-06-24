@@ -30,7 +30,7 @@
       <th>Crop</th>
       <th>Buyer</th>
       <th>Weight</th>
-      <th>Order Date</th>
+      <th>Delivery Date</th>
       <!-- <th>Date of Delivery</th> -->
       <!-- <th>Image</th> -->
     </tr>
@@ -42,7 +42,7 @@
       <td>{{entry.crop_id}}</td>
       <td>{{entry.buyer.first_name}}</td>
       <td>{{entry.weight}}g</td>
-      <td>{{entry.time}}</td>
+      <td>{{entry.delivery_date}}</td>
     </tr>
   {% endfor %}
   </tbody>
@@ -93,6 +93,6 @@
 </nav>
 
 {% else %}
-<h5>You have no orders to deliver</h5>
+<h5>You have delivered no orders</h5>
 {% endif %}
 {% endblock content %}

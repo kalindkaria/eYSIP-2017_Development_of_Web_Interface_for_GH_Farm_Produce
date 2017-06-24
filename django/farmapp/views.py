@@ -586,52 +586,60 @@ def producer_orders(request):
     user = User.objects.get(user_id=request.session['user_id'])
     orders = Order.objects.filter(seller = user).order_by('-cart_id')
 
-    all_orders = {}
+    if orders:
+        all_orders = {}
 
-    for order in orders:
-        if all_orders.get(order.crop_id.english_name,False):
-            print("")
-        else:
-            all_orders[order.crop_id.english_name]=[]
-        item_order = {}
-        item_order['cart_id'] = order.cart_id
-        item_order['crop_id'] = order.crop_id
-        item_order['user_id'] = order.user_id
-        item_order['weight'] = order.weight
-        item_order['time'] = order.time
-        item_order['status'] = order.status.upper()
-        all_orders[order.crop_id.english_name].append(item_order)
+        for order in orders:
+            if all_orders.get(order.crop_id.english_name,False):
+                print("")
+            else:
+                all_orders[order.crop_id.english_name]=[]
+            item_order = {}
+            item_order['cart_id'] = order.cart_id
+            item_order['crop_id'] = order.crop_id
+            item_order['user_id'] = order.user_id
+            item_order['weight'] = order.weight
+            item_order['time'] = order.time
+            item_order['status'] = order.status.upper()
+            all_orders[order.crop_id.english_name].append(item_order)
 
-    context ={'page':"orders",'all_orders':all_orders}
-    return render(request,'producerOrder.html',context)
+        context ={'page':"orders",'all_orders':all_orders}
+        return render(request,'producerOrder.html',context)
+    else:
+        context = {'page': "orders"}
+        return render(request, 'producerOrder.html', context)
 
 
 def producer_pending_orders(request):
     request.session['page'] = "/producer/pendingorders"
     user = User.objects.get(user_id=request.session['user_id'])
     orders = Order.objects.filter(seller = user,status__iexact ='pending').order_by('-cart_id')
+    if orders:
+        all_orders = {}
 
-    all_orders = {}
+        for order in orders:
+            if all_orders.get(order.crop_id.english_name,False):
+                print("")
+            else:
+                all_orders[order.crop_id.english_name]=[]
+            item_order = {}
+            item_order['cart_id'] = order.cart_id
+            item_order['crop_id'] = order.crop_id
+            item_order['user_id'] = order.user_id
+            item_order['weight'] = order.weight
+            item_order['time'] = order.time
+            item_order['status'] = order.status.upper()
+            all_orders[order.crop_id.english_name].append(item_order)
 
-    for order in orders:
-        if all_orders.get(order.crop_id.english_name,False):
-            print("")
-        else:
-            all_orders[order.crop_id.english_name]=[]
-        item_order = {}
-        item_order['cart_id'] = order.cart_id
-        item_order['crop_id'] = order.crop_id
-        item_order['user_id'] = order.user_id
-        item_order['weight'] = order.weight
-        item_order['time'] = order.time
-        item_order['status'] = order.status.upper()
-        all_orders[order.crop_id.english_name].append(item_order)
+        context ={'page':"orders",'all_orders':all_orders}
+        return render(request,'producerPendingOrder.html',context)
+    else:
+        context ={'page':"orders"}
+        return render(request,'producerPendingOrder.html',context)
 
-    context ={'page':"orders",'all_orders':all_orders}
-    return render(request,'producerPendingOrder.html',context)
 
 def producer_delivery(request):
-
+    request.session['page'] = "/producer/delivery"
     user = User.objects.get(user_id = request.session['user_id'])
     orders = Order.objects.filter(seller = user , status = "pending").order_by('cart_id')
 
@@ -671,11 +679,11 @@ def producer_delivery(request):
         for i in range(1,orders.paginator.num_pages +1):
             pagelist.append(i)
         print(paginator.num_pages)
-        context ={'page':"orders",'all_orders':orders ,'pagelist':pagelist}
+        context ={'page':"delivery",'all_orders':orders ,'pagelist':pagelist}
         return render(request,'producerDelivery.html',context)
     else:
         context ={'page':"orders"}
-        return render(request,'',context)
+        return render(request,'producerDelivery.html',context)
 
 def producer_delivered(request):
 
@@ -698,6 +706,7 @@ def producer_delivered(request):
             item_order['buyer']=order.user_id
             item_order['weight']=order.weight
             item_order['time']=order.time
+            item_order['delivery_date'] = order.delivery_date
             item_order['status'] = order.status.upper()
             individual_order.append(item_order)
         all_orders.append(individual_order)
@@ -719,10 +728,10 @@ def producer_delivered(request):
             pagelist.append(i)
         print(paginator.num_pages)
         context ={'page':"orders",'all_orders':orders ,'pagelist':pagelist}
-        return render(request,'producerDelivery.html',context)
+        return render(request,'producerDelivered.html',context)
     else:
         context ={'page':"orders"}
-        return render(request,'',context)
+        return render(request,'producerDelivered.html',context)
 
 def consumer_orders(request):
     request.session['page'] = "/consumer/orders"
@@ -878,10 +887,11 @@ def producer_order_deliver(request, cart_id, buyer):
         user = User.objects.get(user_id=request.session['user_id'])
         buyer = User.objects.get(user_id=buyer)
         cart = Cart.objects.get(cart_id = cart_id)
-        orders = Order.objects.filter(seller=user,cart_id =cart ,user_id=buyer)
+        orders = Order.objects.filter(seller=user,cart_id =cart ,user_id=buyer,status__iexact = "pending")
 
         for order in orders:
             order.status = "delivered"
+            order.delivery_date = datetime.datetime.now()
             producer_message = order.seller.first_name+" has delivered your order for "+str(order.weight)+" grams of "\
                                +order.crop_id.english_name+" placed on "+ str(order.time.date())
 
