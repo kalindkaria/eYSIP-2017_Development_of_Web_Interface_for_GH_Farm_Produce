@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -25,8 +24,7 @@ SECRET_KEY = '+dy*asyh-5+sk$2&cl$#qe98_sb-$q3e)oj)5xv_030bul&3bt'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.43.90', 'localhost', '0.0.0.0', '192.168.0.111','192.168.0.66','192.168.0.200']
-
+ALLOWED_HOSTS = ['192.168.43.90', 'localhost', '0.0.0.0', '192.168.0.111', '192.168.0.66', '192.168.0.200']
 
 # Application definition
 
@@ -69,13 +67,12 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.request',
             ],
-            'loaders':['django.template.loaders.filesystem.Loader']
+            'loaders': ['django.template.loaders.filesystem.Loader']
         },
     },
 ]
 
 WSGI_APPLICATION = 'ghfarm.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -86,12 +83,11 @@ DATABASES = {
         'NAME': 'ghfarm',
         'USER': 'root',
         'PASSWORD': '12345',
-        'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
+        'HOST': 'localhost',  # Or an IP Address that your DB is hosted on
         'PORT': '',
-        'OPTIONS': {'charset':'utf8mb4'}
+        'OPTIONS': {'charset': 'utf8mb4'}
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -111,7 +107,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -124,7 +119,6 @@ USE_I18N = False
 USE_L10N = True
 
 USE_TZ = False
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -144,4 +138,3 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
     'django.contrib.auth.hashers.CryptPasswordHasher',
 )
-

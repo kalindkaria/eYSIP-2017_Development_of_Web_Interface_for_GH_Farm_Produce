@@ -1,12 +1,13 @@
+import datetime
 import json
 import os
-import datetime
-from machine import *
-from django.views.decorators.csrf import csrf_exempt
-from farmapp.models import Produce, Machine, Crop, Trough, User, Inventory
-from django.http import HttpResponse
-import requests
 from threading import Thread, Lock
+
+import requests
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from farmapp.models import Produce, Machine, Crop, Trough, Inventory
+from machine import *
 
 TRAIN_URL = 'http://10.129.11.17:1111'
 TRAIN_SECRET_KEY = 'El-Psy-Kongroo'
@@ -34,26 +35,28 @@ def update_inventory(entry):
         crop.availability = crop.availability + entry.weight
         crop.save()
     except:
-        print("In first exception"+str(user)+str(entry.crop_id))
+        print("In first exception" + str(user) + str(entry.crop_id))
         try:
             Inventory.objects.create(user_id=user, crop_id=entry.crop_id, weight=entry.weight)
             crop = Crop.objects.get(crop_id=entry.crop_id.crop_id)
             crop.availability = crop.availability + entry.weight
             crop.save()
         except Exception as e:
-            print(e+"Hello")
+            print(e + "Hello")
+
 
 def send_data_for_training(training_data):
     lock = Lock()
     try:
-        r = requests.post(TRAIN_URL, data=json.dumps(training_data).encode('utf-8'),timeout=10)
+        r = requests.post(TRAIN_URL, data=json.dumps(training_data).encode('utf-8'), timeout=10)
         lock.acquire()
         print("Data sent for training!")
         lock.relase()
     except Exception as e:
         lock.acquire()
-        print("Couldn't send data for training because of ",e)
+        print("Couldn't send data for training because of ", e)
         lock.release()
+
 
 # The main view to handle the data logged by the machine. It checks the machines authentication
 # and then logs the produce into the database and inventory.
@@ -95,17 +98,16 @@ def data_entry(request):
                 entry.save()
                 update_inventory(entry)
 
-                
                 training_image_name = entry.image
                 training_label = entry.crop_id.short_name
 
                 # Json Payload to send for training along with secret-key
-                training_data = {'secret':TRAIN_SECRET_KEY,
-                                 'label':training_label,'image':training_image,
-                                 'image_name':training_image_name}
-                
+                training_data = {'secret': TRAIN_SECRET_KEY,
+                                 'label': training_label, 'image': training_image,
+                                 'image_name': training_image_name}
+
                 # Try to send training_data to train server.
-                thread = Thread(target=send_data_for_training,args=(training_data,))
+                thread = Thread(target=send_data_for_training, args=(training_data,))
                 thread.daemon = True
                 thread.start()
 
@@ -117,4 +119,3 @@ def data_entry(request):
         elif auth == 0:
             return HttpResponse("Invalid")
     return HttpResponse("ALive")
-

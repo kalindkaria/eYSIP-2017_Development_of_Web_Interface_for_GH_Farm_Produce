@@ -18,9 +18,11 @@
 #
 ########################################################################
 
-import numpy as np
 import os
+
+import numpy as np
 from cache import cache
+
 
 ########################################################################
 
@@ -289,6 +291,5 @@ def load_cached(cache_path, in_dir):
                     fn=DataSet, in_dir=in_dir)
 
     return dataset
-
 
 ########################################################################
