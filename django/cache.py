@@ -22,7 +22,9 @@
 
 import os
 import pickle
+
 import numpy as np
+
 
 ########################################################################
 
@@ -114,6 +116,7 @@ if __name__ == '__main__':
     def expensive_function(a, b):
         return a * b
 
+
     print('Computing expensive_function() ...')
 
     # Either load the result from a cache-file if it already exists,
@@ -126,6 +129,7 @@ if __name__ == '__main__':
 
     # Newline.
     print()
+
 
     # This is another example which saves an object to a cache-file.
 
@@ -142,6 +146,7 @@ if __name__ == '__main__':
             print('c =', self.c)
             print('d =', self.d)
             print('result = c * d =', self.result)
+
 
     print('Creating object from ExpensiveClass() ...')
 

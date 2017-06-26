@@ -71,10 +71,10 @@
     </tr>
   </tfoot>
   <tbody>
-  	{%for entry in inventory%}
+  	{% for entry in inventory %}
     <tr>
       <td>{{forloop.counter}}</td>
-      <td>{{entry.crop_id}}</td>
+      <td>{{entry.crop_id}} | {{entry.crop_id.local_name }}</td>
       <td>{{entry.weight}}g</td>
       <td>{{entry.sold}}g</td>
     </tr> 

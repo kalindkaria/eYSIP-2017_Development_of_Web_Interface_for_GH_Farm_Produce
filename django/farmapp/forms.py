@@ -1,9 +1,11 @@
 from django import forms
-from .models import Crop, Produce
+from .models import Crop, Inventory
+
 
 class LoginForm(forms.Form):
     email = forms.EmailField(label="Email ID", max_length=100, help_text="Enter your email id", label_suffix=":")
-    password = forms.CharField(label="Password", help_text="Enter your password", widget=forms.PasswordInput(), label_suffix=":")
+    password = forms.CharField(label="Password", help_text="Enter your password", widget=forms.PasswordInput(),
+                               label_suffix=":")
 
 
 class SignUpForm(forms.Form):
@@ -13,6 +15,7 @@ class SignUpForm(forms.Form):
     contact = forms.CharField(label="Contact", max_length=15, label_suffix=":")
     password = forms.CharField(label="Password", widget=forms.PasswordInput(), label_suffix=":")
     repass = forms.CharField(label="Retype Password", widget=forms.PasswordInput(), label_suffix=":")
+
 
 class CartForm(forms.Form):
     quantity = forms.FloatField(label="Quantity", help_text="Specify quantity", label_suffix=":")
@@ -32,19 +35,24 @@ class AnalyticsForm(forms.Form):
         super(AnalyticsForm, self).__init__(*args, **kwargs)
         self.fields['crops'].choices = crop_list
 
+
 class CropAnalyticsForm(forms.Form):
     crop_list = []
     allcrops = Crop.objects.all()
     for crop in allcrops:
         crop_list.append([str(crop.crop_id), crop.english_name])
-    start_date = forms.DateField(label="Start Date", input_formats=['%m.%Y','%Y'], required=False)
-    end_date = forms.DateField(label="End Date", input_formats=['%m.%Y','%Y'], required=False)
-    time_frame = forms.ChoiceField([('weekly','Weekly'),('monthly','Monthly'),('quaterly','Quaterly')])
+    start_date = forms.DateField(label="Start Date", input_formats=['%m.%Y', '%Y'], required=False)
+    end_date = forms.DateField(label="End Date", input_formats=['%m.%Y', '%Y'], required=False)
+    time_frame = forms.ChoiceField([('weekly', 'Weekly'), ('monthly', 'Monthly'), ('quaterly', 'Quaterly')])
     crops = forms.ChoiceField(crop_list)
-
 
     def __init__(self, *args, **kwargs):
         crop_list = kwargs.pop('crop_list', None)
         super(CropAnalyticsForm, self).__init__(*args, **kwargs)
         self.fields['crops'].choices = crop_list
 
+
+class InventoryForm(forms.ModelForm):
+    class Meta:
+        model = Inventory
+        fields = ['minimum', 'maximum', 'price', 'shelf_life']
