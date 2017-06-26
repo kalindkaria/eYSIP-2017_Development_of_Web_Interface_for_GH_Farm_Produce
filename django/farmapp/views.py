@@ -15,12 +15,14 @@ from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_s
 from graphos.renderers.morris import DonutChart, BarChart
 from graphos.sources.model import ModelDataSource
 from graphos.sources.simple import SimpleDataSource
+from django.contrib.auth import authenticate, login
 
 from .forms import LoginForm, SignUpForm, AnalyticsForm, CropAnalyticsForm, InventoryForm
 
 # Function to handle login and signup of user
 # returns redirect, login form, signup form
 def handle_login_signup(request):
+    print("CALLED HANDLE")
     loginform = LoginForm()
     signupform = SignUpForm()
 
@@ -33,6 +35,7 @@ def handle_login_signup(request):
 
     # Handling the form submitted
     if request.method == "POST":
+        print("GOT A POST REQ")
         # If the login form is submitted
         if request.POST.get("login", ""):
             # recreating the login form via the request data
@@ -42,14 +45,17 @@ def handle_login_signup(request):
                 print(loginform.cleaned_data)
                 # checking the details from the database
                 try:
-
-                    user = User.objects.get(email=loginform.cleaned_data['email'],
-                                            password=loginform.cleaned_data['password'])
+                    user = authenticate(request, email=loginform.cleaned_data['email'], password=loginform.cleaned_data['password'])
+                    print("User: ",user)
+                    if user is not None:
+                        login(request, user)
+                    # user = User.objects.get(email=loginform.cleaned_data['email'],
+                    #                         password=loginform.cleaned_data['password'])
                     # storing the details into the session
-                    request.session['logged_in'] = True
-                    request.session['user_id'] = user.user_id
-                    request.session['email'] = user.email
-                    request.session['user_type'] = user.user_type
+                        request.session['logged_in'] = True
+                        request.session['user_id'] = user.pk
+                        request.session['email'] = user.email
+                        request.session['user_type'] = user.user_type
                     # if the logged in user is a producer
                     if request.session['user_type'] == "Producer":
                         print("A Producer Logged In")
@@ -144,7 +150,7 @@ def index(request):
             # Extracting details about the crops present in the cart
             for crop in cart_items:
                 if (crop.crop_id.availability > 10):
-                    user = User.objects.get(user_id=request.session['user_id'])
+                    user = User.objects.get(email=request.session['email'])
                     producers = Inventory.objects.filter(crop_id=crop.crop_id)
                     maximum_sum = 0
                     for producer in producers:
@@ -182,7 +188,7 @@ def index(request):
             added_crops = []
 
         for crop in crops:
-            user = User.objects.get(user_id=request.session['user_id'])
+            user = User.objects.get(email=request.session['email'])
             producers = Inventory.objects.filter(crop_id=crop)
             maximum_sum = 0
             for producer in producers:
@@ -242,7 +248,7 @@ def home(request):
 # The view to logout a user. It flushes the user session.
 def logout(request):
     if request.session.get('cart_id', False):
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         user.last_cart = Cart.objects.get(cart_id=request.session['cart_id'])
         user.save()
         request.session.flush()
@@ -356,7 +362,7 @@ def view_cart(request):
             id = []
             for crop in cart_items:
                 if (crop.crop_id.availability > 10):
-                    user = User.objects.get(user_id=request.session['user_id'])
+                    user = User.objects.get(pk=request.session['email'])
                     producers = Inventory.objects.filter(crop_id=crop.crop_id)
                     maximum_sum = 0
                     for producer in producers:
@@ -467,7 +473,7 @@ def checkout(request):
                             errors[item.crop_id.crop_id] = item_errors
 
                     if error_flag == 0:
-                        user = User.objects.get(user_id=request.session['user_id'])
+                        user = User.objects.get(pk=request.session['email'])
                         for producer in valid_producers:
                             requested_quantity = request.POST.get(
                                 producer.user_id.first_name + str(producer.crop_id.crop_id))
@@ -524,7 +530,7 @@ def checkout(request):
 
                 quantity = []
                 i = int(producer.minimum)
-                user = User.objects.get(user_id=request.session['user_id'])
+                user = User.objects.get(pk=request.session['email'])
                 order_sum = 0
                 try:
                     order_sum = \
@@ -568,7 +574,7 @@ def checkout(request):
 def order_summary(request):
     try:
         cart = Cart.objects.get(cart_id=request.session['cart_id'])
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         user.last_cart = None
         user.save()
         orders = Order.objects.filter(user_id=user, cart_id=cart)
@@ -613,7 +619,7 @@ def order_summary(request):
 def producer_orders(request):
     try:
         request.session['page'] = "/producer/orders"
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         orders = Order.objects.filter(seller=user).order_by('-cart_id')
 
         if orders:
@@ -646,7 +652,7 @@ def producer_orders(request):
 def producer_pending_orders(request):
     try:
         request.session['page'] = "/producer/pendingorders"
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         orders = Order.objects.filter(seller=user, status__iexact='pending').order_by('-cart_id')
         if orders:
             all_orders = {}
@@ -679,7 +685,7 @@ def producer_pending_orders(request):
 def producer_delivery(request):
     try:
         request.session['page'] = "/producer/delivery"
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         orders = Order.objects.filter(seller=user, status="pending").order_by('cart_id')
 
         if orders:
@@ -731,7 +737,7 @@ def producer_delivery(request):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def producer_delivered(request):
     try:
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         orders = Order.objects.filter(seller=user, status__iexact="delivered").order_by('-delivery_date')
 
         if orders:
@@ -784,7 +790,7 @@ def producer_delivered(request):
 def consumer_orders(request):
     try:
         request.session['page'] = "/consumer/orders"
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         orders = Order.objects.filter(user_id=user).order_by('-cart_id')
         if orders:
             prev_order = orders[0].cart_id.cart_id
@@ -834,7 +840,7 @@ def consumer_orders(request):
 # The view for consumer to cancel a particular order
 def consumer_order_cancel(request, cart_id, seller, crop_id):
     try:
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
 
         seller = User.objects.get(user_id=seller)
         cart = Cart.objects.get(cart_id=cart_id)
@@ -887,7 +893,7 @@ def consumer_order_cancel(request, cart_id, seller, crop_id):
 # The view for producer to reject a order.
 def producer_order_reject(request, cart_id, buyer, crop_id):
     try:
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         buyer = User.objects.get(user_id=buyer)
         cart = Cart.objects.get(cart_id=cart_id)
         crop = Crop.objects.get(crop_id=crop_id)
@@ -937,7 +943,7 @@ def producer_order_reject(request, cart_id, buyer, crop_id):
 # The view for producer to deliver a order
 def producer_order_deliver(request, cart_id, buyer):
     try:
-        user = User.objects.get(user_id=request.session['user_id'])
+        user = User.objects.get(pk=request.session['email'])
         buyer = User.objects.get(user_id=buyer)
         cart = Cart.objects.get(cart_id=cart_id)
         orders = Order.objects.filter(seller=user, cart_id=cart, user_id=buyer, status__iexact="pending")
@@ -965,7 +971,7 @@ def producer_order_deliver(request, cart_id, buyer):
 
 # The view for the alerts page
 def alerts(request):
-    user = User.objects.get(user_id=request.session['user_id'])
+    user = User.objects.get(pk=request.session['email'])
     alerts = Alert.objects.filter(user_id=user).order_by('-timestamp')
     if user.user_type.upper() == "PRODUCER":
         return render(request, 'login/produceralert.html', {'alerts': alerts})
@@ -987,7 +993,7 @@ def set_to_list(set_of_dict):
 def analytics(request):
     context = {}
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
-        inventory = Inventory.objects.filter(user_id=request.session['user_id'])
+        inventory = Inventory.objects.filter(pk=request.session['email'])
         producer_crops = []
         crop_list = []
         for item in inventory:
@@ -1061,7 +1067,7 @@ def analytics(request):
 def crop_analytics(request):
     context = {}
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
-        inventory = Inventory.objects.filter(user_id=request.session['user_id'])
+        inventory = Inventory.objects.filter(pk=request.session['email'])
         producer_crops = []
         crop_list = []
         for item in inventory:
