@@ -49,7 +49,7 @@
 </table>
 <div class="row justify-content-end">
   <div class="col-md-2 ">
-    <a href="{% url 'producer_order_deliver' order.0.cart_id order.0.buyer.user_id %}">
+    <a href="{% url 'producer_order_deliver' order.0.cart_id order.0.buyer.pk %}">
       <button class="btn btn-success">Deliver<span class="fa fa-check ml-2"></span></button>
     </a>
   </div>

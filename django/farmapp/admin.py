@@ -69,8 +69,7 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('email', 'password', 'user_type', 'first_name', 'last_name', 'contact', 'address_line1',
-                    'address_line2', 'state', 'country', 'pin_code', 'last_cart', 'is_admin')
+    list_display = ('email', 'user_type', 'first_name', 'last_name', 'is_admin')
     list_filter = ('is_admin',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
