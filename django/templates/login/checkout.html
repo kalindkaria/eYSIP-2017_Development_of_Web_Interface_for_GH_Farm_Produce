@@ -33,8 +33,8 @@
 		        <tr>
 		          <th>Recent Produce</th>
 		          <th>Name</th>
-		          <th>Maximum Limit</th>
-		          <th>Availability</th>
+		          <th>Maximum Limit / day</th>
+		          <th>Available now</th>
 		          <th>Quantity</th>
 		        </tr>
 		      </thead>
@@ -43,8 +43,8 @@
 		        <tr class="border-top-0 border-left-0 border-right-0">
 		          <td><a href="#" data-toggle="modal" data-target="#{{p.0.first_name}}{{p.1.crop_id}}"><img src="{% static p.5 %}" class="img-thumbnail"  width=65 height=65></a></td>
 		          <td>{{p.0.first_name}}</td>
-		          <td>{{p.4}}</td>
-		          <td>{{p.2}} g</td>
+		          <td>{{p.4}} g</td>
+		          <td>{{p.8}} g</td>
 		          
 		          <td>
 		          	{% if p.2 < p.3 %}

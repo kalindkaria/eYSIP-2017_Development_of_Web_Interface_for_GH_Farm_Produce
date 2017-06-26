@@ -348,7 +348,7 @@ def remove_from_cart(request, crop_id):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def view_cart(request):
     errors = []
-    request.session['page'] = "/crops"
+    request.session['page'] = "/cart"
     redirect, loginform, signupform = handle_login_signup(request)
     if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
         return HttpResponseRedirect("/producer/home/")
@@ -401,7 +401,6 @@ def view_cart(request):
 
     else:
         try:
-            request.session['page'] = "/cart"
             redirect, loginform, signupform = handle_login_signup(request)
 
             cart = Cart.objects.get(cart_id=request.session['cart_id'])
