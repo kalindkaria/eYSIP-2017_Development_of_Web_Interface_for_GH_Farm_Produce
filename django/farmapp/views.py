@@ -96,6 +96,9 @@ def handle_login_signup(request):
                     request.session['email'] = user.email
                     request.session['user_type'] = user.user_type
                     login(request, user)
+                    message = "Hi "+str(user.first_name)+"! Please Update your Address Details to let the producers \
+                               know where to deliver your orders."
+                    Alert.objects.create(user_id=user, message=message, type="start_message")
                     print("A Consumer Logged In")
                     # trying to restore last cart session
                     try:

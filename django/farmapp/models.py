@@ -63,7 +63,7 @@ class User(AbstractBaseUser):
     pin_code = models.CharField(max_length=20, null=True, blank=True, )
     user_type = models.CharField(max_length=20, default="Consumer" )
     last_cart = models.ForeignKey(Cart, null=True, blank=True, on_delete=models.CASCADE)
-    contact = models.TextField()
+    contact = models.CharField(max_length=15)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
@@ -217,6 +217,7 @@ class Order(models.Model):
 class Alert(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     message = models.TextField()
+    type = models.CharField(max_length=20,default="unknown")
     timestamp = models.DateTimeField(default=django.utils.timezone.now)
 
     def __str__(self):
