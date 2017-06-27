@@ -165,19 +165,21 @@ def index(request):
     # If the user is a consumer.
     if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
         availability = {}
+
+        id = []
+        exceeded_id = []
+        unavailable_id = []
         # If a user cart exists
         if request.session.get('cart_id', False):
             cart = Cart.objects.get(pk=request.session['cart_id'])
             cart_items = Cart_session.objects.filter(cart_id=cart)
-
-            id = []
             # Extracting details about the crops present in the cart
             for crop in cart_items:
                 if (crop.crop_id.availability > 10):
                     producers = Inventory.objects.filter(crop_id=crop.crop_id)
                     maximum_sum = 0
                     for producer in producers:
-                        maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold)))
+                        maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold - producer.wasted)))
                     print("maximum sum:  ", maximum_sum)
                     try:
                         order_sum = \
@@ -192,40 +194,52 @@ def index(request):
                     if availability[crop.crop_id.crop_id] > 10:
                         id.append(crop.crop_id.crop_id)
                     else:
+                        exceeded_id.append(crop.crop_id.crop_id)
                         message = "Sorry you have exceeded your daily limit for purchasing " + crop.crop_id.english_name
                         errors.append(message)
                         print(errors)
                         crop.delete()
                 else:
+                    unavailable_id.append(crop.crop_id.crop_id)
                     message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
                     errors.append(message)
                     print(errors)
                     crop.delete()
-            added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
-            print(added_crops)
-            request.session['cart_count'] = added_crops.count()
-            crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
 
-        else:
-            crops = Crop.objects.all().order_by('-availability')
-            added_crops = []
+        added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+        print(added_crops)
+        request.session['cart_count'] = added_crops.count()
+
+        id = id + exceeded_id + unavailable_id
+        crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
 
         for crop in crops:
-            producers = Inventory.objects.filter(crop_id=crop)
-            maximum_sum = 0
-            for producer in producers:
-                maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold)))
+            if crop.availability >10:
+                producers = Inventory.objects.filter(crop_id=crop)
+                maximum_sum = 0
+                for producer in producers:
+                    maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold - producer.wasted)))
 
-            try:
-                order_sum = Order.objects.filter(user_id=request.user, crop_id=crop, time__date=datetime.date.today(),
-                                                 status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
-                order_sum = int(order_sum)
-            except:
-                order_sum = 0
-            availability[crop.crop_id] = maximum_sum - order_sum
+                try:
+                    order_sum = Order.objects.filter(user_id=request.user, crop_id=crop, time__date=datetime.date.today(),
+                                                     status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                    order_sum = int(order_sum)
+                except:
+                    order_sum = 0
+                availability[crop.crop_id] = maximum_sum - order_sum
+                if availability[crop.crop_id] <10:
+                    exceeded_id.append(crop.crop_id)
+            else:
+                unavailable_id.append(crop.crop_id)
 
-        context = {'page': 'home', 'crops': crops, 'added_crops': added_crops, 'errors': errors,
+        unavailable_crops = Crop.objects.filter(crop_id__in=unavailable_id).order_by('-availability')
+        exceeded_crops = Crop.objects.filter(crop_id__in=exceeded_id).order_by('-availability')
+        id = id + exceeded_id + unavailable_id
+        crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
+
+        context = {'page': 'home', 'crops': crops, 'added_crops': added_crops ,'unavailable_crops':unavailable_crops, 'exceeded_crops':exceeded_crops, 'errors': errors,
                    'availability': availability}
+
         return render(request, 'login/shop.html', context)
     # The user is not logged in.
     else:
@@ -374,53 +388,59 @@ def view_cart(request):
     errors = []
     request.session['page'] = "/cart"
     redirect, loginform, signupform = handle_login_signup(request)
-    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "PRODUCER":
+    if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
         return HttpResponseRedirect("/producer/home/")
 
-    if request.session.get('logged_in', False) and request.session.get('user_type', "").upper() == "CONSUMER":
-        availability = {}
-        if request.session.get('cart_id', False):
-            cart = Cart.objects.get(cart_id=request.session['cart_id'])
-            cart_items = Cart_session.objects.filter(cart_id=cart)
+    if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+        try:
+            availability = {}
+            if request.session.get('cart_id', False):
+                cart = Cart.objects.get(cart_id=request.session['cart_id'])
+                cart_items = Cart_session.objects.filter(cart_id=cart)
 
-            id = []
-            for crop in cart_items:
-                if (crop.crop_id.availability > 10):
-                    producers = Inventory.objects.filter(crop_id=crop.crop_id)
-                    maximum_sum = 0
-                    for producer in producers:
-                        maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold)))
-                    print("maximum sum:  ", maximum_sum)
-                    try:
-                        order_sum = \
-                            Order.objects.filter(user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today(),
-                                                 status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
-                        order_sum = int(order_sum)
-                        print("order sum:  ", order_sum)
-                    except:
-                        order_sum = 0
-                    availability[crop.crop_id.crop_id] = maximum_sum - order_sum
-                    print("Availability  ", availability[crop.crop_id.crop_id])
-                    if availability[crop.crop_id.crop_id] > 10:
-                        id.append(crop.crop_id.crop_id)
+                id = []
+                for crop in cart_items:
+                    if (crop.crop_id.availability > 10):
+                        producers = Inventory.objects.filter(crop_id=crop.crop_id)
+                        maximum_sum = 0
+                        for producer in producers:
+                            maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold - producer.wasted)))
+                        print("maximum sum:  ", maximum_sum)
+                        try:
+                            order_sum = \
+                                Order.objects.filter(user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today(),
+                                                     status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                            order_sum = int(order_sum)
+                            print("order sum:  ", order_sum)
+                        except:
+                            order_sum = 0
+                        availability[crop.crop_id.crop_id] = maximum_sum - order_sum
+                        print("Availability  ", availability[crop.crop_id.crop_id])
+                        if availability[crop.crop_id.crop_id] > 10:
+                            id.append(crop.crop_id.crop_id)
+                        else:
+                            message = "Sorry you have exceeded your daily limit for purchasing " + crop.crop_id.english_name
+                            errors.append(message)
+                            print(errors)
+                            crop.delete()
                     else:
-                        message = "Sorry you have exceeded your daily limit for purchasing " + crop.crop_id.english_name
+                        message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
                         errors.append(message)
                         print(errors)
                         crop.delete()
-                else:
-                    message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
-                    errors.append(message)
-                    print(errors)
-                    crop.delete()
-            added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
-            request.session['cart_count'] = added_crops.count()
-            if request.session['cart_count'] == 0:
-                return HttpResponseRedirect('/crops')
+                added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
+                request.session['cart_count'] = added_crops.count()
+                if request.session['cart_count'] == 0:
+                    return HttpResponseRedirect('/crops')
 
-            cart_items = Cart_session.objects.filter(cart_id=cart)
-            context = {'page': 'cart', 'cart_session': cart_items, 'availability': availability, 'errors': errors}
-            return render(request, 'login/cart.html', context)
+                cart_items = Cart_session.objects.filter(cart_id=cart)
+                context = {'page': 'cart', 'cart_session': cart_items, 'availability': availability, 'errors': errors}
+                return render(request, 'login/cart.html', context)
+
+            else:
+                return HttpResponseRedirect('/')
+        except:
+            return HttpResponseRedirect('/')
 
     else:
         try:
@@ -455,182 +475,188 @@ def view_cart(request):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def checkout(request):
     remove_expired_produce()
-    outerlist = {}
-    errors = {}
-    error_flag = 0
-    form_values = {}
+    if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+        outerlist = {}
+        errors = {}
+        error_flag = 0
+        form_values = {}
 
-    if request.session.get('cart_id', False):
-        if request.method == "POST":
-            try:
-                with transaction.atomic():
-                    cart = Cart.objects.get(cart_id=request.session['cart_id'])
-                    cart_session = Cart_session.objects.filter(cart_id=cart)
-                    valid_producers = []
-                    for item in cart_session:
-                        producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
-                        item_errors = []
-                        for producer in producers:
-                            requested_quantity = request.POST.get(
-                                producer.user_id.first_name + str(producer.crop_id.crop_id))
-                            form_values[producer.user_id.first_name + str(producer.crop_id.crop_id)] = int(
-                                requested_quantity)
-                            requested_quantity = float(requested_quantity)
-                            print(requested_quantity)
-                            if requested_quantity != 0:
-                                if (producer.weight - producer.sold) < requested_quantity and (
-                                            producer.weight - producer.sold) >= producer.minimum:
-                                    message = "Sorry " + producer.crop_id.english_name + " is  unavailable as requested quantity of " \
-                                              + str(requested_quantity) + "gm is greater than available quantity of " \
-                                              + str(producer.weight - producer.sold) + "gm !"
-                                    form_values[producer.user_id.first_name + str(producer.crop_id.crop_id)] = 0
-                                    error_flag = 1
-                                    item_errors.append(message)
-                                elif (producer.weight - producer.sold) < producer.minimum:
-                                    message = "Sorry " + producer.user_id.first_name + " does not have enough " + producer.crop_id.english_name + "!"
-                                    form_values[producer.user_id.first_name + str(producer.crop_id.crop_id)] = 0
-                                    error_flag = 1
-                                    item_errors.append(message)
-                                else:
-                                    valid_producers.append(producer)
-                            errors[item.crop_id.crop_id] = item_errors
-
-                    if error_flag == 0:
-                        for producer in valid_producers:
-                            requested_quantity = request.POST.get(
-                                producer.user_id.first_name + str(producer.crop_id.crop_id))
-                            requested_quantity = float(requested_quantity)
-                            crop = Crop.objects.get(crop_id=producer.crop_id.crop_id)
-
-                            if requested_quantity != 0:
-
-                                try:
-                                    order = Order(user_id=request.user, cart_id=cart, crop_id=producer.crop_id,
-                                                  seller=producer.user_id, weight=requested_quantity)
-
-                                    crop = Crop.objects.get(crop_id=producer.crop_id.crop_id)
-                                    inventory = Inventory.objects.select_for_update().get(user_id=producer.user_id,
-                                                                                          crop_id=crop)
-                                    final_inventory = inventory.weight - inventory.sold
-                                    if requested_quantity <= final_inventory:
-                                        inventory.sold = F('sold') + requested_quantity
-                                        crop.availability = F('availability') - requested_quantity
-                                        with transaction.atomic():
-                                            inventory.save()
-                                            order.save()
-                                            crop.save()
-                                    else:
-                                        return HttpResponseRedirect('/checkout')
-                                except Exception as e:
-                                    print(e)
-                                    return HttpResponseRedirect('/checkout')
-
-                        return HttpResponseRedirect('/order')
-            except Exception as e:
-                print(e)
-                return HttpResponseRedirect('/checkout')
-
-        cart = Cart.objects.get(cart_id=request.session['cart_id'])
-        cart_session = Cart_session.objects.filter(cart_id=cart)
-
-        for item in cart_session:
-            producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
-            item_list = []
-            for producer in producers:
-                machines = Machine.objects.filter(user_id=producer.user_id)
-                row = \
-                    Produce.objects.filter(machine_id__in=machines, crop_id=producer.crop_id).order_by(
-                        '-date_of_produce')[
-                        0]
-                innerlist = []
-                innerlist.append(producer.user_id)
-                innerlist.append(producer.crop_id)
-                innerlist.append(producer.weight - producer.sold)
-                innerlist.append(producer.minimum)
-                innerlist.append(producer.maximum)
-                innerlist.append(row.image)
-
-                quantity = []
-                i = int(producer.minimum)
-                order_sum = 0
+        if request.session.get('cart_id', False):
+            if request.method == "POST":
                 try:
-                    order_sum = \
-                        Order.objects.filter(user_id=request.user, crop_id=producer.crop_id, time__date=datetime.date.today(),
-                                             status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
-                    order_sum = int(order_sum)
-                    print(order_sum)
-                except:
+                    with transaction.atomic():
+                        cart = Cart.objects.get(cart_id=request.session['cart_id'])
+                        cart_session = Cart_session.objects.filter(cart_id=cart)
+                        valid_producers = []
+                        for item in cart_session:
+                            producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
+                            item_errors = []
+                            for producer in producers:
+                                requested_quantity = request.POST.get(
+                                    producer.user_id.first_name + str(producer.crop_id.crop_id))
+                                form_values[producer.user_id.first_name + str(producer.crop_id.crop_id)] = int(
+                                    requested_quantity)
+                                requested_quantity = float(requested_quantity)
+                                print(requested_quantity)
+                                if requested_quantity != 0:
+                                    if (producer.weight - producer.sold - producer.wasted) < requested_quantity and (
+                                                producer.weight - producer.sold - producer.wasted) >= producer.minimum:
+                                        message = "Sorry " + producer.crop_id.english_name + " is  unavailable as requested quantity of " \
+                                                  + str(requested_quantity) + "gm is greater than available quantity of " \
+                                                  + str(producer.weight - producer.sold - producer.wasted) + "gm !"
+                                        form_values[producer.user_id.first_name + str(producer.crop_id.crop_id)] = 0
+                                        error_flag = 1
+                                        item_errors.append(message)
+                                    elif (producer.weight - producer.sold - producer.wasted) < producer.minimum:
+                                        message = "Sorry " + producer.user_id.first_name + " does not have enough " + producer.crop_id.english_name + "!"
+                                        form_values[producer.user_id.first_name + str(producer.crop_id.crop_id)] = 0
+                                        error_flag = 1
+                                        item_errors.append(message)
+                                    else:
+                                        valid_producers.append(producer)
+                                errors[item.crop_id.crop_id] = item_errors
+
+                        if error_flag == 0:
+                            for producer in valid_producers:
+                                requested_quantity = request.POST.get(
+                                    producer.user_id.first_name + str(producer.crop_id.crop_id))
+                                requested_quantity = float(requested_quantity)
+                                crop = Crop.objects.get(crop_id=producer.crop_id.crop_id)
+
+                                if requested_quantity != 0:
+
+                                    try:
+                                        order = Order(user_id=request.user, cart_id=cart, crop_id=producer.crop_id,
+                                                      seller=producer.user_id, weight=requested_quantity)
+
+                                        crop = Crop.objects.get(crop_id=producer.crop_id.crop_id)
+                                        inventory = Inventory.objects.select_for_update().get(user_id=producer.user_id,
+                                                                                              crop_id=crop)
+                                        final_inventory = inventory.weight - inventory.sold - inventory.wasted
+                                        if requested_quantity <= final_inventory:
+                                            inventory.sold = F('sold') + requested_quantity
+                                            crop.availability = F('availability') - requested_quantity
+                                            with transaction.atomic():
+                                                inventory.save()
+                                                order.save()
+                                                crop.save()
+                                        else:
+                                            return HttpResponseRedirect('/checkout')
+                                    except Exception as e:
+                                        print(e)
+                                        return HttpResponseRedirect('/checkout')
+
+                            return HttpResponseRedirect('/order')
+                except Exception as e:
+                    print(e)
+                    return HttpResponseRedirect('/checkout')
+
+            cart = Cart.objects.get(cart_id=request.session['cart_id'])
+            cart_session = Cart_session.objects.filter(cart_id=cart)
+
+            for item in cart_session:
+                producers = Inventory.objects.filter(crop_id=item.crop_id, weight__gte=F('minimum'))
+                item_list = []
+                for producer in producers:
+                    machines = Machine.objects.filter(user_id=producer.user_id)
+                    row = \
+                        Produce.objects.filter(machine_id__in=machines, crop_id=producer.crop_id).order_by(
+                            '-date_of_produce')[
+                            0]
+                    innerlist = []
+                    innerlist.append(producer.user_id)
+                    innerlist.append(producer.crop_id)
+                    innerlist.append(producer.weight - producer.sold - producer.wasted)
+                    innerlist.append(producer.minimum)
+                    innerlist.append(producer.maximum)
+                    innerlist.append(row.image)
+
+                    quantity = []
+                    i = int(producer.minimum)
                     order_sum = 0
-                finally:
-                    max = min(int(producer.maximum), int(producer.weight - producer.sold))
-                    print(max)
-                    if max - order_sum > 0:
-                        max = max - order_sum
-                    else:
-                        max = 0
-                    print(max)
-                    if i <= max:
-                        while i <= max:
-                            quantity.append(i)
-                            i = i + int(producer.minimum)
-                        if quantity[len(quantity) - 1] != max:
-                            quantity.append(max)
-                    else:
-                        quantity.append("Unavailable")
-                    print(quantity)
-                    innerlist.append(quantity)
-                    innerlist.append(producer.user_id.first_name + str(producer.crop_id.crop_id))
-                    innerlist.append(max)
-                    item_list.append(innerlist)
-                    print(quantity)
-            outerlist[item.crop_id.crop_id] = item_list
-        context = {'page': 'checkout', 'cart_session': cart_session, 'outerlist': outerlist, 'errors': errors,
-                   'form_values': form_values}
-        return render(request, 'login/checkout.html', context)
+                    try:
+                        order_sum = \
+                            Order.objects.filter(user_id=request.user, crop_id=producer.crop_id, time__date=datetime.date.today(),
+                                                 status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                        order_sum = int(order_sum)
+                        print(order_sum)
+                    except:
+                        order_sum = 0
+                    finally:
+                        max = min(int(producer.maximum), int(producer.weight - producer.sold - producer.wasted))
+                        print(max)
+                        if max - order_sum > 0:
+                            max = max - order_sum
+                        else:
+                            max = 0
+                        print(max)
+                        if i <= max:
+                            while i <= max:
+                                quantity.append(i)
+                                i = i + int(producer.minimum)
+                            if quantity[len(quantity) - 1] != max:
+                                quantity.append(max)
+                        else:
+                            quantity.append("Unavailable")
+                        print(quantity)
+                        innerlist.append(quantity)
+                        innerlist.append(producer.user_id.first_name + str(producer.crop_id.crop_id))
+                        innerlist.append(max)
+                        item_list.append(innerlist)
+                        print(quantity)
+                outerlist[item.crop_id.crop_id] = item_list
+            context = {'page': 'checkout', 'cart_session': cart_session, 'outerlist': outerlist, 'errors': errors,
+                       'form_values': form_values}
+            return render(request, 'login/checkout.html', context)
+        else:
+            return HttpResponseRedirect('/crops')
     else:
-        return HttpResponseRedirect('/crops')
+        return HttpResponseRedirect('/')
 
 
 # The view for the order summary page.
 def order_summary(request):
     try:
-        cart = Cart.objects.get(cart_id=request.session['cart_id'])
-        request.user.last_cart = None
-        request.user.save()
-        orders = Order.objects.filter(user_id=request.user, cart_id=cart)
+        if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+            cart = Cart.objects.get(cart_id=request.session['cart_id'])
+            request.user.last_cart = None
+            request.user.save()
+            orders = Order.objects.filter(user_id=request.user, cart_id=cart)
 
-        for order in orders:
-            try:
-                machines = Machine.objects.filter(user_id=order.seller.pk)
-                produce = Produce.objects.filter(machine_id__in=machines,
-                                                 crop_id=order.crop_id,
-                                                 date_of_expiry__gt=datetime.datetime.now(),
-                                                 weight__gt=F('sold')).order_by('date_of_expiry')
+            for order in orders:
+                try:
+                    machines = Machine.objects.filter(user_id=order.seller.pk)
+                    produce = Produce.objects.filter(machine_id__in=machines,
+                                                     crop_id=order.crop_id,
+                                                     date_of_expiry__gt=datetime.datetime.now(),
+                                                     weight__gt=F('sold')).order_by('date_of_expiry')
 
-                quantity_left = order.weight
-                for entry in produce:
-                    if quantity_left > 0:
-                        if entry.weight - entry.sold >= quantity_left:
-                            entry.sold = entry.sold + quantity_left
-                            with transaction.atomic():
-                                entry.save()
-                            break
-                        else:
-                            quantity_left = quantity_left - (entry.weight - entry.sold)
-                            entry.sold = entry.weight
-                            with transaction.atomic():
-                                entry.save()
-            except Exception as e:
-                print(e)
+                    quantity_left = order.weight
+                    for entry in produce:
+                        if quantity_left > 0:
+                            if entry.weight - entry.sold >= quantity_left:
+                                entry.sold = entry.sold + quantity_left
+                                with transaction.atomic():
+                                    entry.save()
+                                break
+                            else:
+                                quantity_left = quantity_left - (entry.weight - entry.sold)
+                                entry.sold = entry.weight
+                                with transaction.atomic():
+                                    entry.save()
+                except Exception as e:
+                    print(e)
+                    return HttpResponseRedirect('/crops')
+
+            if orders:
+                del request.session['cart_id']
+                del request.session['cart_count']
+
+                return render(request, 'login/order.html', {'orders': orders})
+            else:
                 return HttpResponseRedirect('/crops')
-
-        if orders:
-            del request.session['cart_id']
-            del request.session['cart_count']
-
-            return render(request, 'login/order.html', {'orders': orders})
         else:
-            return HttpResponseRedirect('/crops')
+            return HttpResponseRedirect('/')
     except Exception as e:
         print(e)
         return HttpResponseRedirect('/')
@@ -639,31 +665,34 @@ def order_summary(request):
 # The view for the producer orders page. Shows all the orders.
 def producer_orders(request):
     try:
-        request.session['page'] = "/producer/orders"
-        orders = Order.objects.filter(seller=request.user).order_by('-cart_id')
+        if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+            request.session['page'] = "/producer/orders"
+            orders = Order.objects.filter(seller=request.user).order_by('-cart_id')
 
-        if orders:
-            all_orders = {}
+            if orders:
+                all_orders = {}
 
-            for order in orders:
-                if all_orders.get(order.crop_id.english_name, False):
-                    print("")
-                else:
-                    all_orders[order.crop_id.english_name] = []
-                item_order = {}
-                item_order['cart_id'] = order.cart_id
-                item_order['crop_id'] = order.crop_id
-                item_order['user_id'] = order.user_id
-                item_order['weight'] = order.weight
-                item_order['time'] = order.time
-                item_order['status'] = order.status.upper()
-                all_orders[order.crop_id.english_name].append(item_order)
+                for order in orders:
+                    if all_orders.get(order.crop_id.english_name, False):
+                        print("")
+                    else:
+                        all_orders[order.crop_id.english_name] = []
+                    item_order = {}
+                    item_order['cart_id'] = order.cart_id
+                    item_order['crop_id'] = order.crop_id
+                    item_order['user_id'] = order.user_id
+                    item_order['weight'] = order.weight
+                    item_order['time'] = order.time
+                    item_order['status'] = order.status.upper()
+                    all_orders[order.crop_id.english_name].append(item_order)
 
-            context = {'page': "orders", 'all_orders': all_orders}
-            return render(request, 'producerOrder.html', context)
+                context = {'page': "orders", 'all_orders': all_orders}
+                return render(request, 'producerOrder.html', context)
+            else:
+                context = {'page': "orders"}
+                return render(request, 'producerOrder.html', context)
         else:
-            context = {'page': "orders"}
-            return render(request, 'producerOrder.html', context)
+            return HttpResponseRedirect('/')
     except:
         return HttpResponseRedirect('/')
 
@@ -671,30 +700,33 @@ def producer_orders(request):
 # The view for the producer pending orders.
 def producer_pending_orders(request):
     try:
-        request.session['page'] = "/producer/pendingorders"
-        orders = Order.objects.filter(seller=request.user, status__iexact='pending').order_by('-cart_id')
-        if orders:
-            all_orders = {}
+        if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+            request.session['page'] = "/producer/pendingorders"
+            orders = Order.objects.filter(seller=request.user, status__iexact='pending').order_by('-cart_id')
+            if orders:
+                all_orders = {}
 
-            for order in orders:
-                if all_orders.get(order.crop_id.english_name, False):
-                    print("")
-                else:
-                    all_orders[order.crop_id.english_name] = []
-                item_order = {}
-                item_order['cart_id'] = order.cart_id
-                item_order['crop_id'] = order.crop_id
-                item_order['user_id'] = order.user_id
-                item_order['weight'] = order.weight
-                item_order['time'] = order.time
-                item_order['status'] = order.status.upper()
-                all_orders[order.crop_id.english_name].append(item_order)
+                for order in orders:
+                    if all_orders.get(order.crop_id.english_name, False):
+                        print("")
+                    else:
+                        all_orders[order.crop_id.english_name] = []
+                    item_order = {}
+                    item_order['cart_id'] = order.cart_id
+                    item_order['crop_id'] = order.crop_id
+                    item_order['user_id'] = order.user_id
+                    item_order['weight'] = order.weight
+                    item_order['time'] = order.time
+                    item_order['status'] = order.status.upper()
+                    all_orders[order.crop_id.english_name].append(item_order)
 
-            context = {'page': "orders", 'all_orders': all_orders}
-            return render(request, 'producerPendingOrder.html', context)
+                context = {'page': "orders", 'all_orders': all_orders}
+                return render(request, 'producerPendingOrder.html', context)
+            else:
+                context = {'page': "orders"}
+                return render(request, 'producerPendingOrder.html', context)
         else:
-            context = {'page': "orders"}
-            return render(request, 'producerPendingOrder.html', context)
+            return HttpResponseRedirect('/')
     except:
         return HttpResponseRedirect('/')
 
@@ -703,50 +735,53 @@ def producer_pending_orders(request):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def producer_delivery(request):
     try:
-        request.session['page'] = "/producer/delivery"
-        orders = Order.objects.filter(seller=request.user, status="pending").order_by('cart_id')
+        if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+            request.session['page'] = "/producer/delivery"
+            orders = Order.objects.filter(seller=request.user, status="pending").order_by('cart_id')
 
-        if orders:
-            prev_order = orders[0].cart_id.cart_id
-            all_orders = []
-            individual_order = []
-            for order in orders:
-                if order.cart_id.cart_id != prev_order:
-                    all_orders.append(individual_order)
-                    individual_order = []
-                    prev_order = order.cart_id.cart_id
+            if orders:
+                prev_order = orders[0].cart_id.cart_id
+                all_orders = []
+                individual_order = []
+                for order in orders:
+                    if order.cart_id.cart_id != prev_order:
+                        all_orders.append(individual_order)
+                        individual_order = []
+                        prev_order = order.cart_id.cart_id
 
-                item_order = {}
-                item_order['cart_id'] = order.cart_id
-                item_order['crop_id'] = order.crop_id
-                item_order['buyer'] = order.user_id
-                item_order['weight'] = order.weight
-                item_order['time'] = order.time
-                item_order['status'] = order.status.upper()
-                individual_order.append(item_order)
-            all_orders.append(individual_order)
+                    item_order = {}
+                    item_order['cart_id'] = order.cart_id
+                    item_order['crop_id'] = order.crop_id
+                    item_order['buyer'] = order.user_id
+                    item_order['weight'] = order.weight
+                    item_order['time'] = order.time
+                    item_order['status'] = order.status.upper()
+                    individual_order.append(item_order)
+                all_orders.append(individual_order)
 
-            paginator = Paginator(all_orders, 5)  # Show 5 orders per page
+                paginator = Paginator(all_orders, 5)  # Show 5 orders per page
 
-            page = request.GET.get('page')
-            try:
-                orders = paginator.page(page)
-            except PageNotAnInteger:
-                # If page is not an integer, deliver first page.
-                orders = paginator.page(1)
-            except EmptyPage:
-                # If page is out of range (e.g. 9999), deliver last page of results.
-                orders = paginator.page(paginator.num_pages)
+                page = request.GET.get('page')
+                try:
+                    orders = paginator.page(page)
+                except PageNotAnInteger:
+                    # If page is not an integer, deliver first page.
+                    orders = paginator.page(1)
+                except EmptyPage:
+                    # If page is out of range (e.g. 9999), deliver last page of results.
+                    orders = paginator.page(paginator.num_pages)
 
-            pagelist = []
-            for i in range(1, orders.paginator.num_pages + 1):
-                pagelist.append(i)
-            print(paginator.num_pages)
-            context = {'page': "delivery", 'all_orders': orders, 'pagelist': pagelist}
-            return render(request, 'producerDelivery.html', context)
+                pagelist = []
+                for i in range(1, orders.paginator.num_pages + 1):
+                    pagelist.append(i)
+                print(paginator.num_pages)
+                context = {'page': "delivery", 'all_orders': orders, 'pagelist': pagelist}
+                return render(request, 'producerDelivery.html', context)
+            else:
+                context = {'page': "orders"}
+                return render(request, 'producerDelivery.html', context)
         else:
-            context = {'page': "orders"}
-            return render(request, 'producerDelivery.html', context)
+            return HttpResponseRedirect('/')
     except:
         return HttpResponseRedirect('/')
 
@@ -755,50 +790,53 @@ def producer_delivery(request):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def producer_delivered(request):
     try:
-        orders = Order.objects.filter(seller=request.user, status__iexact="delivered").order_by('-delivery_date')
+        if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+            orders = Order.objects.filter(seller=request.user, status__iexact="delivered").order_by('-delivery_date')
 
-        if orders:
-            prev_order = orders[0].cart_id.cart_id
-            all_orders = []
-            individual_order = []
-            for order in orders:
-                if order.cart_id.cart_id != prev_order:
-                    all_orders.append(individual_order)
-                    individual_order = []
-                    prev_order = order.cart_id.cart_id
+            if orders:
+                prev_order = orders[0].cart_id.cart_id
+                all_orders = []
+                individual_order = []
+                for order in orders:
+                    if order.cart_id.cart_id != prev_order:
+                        all_orders.append(individual_order)
+                        individual_order = []
+                        prev_order = order.cart_id.cart_id
 
-                item_order = {}
-                item_order['cart_id'] = order.cart_id
-                item_order['crop_id'] = order.crop_id
-                item_order['buyer'] = order.user_id
-                item_order['weight'] = order.weight
-                item_order['time'] = order.time
-                item_order['delivery_date'] = order.delivery_date
-                item_order['status'] = order.status.upper()
-                individual_order.append(item_order)
-            all_orders.append(individual_order)
+                    item_order = {}
+                    item_order['cart_id'] = order.cart_id
+                    item_order['crop_id'] = order.crop_id
+                    item_order['buyer'] = order.user_id
+                    item_order['weight'] = order.weight
+                    item_order['time'] = order.time
+                    item_order['delivery_date'] = order.delivery_date
+                    item_order['status'] = order.status.upper()
+                    individual_order.append(item_order)
+                all_orders.append(individual_order)
 
-            paginator = Paginator(all_orders, 5)  # Show 5 orders per page
+                paginator = Paginator(all_orders, 5)  # Show 5 orders per page
 
-            page = request.GET.get('page')
-            try:
-                orders = paginator.page(page)
-            except PageNotAnInteger:
-                # If page is not an integer, deliver first page.
-                orders = paginator.page(1)
-            except EmptyPage:
-                # If page is out of range (e.g. 9999), deliver last page of results.
-                orders = paginator.page(paginator.num_pages)
+                page = request.GET.get('page')
+                try:
+                    orders = paginator.page(page)
+                except PageNotAnInteger:
+                    # If page is not an integer, deliver first page.
+                    orders = paginator.page(1)
+                except EmptyPage:
+                    # If page is out of range (e.g. 9999), deliver last page of results.
+                    orders = paginator.page(paginator.num_pages)
 
-            pagelist = []
-            for i in range(1, orders.paginator.num_pages + 1):
-                pagelist.append(i)
-            print(paginator.num_pages)
-            context = {'page': "orders", 'all_orders': orders, 'pagelist': pagelist}
-            return render(request, 'producerDelivered.html', context)
+                pagelist = []
+                for i in range(1, orders.paginator.num_pages + 1):
+                    pagelist.append(i)
+                print(paginator.num_pages)
+                context = {'page': "orders", 'all_orders': orders, 'pagelist': pagelist}
+                return render(request, 'producerDelivered.html', context)
+            else:
+                context = {'page': "orders"}
+                return render(request, 'producerDelivered.html', context)
         else:
-            context = {'page': "orders"}
-            return render(request, 'producerDelivered.html', context)
+            return HttpResponseRedirect('/')
     except:
         return HttpResponseRedirect('/')
 
@@ -806,49 +844,52 @@ def producer_delivered(request):
 # The view for the consumer orders page.
 def consumer_orders(request):
     try:
-        request.session['page'] = "/consumer/orders"
-        orders = Order.objects.filter(user_id=request.user).order_by('-cart_id')
-        if orders:
-            prev_order = orders[0].cart_id.cart_id
-            all_orders = []
-            individual_order = []
-            for order in orders:
-                if order.cart_id.cart_id != prev_order:
-                    all_orders.append(individual_order)
-                    individual_order = []
-                    prev_order = order.cart_id.cart_id
+        if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+            request.session['page'] = "/consumer/orders"
+            orders = Order.objects.filter(user_id=request.user).order_by('-cart_id')
+            if orders:
+                prev_order = orders[0].cart_id.cart_id
+                all_orders = []
+                individual_order = []
+                for order in orders:
+                    if order.cart_id.cart_id != prev_order:
+                        all_orders.append(individual_order)
+                        individual_order = []
+                        prev_order = order.cart_id.cart_id
 
-                item_order = {}
-                item_order['cart_id'] = order.cart_id
-                item_order['crop_id'] = order.crop_id
-                item_order['seller'] = order.seller
-                item_order['weight'] = order.weight
-                item_order['time'] = order.time
-                item_order['status'] = order.status.upper()
-                individual_order.append(item_order)
-            all_orders.append(individual_order)
+                    item_order = {}
+                    item_order['cart_id'] = order.cart_id
+                    item_order['crop_id'] = order.crop_id
+                    item_order['seller'] = order.seller
+                    item_order['weight'] = order.weight
+                    item_order['time'] = order.time
+                    item_order['status'] = order.status.upper()
+                    individual_order.append(item_order)
+                all_orders.append(individual_order)
 
-            paginator = Paginator(all_orders, 5)  # Show 5 orders per page
+                paginator = Paginator(all_orders, 5)  # Show 5 orders per page
 
-            page = request.GET.get('page')
-            try:
-                orders = paginator.page(page)
-            except PageNotAnInteger:
-                # If page is not an integer, deliver first page.
-                orders = paginator.page(1)
-            except EmptyPage:
-                # If page is out of range (e.g. 9999), deliver last page of results.
-                orders = paginator.page(paginator.num_pages)
+                page = request.GET.get('page')
+                try:
+                    orders = paginator.page(page)
+                except PageNotAnInteger:
+                    # If page is not an integer, deliver first page.
+                    orders = paginator.page(1)
+                except EmptyPage:
+                    # If page is out of range (e.g. 9999), deliver last page of results.
+                    orders = paginator.page(paginator.num_pages)
 
-            pagelist = []
-            for i in range(1, orders.paginator.num_pages + 1):
-                pagelist.append(i)
-            print(paginator.num_pages)
-            context = {'page': "orders", 'all_orders': orders, 'pagelist': pagelist}
-            return render(request, 'consumerOrder.html', context)
+                pagelist = []
+                for i in range(1, orders.paginator.num_pages + 1):
+                    pagelist.append(i)
+                print(paginator.num_pages)
+                context = {'page': "orders", 'all_orders': orders, 'pagelist': pagelist}
+                return render(request, 'consumerOrder.html', context)
+            else:
+                context = {'page': "orders"}
+                return render(request, 'consumerOrder.html', context)
         else:
-            context = {'page': "orders"}
-            return render(request, 'consumerOrder.html', context)
+            return HttpResponseRedirect('/')
     except Exception as e:
         print(e)
         return HttpResponseRedirect('/')
@@ -857,46 +898,49 @@ def consumer_orders(request):
 # The view for consumer to cancel a particular order
 def consumer_order_cancel(request, cart_id, seller, crop_id):
     try:
-        seller = User.objects.get(pk=seller)
-        cart = Cart.objects.get(cart_id=cart_id)
-        crop = Crop.objects.get(crop_id=crop_id)
+        if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+            seller = User.objects.get(pk=seller)
+            cart = Cart.objects.get(cart_id=cart_id)
+            crop = Crop.objects.get(crop_id=crop_id)
 
-        order = Order.objects.get(user_id=request.user, cart_id=cart, crop_id=crop, seller=seller)
-        order.status = "cancelled"
-        producer_message = order.user_id.first_name + " has cancelled his order for " + str(order.weight) + " grams of " \
-                           + order.crop_id.english_name + " placed on " + str(order.time.date())
+            order = Order.objects.get(user_id=request.user, cart_id=cart, crop_id=crop, seller=seller)
+            order.status = "cancelled"
+            producer_message = order.user_id.first_name + " has cancelled his order for " + str(order.weight) + " grams of " \
+                               + order.crop_id.english_name + " placed on " + str(order.time.date())
 
-        crop.availability = crop.availability + order.weight
-        inventory = Inventory.objects.get(user_id=seller, crop_id=crop)
-        inventory.sold = inventory.sold - order.weight
-        Alert.objects.create(user_id=seller, message=producer_message)
+            crop.availability = crop.availability + order.weight
+            inventory = Inventory.objects.get(user_id=seller, crop_id=crop)
+            inventory.sold = inventory.sold - order.weight
+            Alert.objects.create(user_id=seller, message=producer_message)
 
-        with transaction.atomic():
-            order.save()
-            inventory.save()
-            crop.save()
+            with transaction.atomic():
+                order.save()
+                inventory.save()
+                crop.save()
 
-            machines = Machine.objects.filter(user_id=seller)
-            produce = Produce.objects.filter(machine_id__in=machines,
-                                             crop_id=crop,
-                                             date_of_expiry__gt=datetime.datetime.now(),
-                                             ).exclude(sold=0).order_by('-date_of_expiry')
+                machines = Machine.objects.filter(user_id=seller)
+                produce = Produce.objects.filter(machine_id__in=machines,
+                                                 crop_id=crop,
+                                                 date_of_expiry__gt=datetime.datetime.now(),
+                                                 ).exclude(sold=0).order_by('-date_of_expiry')
 
-            quantity_left = order.weight
-            for entry in produce:
-                if quantity_left > 0:
-                    if entry.sold >= quantity_left:
-                        entry.sold = entry.sold - quantity_left
-                        entry.save()
-                        break
-                    else:
-                        quantity_left = quantity_left - entry.sold
-                        entry.sold = 0
-                        entry.save()
-            if request.session.get('page', False):
-                return HttpResponseRedirect(request.session['page'])
-            else:
-                return HttpResponseRedirect(request.session['page'])
+                quantity_left = order.weight
+                for entry in produce:
+                    if quantity_left > 0:
+                        if entry.sold >= quantity_left:
+                            entry.sold = entry.sold - quantity_left
+                            entry.save()
+                            break
+                        else:
+                            quantity_left = quantity_left - entry.sold
+                            entry.sold = 0
+                            entry.save()
+                if request.session.get('page', False):
+                    return HttpResponseRedirect(request.session['page'])
+                else:
+                    return HttpResponseRedirect(request.session['page'])
+        else:
+            return HttpResponseRedirect('/')
     except Exception as e:
         print(e)
         if request.session.get('page', False):
@@ -908,72 +952,78 @@ def consumer_order_cancel(request, cart_id, seller, crop_id):
 # The view for producer to reject a order.
 def producer_order_reject(request, cart_id, buyer, crop_id):
     try:
-        buyer = User.objects.get(pk=buyer)
-        cart = Cart.objects.get(cart_id=cart_id)
-        crop = Crop.objects.get(crop_id=crop_id)
-        order = Order.objects.get(seller=request.user, cart_id=cart, crop_id=crop, user_id=buyer)
-        order.status = "rejected"
-        producer_message = order.seller.first_name + " has rejected your order for " + str(order.weight) + " grams of " \
-                           + order.crop_id.english_name + " placed on " + str(order.time.date())
+        if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+            buyer = User.objects.get(pk=buyer)
+            cart = Cart.objects.get(cart_id=cart_id)
+            crop = Crop.objects.get(crop_id=crop_id)
+            order = Order.objects.get(seller=request.user, cart_id=cart, crop_id=crop, user_id=buyer)
+            order.status = "rejected"
+            producer_message = order.seller.first_name + " has rejected your order for " + str(order.weight) + " grams of " \
+                               + order.crop_id.english_name + " placed on " + str(order.time.date())
 
-        Alert.objects.create(user_id=buyer, message=producer_message)
-        crop.availability = crop.availability + order.weight
-        inventory = Inventory.objects.get(user_id=request.user, crop_id=crop)
-        inventory.sold = inventory.sold - order.weight
+            Alert.objects.create(user_id=buyer, message=producer_message)
+            crop.availability = crop.availability + order.weight
+            inventory = Inventory.objects.get(user_id=request.user, crop_id=crop)
+            inventory.sold = inventory.sold - order.weight
 
-        with transaction.atomic():
-            order.save()
-            inventory.save()
-            crop.save()
+            with transaction.atomic():
+                order.save()
+                inventory.save()
+                crop.save()
 
-            machines = Machine.objects.filter(user_id=request.user)
-            produce = Produce.objects.filter(machine_id__in=machines,
-                                             crop_id=crop,
-                                             date_of_expiry__gt=datetime.datetime.now(),
-                                             ).exclude(sold=0).order_by('-date_of_expiry')
+                machines = Machine.objects.filter(user_id=request.user)
+                produce = Produce.objects.filter(machine_id__in=machines,
+                                                 crop_id=crop,
+                                                 date_of_expiry__gt=datetime.datetime.now(),
+                                                 ).exclude(sold=0).order_by('-date_of_expiry')
 
-            quantity_left = order.weight
-            for entry in produce:
-                if quantity_left > 0:
-                    if entry.sold >= quantity_left:
-                        entry.sold = entry.sold - quantity_left
-                        entry.save()
-                        break
-                    else:
-                        quantity_left = quantity_left - entry.sold
-                        entry.sold = 0
-                        entry.save()
-        if request.session.get('page', False):
-            return HttpResponseRedirect(request.session['page'])
+                quantity_left = order.weight
+                for entry in produce:
+                    if quantity_left > 0:
+                        if entry.sold >= quantity_left:
+                            entry.sold = entry.sold - quantity_left
+                            entry.save()
+                            break
+                        else:
+                            quantity_left = quantity_left - entry.sold
+                            entry.sold = 0
+                            entry.save()
+            if request.session.get('page', False):
+                return HttpResponseRedirect(request.session['page'])
+            else:
+                return HttpResponseRedirect('/')
         else:
-            return HttpResponseRedirect(request.session['page'])
+            return HttpResponseRedirect('/')
     except Exception as e:
         print(e)
         if request.session.get('page', False):
             return HttpResponseRedirect(request.session['page'])
         else:
-            return HttpResponseRedirect(request.session['page'])
+            return HttpResponseRedirect('/')
 
 # The view for producer to deliver a order
 def producer_order_deliver(request, cart_id, buyer):
     try:
-        buyer = User.objects.get(pk=buyer)
-        cart = Cart.objects.get(cart_id=cart_id)
-        orders = Order.objects.filter(seller=request.user, cart_id=cart, user_id=buyer, status__iexact="pending")
+        if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+            buyer = User.objects.get(pk=buyer)
+            cart = Cart.objects.get(cart_id=cart_id)
+            orders = Order.objects.filter(seller=request.user, cart_id=cart, user_id=buyer, status__iexact="pending")
 
-        for order in orders:
-            order.status = "delivered"
-            order.delivery_date = datetime.datetime.now()
-            producer_message = order.seller.first_name + " has delivered your order for " + str(
-                order.weight) + " grams of " \
-                               + order.crop_id.english_name + " placed on " + str(order.time.date())
+            for order in orders:
+                order.status = "delivered"
+                order.delivery_date = datetime.datetime.now()
+                producer_message = order.seller.first_name + " has delivered your order for " + str(
+                    order.weight) + " grams of " \
+                                   + order.crop_id.english_name + " placed on " + str(order.time.date())
 
-            Alert.objects.create(user_id=buyer, message=producer_message)
+                Alert.objects.create(user_id=buyer, message=producer_message)
 
-            with transaction.atomic():
-                order.save()
+                with transaction.atomic():
+                    order.save()
 
-        return HttpResponseRedirect('/producer/deliveredorders/')
+            return HttpResponseRedirect('/producer/deliveredorders/')
+        else:
+            return HttpResponseRedirect('/')
     except Exception as e:
         print(e)
         if request.session.get('page', False):

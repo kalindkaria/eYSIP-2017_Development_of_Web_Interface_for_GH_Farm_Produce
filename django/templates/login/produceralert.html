@@ -5,6 +5,7 @@
  
 <h2>Alerts:</h2>
 <hr>
+{% if alerts %}
 <table class="table table-inverse table-bordered">
 <tbody>
 {% for alert in alerts %}
@@ -14,5 +15,7 @@
 {% endfor %}
 </tbody>
 </table>
-
+{% else %}
+<h5>You have no alerts</h5>
+{% endif %}
 {% endblock content %}

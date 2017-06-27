@@ -4,7 +4,7 @@
 {% block content%}
 
 <div class="row justify-content-end">
-	<div class="col-md-2 mr-auto">
+	<div class="col-md-4 mr-auto">
 		<h2>Our Crops:</h2>
 	</div>
 	{% if request.session.cart_count %}
@@ -40,7 +40,7 @@
 		    {% if availability|get_item:crop.crop_id > 10 %}
 		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
 		    	<div class="text-right">
-		    		<a href="{% url 'remove_from_cart' crop.crop_id %}"><button class="btn btn-danger">Remove from cart<span class="fa fa-times ml-2"></span></button></a>
+		    		<a href="{% url 'remove_from_cart' crop.crop_id %}"><button class="btn btn-danger">Remove <span class="fa fa-times ml-2"></span></button></a>
 		  		</div>
 		    {% else %}
 		    	<p class="card-text">Exceeded Daily Limit</p>
@@ -126,5 +126,111 @@
 	  </div>
 	</div>
 {%endfor%}
+
+{% for crop in exceeded_crops %}
+<div class="col-md-3 col-sm-6 col-xs-12">
+		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
+			<div class="card-header" style="border-color: #333">
+		    	<span style="font-size: 110%"><strong>{{ crop.english_name }}  </strong></span>
+		    	<span style="font-size: 120%"><strong><em>| {{crop.local_name}}</em></strong></span>
+		  	</div>
+			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
+					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
+			</a>
+		  <div class="card-block">
+		    <!-- <h4 class="card-title">Special title treatment</h4> -->
+		    {% if crop.availability <= 0.0 %}
+		    	<p class="card-text">Unavailable</p>
+		    {% else  %}
+		    {% if availability|get_item:crop.crop_id > 10 %}
+		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
+		    	<div class="text-right">
+		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart <span class="fa fa-cart-plus ml-2"></span></button></a>
+		  		</div>
+		    {% else %}
+		    	<p class="card-text">Exceeded Daily Limit</p>
+		    {% endif %}
+		    {% endif %}
+
+		  </div>
+		</div>
+	</div>
+
+
+	<div class="modal fade hidden" id="{{crop.crop_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content" style="width:135%;">
+	      <div class="modal-header hidden">
+	        <h5 class="modal-title hidden" id="exampleModalLabel">Crop Details:</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	      	<ul class="list-group">
+	      		<li class="list-group-item">English Name: {{crop.english_name}}</li>
+	      		<li class="list-group-item">Local Name: {{crop.local_name}}</li>
+	      		<li class="list-group-item">Scientific Name:{{crop.scientific_name}}</li>
+	      		<li class="list-group-item">Shelf Life: {{crop.shelf_life}} hrs</li>
+	      		<li class="list-group-item">Price: Rs.{{crop.price}}/kg</li>
+	      	</ul>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+{% endfor %}
+
+{% for crop in unavailable_crops %}
+<div class="col-md-3 col-sm-6 col-xs-12">
+		<div class="card text-center card-inverse card-outline-danger mb-2" style="background-color: #333;">
+			<div class="card-header" style="border-color: #333">
+		    	<span style="font-size: 110%"><strong>{{ crop.english_name }}  </strong></span>
+		    	<span style="font-size: 120%"><strong><em>| {{crop.local_name}}</em></strong></span>
+		  	</div>
+			<a href="#" data-toggle="modal" data-target="#{{crop.crop_id}}">
+					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
+			</a>
+		  <div class="card-block">
+		    <!-- <h4 class="card-title">Special title treatment</h4> -->
+		    {% if crop.availability <= 0.0 %}
+		    	<p class="card-text">Unavailable</p>
+		    {% else  %}
+		    {% if availability|get_item:crop.crop_id > 10 %}
+		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
+		    	<div class="text-right">
+		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart <span class="fa fa-cart-plus ml-2"></span></button></a>
+		  		</div>
+		    {% else %}
+		    	<p class="card-text">Exceeded Daily Limit</p>
+		    {% endif %}
+		    {% endif %}
+
+		  </div>
+		</div>
+	</div>
+
+
+	<div class="modal fade hidden" id="{{crop.crop_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content" style="width:135%;">
+	      <div class="modal-header hidden">
+	        <h5 class="modal-title hidden" id="exampleModalLabel">Crop Details:</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	      	<ul class="list-group">
+	      		<li class="list-group-item">English Name: {{crop.english_name}}</li>
+	      		<li class="list-group-item">Local Name: {{crop.local_name}}</li>
+	      		<li class="list-group-item">Scientific Name:{{crop.scientific_name}}</li>
+	      		<li class="list-group-item">Shelf Life: {{crop.shelf_life}} hrs</li>
+	      		<li class="list-group-item">Price: Rs.{{crop.price}}/kg</li>
+	      	</ul>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+{% endfor %}
 </div>
 {% endblock content%}
