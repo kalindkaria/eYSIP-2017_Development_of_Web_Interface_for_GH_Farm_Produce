@@ -153,6 +153,7 @@ class Produce(models.Model):
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
     trough_id = models.ForeignKey(Trough, on_delete=models.CASCADE)
     image = models.CharField(max_length=255)
+    show_image = models.BooleanField(default=True)
     weight = models.FloatField()
     timestamp = models.DateTimeField()
     date_of_produce = models.DateTimeField()

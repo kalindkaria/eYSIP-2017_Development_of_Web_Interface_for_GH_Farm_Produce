@@ -1208,6 +1208,7 @@ def crop_analytics(request):
 
 
 # The view to allow editing of inventory to producer.
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def edit_inventory(request, crop_id):
     context = {}
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
@@ -1220,7 +1221,7 @@ def edit_inventory(request, crop_id):
                 form = InventoryForm(request.POST)
                 if form.is_valid():
                     print("DATA\n", form.cleaned_data)
-                    o = InventoryForm(request.POST, inventory)
+                    o = InventoryForm(request.POST, instance=inventory)
                     o.save()
             context['inventory'] = inventory
             context['form'] = form
@@ -1233,6 +1234,7 @@ def edit_inventory(request, crop_id):
 
 
 # The view to allow editing of inventory to producer.
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def edit_produce(request, produce_pk):
     context = {}
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
@@ -1240,13 +1242,23 @@ def edit_produce(request, produce_pk):
             machines = Machine.objects.filter(user_id=request.user)
             produce = Produce.objects.get(pk=produce_pk, machine_id__in=machines)
             form = ProduceForm(instance=produce)
+            previous_wasted = produce.wasted
             print("Form\n")
             if request.method == "POST":
                 form = ProduceForm(request.POST)
                 if form.is_valid():
                     print("DATA\n", form.cleaned_data)
-                    o = ProduceForm(request.POST, produce)
-                    o.save()
+                    o = ProduceForm(request.POST, instance=produce)
+                    o = o.save()
+                    inventory = Inventory.objects.get(user_id=request.user, crop_id=produce.crop_id)
+                    crop = Crop.objects.get(crop_id = produce.crop_id.crop_id)
+                    inventory.wasted = inventory.wasted - previous_wasted + o.wasted
+                    crop.availability = crop.availability + previous_wasted - o.wasted
+                    with transaction.atomic():
+                        inventory.save()
+                        crop.save()
+                    remove_expired_produce()
+
             context['produce'] = produce
             context['form'] = form
             context['page'] = "edit_produce"
@@ -1268,7 +1280,7 @@ def download(request):
                 return response
     return HttpResponseRedirect(request.session.get('page', "/"))
 
-
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def producer_profile(request):
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
         context = {}
@@ -1278,14 +1290,14 @@ def producer_profile(request):
             form = UserForm(request.POST)
             if form.is_valid():
                 print("DATA\n", form.cleaned_data)
-                o = UserForm(request.POST, request.user)
+                o = UserForm(request.POST, instance=request.user)
                 o.save()
         context['form'] = form
         context['page'] = "producer_profile"
         return render(request, "producer_profile.html", context)
     return  HttpResponseRedirect(request.session.get('page',"/"))
 
-
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def consumer_profile(request):
     if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
         context = {}
@@ -1295,7 +1307,7 @@ def consumer_profile(request):
             form = UserForm(request.POST)
             if form.is_valid():
                 print("DATA\n", form.cleaned_data)
-                o = UserForm(request.POST, request.user)
+                o = UserForm(request.POST, instance=request.user)
                 o.save()
         context['form'] = form
         context['page'] = "consumer_profile"

@@ -60,7 +60,7 @@ class InventoryForm(forms.ModelForm):
 class ProduceForm(forms.ModelForm):
     class Meta:
         model = Produce
-        fields = ['trough_id', 'date_of_expiry', 'wasted']
+        fields = ['trough_id', 'date_of_expiry', 'wasted', 'show_image']
 
 class UserForm(forms.ModelForm):
     class Meta:

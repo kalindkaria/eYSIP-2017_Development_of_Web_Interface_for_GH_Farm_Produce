@@ -4,6 +4,13 @@
 
 {% block content %}
 <h1>Profile</h1>
+
+<hr>
+
+<div class="form-group"><label class="control-label" for="email">Email</label><input type="text" name="email" value="{{ user.email }}" disabled class="form-control disabled" id="email" /></div>
+
+<div class="form-group"><label class="control-label" for="Name">Name</label><input type="text" name="email" value="{{ user.first_name }} {{ user.last_name }}" disabled class="form-control disabled" id="name" /></div>
+
 <form action="" method="POST">
 	{% csrf_token %}
 	{% bootstrap_form form %}
