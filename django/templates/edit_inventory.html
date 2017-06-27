@@ -4,5 +4,30 @@
 
 {% block content %}
 <h1>Edit Inventory:</h1>
+<table class="table table-striped table-bordered">
+  <thead class="thead-inverse mx-auto">
+    <tr>
+      <th>Crop</th>
+      <th>Weight</th>
+      <th>Price</th>
+      <th>Minimum</th>
+      <th>Maximum</th>
+      <th>Sold</th>
+      <th>Wasted</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{{ inventory.crop_id }} | {{inventory.crop_id.local_name }}</td>
+      <td>{{ inventory.weight }} g</td>
+      <td>{{ inventory.price }}</td>
+      <td>{{ inventory.minimum }}</td>
+      <td>{{ inventory.maximum }}</td>
+      <td>{{ inventory.sold }} g</td>
+      <td>{{ inventory.wasted }} g</td>
+    </tr> 
+  </tbody>
+</table>
+
   {% bootstrap_form form %}
 {% endblock content %}

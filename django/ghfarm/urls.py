@@ -51,5 +51,8 @@ urlpatterns = [
     url(r'^producer/reject_order/(?P<cart_id>[0-9]+)/(?P<buyer>[0-9]+)/$', views.producer_order_deliver,
         name='producer_order_deliver'),
     url(r'^producer/deliveredorders/$', views.producer_delivered, name='producer_delivered'),
-    url(r'^producer/edit/(?P<crop_id>[0-9]+)$', views.edit_inventory, name='edit_inventory')
+    url(r'^producer/edit_inventory/(?P<crop_id>[0-9]+)/$', views.edit_inventory, name='edit_inventory'),
+    url(r'^producer/edit_produce/(?P<produce_pk>[0-9]+)/$', views.edit_produce, name='edit_produce'),
+    url(r'^producer/profile/$', views.producer_profile, name='producer_profile'),
+    url(r'^consumer/profile/$', views.consumer_profile, name='consumer_profile')
 ]

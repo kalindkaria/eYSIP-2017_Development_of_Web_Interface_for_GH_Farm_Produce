@@ -31,13 +31,17 @@ def update_inventory(entry):
         inventory = Inventory.objects.get(user_id=user, crop_id=entry.crop_id)
         inventory.weight = inventory.weight + entry.weight
         inventory.save()
+        entry.date_of_expiry = entry.date_of_produce + datetime.timedelta(hours=inventory.shelf_life)
+        entry.save()
         crop = Crop.objects.get(crop_id=entry.crop_id.crop_id)
         crop.availability = crop.availability + entry.weight
         crop.save()
     except:
         print("In first exception" + str(user) + str(entry.crop_id))
         try:
-            Inventory.objects.create(user_id=user, crop_id=entry.crop_id, weight=entry.weight)
+            inventory = Inventory.objects.create(user_id=user, crop_id=entry.crop_id, weight=entry.weight)
+            entry.date_of_expiry = entry.date_of_produce + datetime.timedelta(hours=inventory.shelf_life)
+            entry.save()
             crop = Crop.objects.get(crop_id=entry.crop_id.crop_id)
             crop.availability = crop.availability + entry.weight
             crop.save()
@@ -94,8 +98,6 @@ def data_entry(request):
                                 timestamp=datetime.datetime.now()
                                 )
                 input_crop = Crop.objects.get(crop_id=crop['crop_id'])
-                entry.date_of_expiry = entry.date_of_produce + datetime.timedelta(hours=input_crop.shelf_life)
-                entry.save()
                 update_inventory(entry)
 
                 training_image_name = entry.image

@@ -78,12 +78,10 @@
   			{{ request.user.email }}
   		</a>
   		<div class="dropdown-menu dropdown-menu-right">
-	    <a class="dropdown-item h-100" href="#"><span class="fa fa-user"></span>   Profile</a>
-	    <a class="dropdown-item h-100" href="/producer/alerts"><span class="fa fa-bell"></span>   Alerts 
-      <!-- <span class="badge badge-default badge-pill">0</span> --></a>
-	    <!-- <a class="dropdown-item" href="#"><span class="fa fa-shopping-cart"></span>Orders</a>
- -->	    <div class="dropdown-divider"></div>
-	    <a class="dropdown-item" href="/logout"><span class="fa fa-sign-out"></span>    Logout</a>
+	    <a class="dropdown-item h-100" href="/producer/profile/"><span class="fa fa-user mr-2"></span>Profile</a>
+	    <a class="dropdown-item h-100" href="/producer/alerts/"><span class="fa fa-bell mr-2"></span>Alerts</a>
+	   	<div class="dropdown-divider"></div>
+	    <a class="dropdown-item" href="/logout"><span class="fa fa-sign-out mr-2"></span>Logout</a>
 	  </div>
   	</li>
   </ul>
@@ -104,11 +102,13 @@
       <th>Date of Produce</th>
       <th>Date of Expiry</th>
       <th>Sold</th>
+      <th>Wasted</th>
       <th>Image</th>
+      <th>Edit</th>
     </tr>
   </thead>
   <tbody>
-  	{%for entry in produce%}
+  	{% for entry in produce %}
     <tr>
       <td>{{ forloop.counter }}</td>
       <td>{{ entry.crop_id }}</td>
@@ -118,13 +118,15 @@
       <td>{{ entry.date_of_produce }}</td>
       <td>{{ entry.date_of_expiry }}</td>
       <td>{{ entry.sold }} g</td>
+      <td>{{ entry.wasted }} g</td>
       <td><a href="#" data-toggle="modal" data-target="#{{forloop.counter}}"><img src="{% static entry.image %}"  width=28 height=28></a></td>
+      <td><a href="/producer/edit_produce/{{ entry.pk }}/">Edit</a></td>
     </tr> 
-    {%endfor%}
+    {% endfor %}
   </tbody>
 </table>
 <!-- Modal -->
-{%for entry in produce%}
+{% for entry in produce %}
 <div class="modal fade hidden" id="{{forloop.counter}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
