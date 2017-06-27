@@ -127,7 +127,7 @@ def remove_expired_produce():
         crop = produce.crop_id
         inventory = Inventory.objects.get(user_id = user , crop_id = crop)
         produce_crop  = Crop.objects.get(crop_id = crop.crop_id)
-        produce.wasted = produce.weight - produce.sold
+        produce.wasted += produce.weight - produce.sold
         inventory.wasted += produce.wasted
         produce_crop.availability -= produce.wasted
         message ="Your produce of "+produce.crop_id.english_name+" of weight "+str(produce.weight)+" logged on "+str(produce.date_of_produce)+" has expired on "+str(produce.date_of_expiry)
