@@ -17,7 +17,7 @@ from graphos.sources.model import ModelDataSource
 from graphos.sources.simple import SimpleDataSource
 from django.contrib.auth import authenticate, login, logout
 
-from .forms import LoginForm, SignUpForm, AnalyticsForm, CropAnalyticsForm, InventoryForm
+from .forms import LoginForm, SignUpForm, AnalyticsForm, CropAnalyticsForm, InventoryForm, ProduceForm, UserForm
 
 # Function to handle login and signup of user
 # returns redirect, login form, signup form
@@ -251,9 +251,6 @@ def log_out(request):
             request.user.save()
         logout(request)
         request.session.flush()
-
-        # request.session['cart_id'] = cart_id
-        # request.session['cart_count'] = cart_count
         return HttpResponseRedirect('/')
     request.session.flush()
     return HttpResponseRedirect('/')
@@ -261,7 +258,7 @@ def log_out(request):
 # The view for producer home.
 def producer_home(request):
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
-        # Fetch all infomation about the logged produce
+        # Fetch all information about the logged produce
         machines = Machine.objects.filter(user_id=request.user)
         produce = list(Produce.objects.filter(machine_id__in=machines).order_by('-timestamp'))
         print(produce)
@@ -1184,24 +1181,50 @@ def crop_analytics(request):
 def edit_inventory(request, crop_id):
     context = {}
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
-        crop = Crop.objects.get(pk=crop_id)
-        inventory = Inventory.objects.get(crop_id=crop, user_id=request.user)
-        form = InventoryForm(instance=inventory)
-        print("Form\n")
-        if request.method == "POST":
-            form = InventoryForm(request.POST)
-            if form.is_valid():
-                print("DATA\n", form.cleaned_data)
-                o = InventoryForm(request.POST, inventory)
-                o.save()
-        context['form'] = form
-        context['page'] = "edit_inventory"
-        return render(request, "edit_inventory.html", context)
-        # except Exception as e:
-        #     print(e)
-        #     return HttpResponseRedirect(request.session.get("page","/"))
+        try:
+            crop = Crop.objects.get(pk=crop_id)
+            inventory = Inventory.objects.get(crop_id=crop, user_id=request.user)
+            form = InventoryForm(instance=inventory)
+            print("Form\n")
+            if request.method == "POST":
+                form = InventoryForm(request.POST)
+                if form.is_valid():
+                    print("DATA\n", form.cleaned_data)
+                    o = InventoryForm(request.POST, inventory)
+                    o.save()
+            context['inventory'] = inventory
+            context['form'] = form
+            context['page'] = "edit_inventory"
+            return render(request, "edit_inventory.html", context)
+        except Exception as e:
+            print(e)
+            return HttpResponseRedirect(request.session.get("page","/"))
     return HttpResponseRedirect("/")
 
+
+# The view to allow editing of inventory to producer.
+def edit_produce(request, produce_pk):
+    context = {}
+    if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+        try:
+            machines = Machine.objects.filter(user_id=request.user)
+            produce = Produce.objects.get(pk=produce_pk, machine_id__in=machines)
+            form = ProduceForm(instance=produce)
+            print("Form\n")
+            if request.method == "POST":
+                form = ProduceForm(request.POST)
+                if form.is_valid():
+                    print("DATA\n", form.cleaned_data)
+                    o = ProduceForm(request.POST, produce)
+                    o.save()
+            context['produce'] = produce
+            context['form'] = form
+            context['page'] = "edit_produce"
+            return render(request, "edit_produce.html", context)
+        except Exception as e:
+            print(e)
+            return HttpResponseRedirect(request.session.get("page","/"))
+    return HttpResponseRedirect("/")
 
 # The view for download of csv for overall analytics by producer.
 def download(request):
@@ -1214,3 +1237,37 @@ def download(request):
                 response['Content-Disposition'] = 'attachment; filename=' + "report.csv"
                 return response
     return HttpResponseRedirect(request.session.get('page', "/"))
+
+
+def producer_profile(request):
+    if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+        context = {}
+        form = UserForm(instance = request.user)
+        print("Form\n")
+        if request.method == "POST":
+            form = UserForm(request.POST)
+            if form.is_valid():
+                print("DATA\n", form.cleaned_data)
+                o = UserForm(request.POST, request.user)
+                o.save()
+        context['form'] = form
+        context['page'] = "producer_profile"
+        return render(request, "producer_profile.html", context)
+    return  HttpResponseRedirect(request.session.get('page',"/"))
+
+
+def consumer_profile(request):
+    if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+        context = {}
+        form = UserForm(instance = request.user)
+        print("Form\n")
+        if request.method == "POST":
+            form = UserForm(request.POST)
+            if form.is_valid():
+                print("DATA\n", form.cleaned_data)
+                o = UserForm(request.POST, request.user)
+                o.save()
+        context['form'] = form
+        context['page'] = "consumer_profile"
+        return render(request, "consumer_profile.html", context)
+    return  HttpResponseRedirect(request.session.get('page',"/"))

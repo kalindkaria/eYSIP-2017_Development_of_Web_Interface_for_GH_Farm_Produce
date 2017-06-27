@@ -1,5 +1,5 @@
 from django import forms
-from .models import Crop, Inventory
+from .models import Crop, Inventory, Produce, User
 
 
 class LoginForm(forms.Form):
@@ -56,3 +56,13 @@ class InventoryForm(forms.ModelForm):
     class Meta:
         model = Inventory
         fields = ['minimum', 'maximum', 'price', 'shelf_life']
+
+class ProduceForm(forms.ModelForm):
+    class Meta:
+        model = Produce
+        fields = ['trough_id', 'date_of_expiry', 'wasted']
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['address_line1', 'address_line2', 'state', 'country', 'pin_code', 'contact']

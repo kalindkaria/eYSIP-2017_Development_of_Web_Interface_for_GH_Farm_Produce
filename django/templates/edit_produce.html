@@ -1,0 +1,53 @@
+{% extends "producer.html" %}
+{% load static %}
+{% load bootstrap3 %}
+
+{% block content %}
+<h1>Edit Produce:</h1>
+	<table class="table table-bordered">
+		<thead class="thead-inverse">
+			<tr>
+			  <th>Crop</th>
+			  <th>Weight</th>
+			  <th>Machine</th>
+			  <th>Trough</th>
+			  <th>Date of Produce</th>
+			  <th>Date of Expiry</th>
+			  <th>Sold</th>
+			  <th>Wasted</th>
+			  <th>Image</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+		      	<td>{{ produce.crop_id }}</td>
+		      	<td>{{ produce.weight }} g</td>
+		      	<td>{{ produce.machine_id }}</td>
+		      	<td>{{ produce.trough_id }}</td>
+		      	<td>{{ produce.date_of_produce }}</td>
+		      	<td>{{ produce.date_of_expiry }}</td>
+		      	<td>{{ produce.sold }} g</td>
+		      	<td>{{ produce.wasted }} g</td>
+		      	<td><a href="#" data-toggle="modal" data-target="#image"><img src="{% static produce.image %}"  width=28 height=28></a></td>
+			</tr>
+		</tbody>
+		
+	</table>
+	<div class="modal fade hidden" id="image" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog modal-lg" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header hidden">
+	        <h5 class="modal-title hidden" id="exampleModalLabel">{{ produce.crop_id }}</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body">
+	       	<img src="{% static produce.image %}" style="height: inherit; width: 100%">
+	      </div>
+
+	    </div>
+	  </div>
+	</div>
+  {% bootstrap_form form %}
+{% endblock content %}
