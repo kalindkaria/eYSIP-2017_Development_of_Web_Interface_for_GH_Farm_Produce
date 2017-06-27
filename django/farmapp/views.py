@@ -127,7 +127,7 @@ def remove_expired_produce():
         produce.wasted = produce.weight - produce.sold
         inventory.wasted += produce.wasted
         produce_crop.availability -= produce.wasted
-        message ="Your produce of "+produce.crop_id.english_name+" of weight "+str(produce.weight)+" logged on "+produce.date_of_produce+" has expired on "+produce.date_of_expiry
+        message ="Your produce of "+produce.crop_id.english_name+" of weight "+str(produce.weight)+" logged on "+str(produce.date_of_produce)+" has expired on "+str(produce.date_of_expiry)
         with transaction.atomic():
             Alert.objects.create(user_id = user,message = message)
             produce.save()
@@ -279,6 +279,7 @@ def log_out(request):
 
 # The view for producer home.
 def producer_home(request):
+    remove_expired_produce()
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
         # Fetch all information about the logged produce
         machines = Machine.objects.filter(user_id=request.user)
@@ -290,6 +291,7 @@ def producer_home(request):
 
 # The view for producer inventory
 def producer_inventory(request):
+    remove_expired_produce()
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
         # Fetch all information about the producer inventory
         user = User.objects.get(pk=request.session['user_id'])
@@ -320,6 +322,7 @@ def crops(request):
 
 # The view to add item to cart and redirect back.
 def add_to_cart(request, crop_id):
+    remove_expired_produce()
     try:
         input_crop = Crop.objects.get(crop_id=crop_id)
         cart_session = Cart_session()
@@ -364,6 +367,7 @@ def remove_from_cart(request, crop_id):
 # The view for the cart page. Shows information anout the items present in the cart.
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def view_cart(request):
+    remove_expired_produce()
     errors = []
     request.session['page'] = "/cart"
     redirect, loginform, signupform = handle_login_signup(request)
@@ -447,6 +451,7 @@ def view_cart(request):
 # The view for the checkout page.
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def checkout(request):
+    remove_expired_produce()
     outerlist = {}
     errors = {}
     error_flag = 0
