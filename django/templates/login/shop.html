@@ -2,7 +2,17 @@
 {% load static %}
 
 {% block content%}
-<h2>Our Crops:</h2>
+
+<div class="row justify-content-end">
+	<div class="col-md-2 mr-auto">
+		<h2>Our Crops:</h2>
+	</div>
+	{% if request.session.cart_count %}
+	<div  class="col-md-2">
+		<a href="/checkout"><button class="btn btn-warning">Buy Now <span class="fa fa-arrow-right ml-2"></span></button></a>
+	</div>
+	{% endif %}
+</div>
 <hr>
   {% for error in errors %}
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
