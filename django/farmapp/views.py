@@ -5,7 +5,7 @@ import os
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F,Q
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect
@@ -114,6 +114,26 @@ def handle_login_signup(request):
 
     return None, loginform, signupform
 
+
+def remove_expired_produce():
+    expired_produce = Produce.objects.filter(Q(date_of_expiry__lt = datetime.datetime.now())).exclude(Q(wasted =F('weight')-F('sold')))
+
+    for produce in expired_produce:
+        machine = produce.machine_id
+        user = machine.user_id
+        crop = produce.crop_id
+        inventory = Inventory.objects.get(user_id = user , crop_id = crop)
+        produce_crop  = Crop.objects.get(crop_id = crop.crop_id)
+        produce.wasted = produce.weight - produce.sold
+        inventory.wasted += produce.wasted
+        produce_crop.availability -= produce.wasted
+        message ="Your produce of "+produce.crop_id.english_name+" of weight "+str(produce.weight)+" logged on "+produce.date_of_produce+" has expired on "+produce.date_of_expiry
+        with transaction.atomic():
+            Alert.objects.create(user_id = user,message = message)
+            produce.save()
+            inventory.save()
+            produce_crop.save()
+
 # Function to return the value for given key from a given dict in django template
 @register.filter
 def get_item(dictionary, key):
@@ -128,6 +148,7 @@ def get_list_item(list, key):
 # The view for the homepage.
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def index(request):
+    remove_expired_produce()
     errors = []
     request.session['page'] = "/crops"
 
@@ -233,6 +254,7 @@ def index(request):
 
 # The view for consumer home. The page has been removed and redirected to 'crops/' i.e. the store
 def home(request):
+    remove_expired_produce()
     if request.user.is_authenticated and request.user.user_type.upper() != "PRODUCER":
         if request.session.get('cart_id', False):
             if request.session.get('page', False):
