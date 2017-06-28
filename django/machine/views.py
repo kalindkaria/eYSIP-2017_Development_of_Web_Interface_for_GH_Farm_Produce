@@ -6,7 +6,7 @@ from threading import Thread, Lock
 import requests
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from farmapp.models import Produce, Machine, Crop, Trough, Inventory
+from farmapp.models import Produce, Machine, Crop, Inventory
 from machine import *
 
 TRAIN_URL = 'http://10.129.11.17:1111'
@@ -83,7 +83,7 @@ def data_entry(request):
 
             print(crop['user_id'])
             print(crop['crop_id'])
-            print(crop['troughid'])
+            print(crop['farmid'])
             print(crop['imagename'])
             print(crop['weight'])
             print(time)
@@ -91,7 +91,7 @@ def data_entry(request):
             try:
                 entry = Produce(machine_id=Machine.objects.get(pk=crop['user_id']),
                                 crop_id=Crop.objects.get(pk=crop['crop_id']),
-                                trough_id=Trough.objects.get(pk=crop['troughid']),
+                                farm_id=crop['farmid'],
                                 image=crop['imagename'],
                                 weight=crop['weight'],
                                 date_of_produce=time,

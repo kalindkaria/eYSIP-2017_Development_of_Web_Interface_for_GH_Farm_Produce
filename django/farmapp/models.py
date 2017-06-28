@@ -137,21 +137,10 @@ class Machine(models.Model):
         verbose_name_plural = "machines"
 
 
-class Trough(models.Model):
-    trough_id = models.AutoField(primary_key=True)
-    machine_id = models.ForeignKey(Machine, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return str(self.machine_id)
-
-    class Meta:
-        verbose_name_plural = "troughs"
-
-
 class Produce(models.Model):
     machine_id = models.ForeignKey(Machine, on_delete=models.CASCADE)
     crop_id = models.ForeignKey(Crop, on_delete=models.CASCADE)
-    trough_id = models.ForeignKey(Trough, on_delete=models.CASCADE)
+    farm_id =models.IntegerField()
     image = models.CharField(max_length=255)
     show_image = models.BooleanField(default=True)
     weight = models.FloatField()

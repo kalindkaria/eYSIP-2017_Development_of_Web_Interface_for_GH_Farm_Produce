@@ -925,17 +925,18 @@ def consumer_delivered(request):
                         rating = float(Review.objects.filter(user_id = order.seller).aggregate(Avg('rating'))['rating__avg'])
                     except:
                         rating = 0
-                    item_order['rating'] = rating
+                    item_order['rating'] = "{:4.2f}".format(rating)
                     individual_order.append(item_order)
                     try:
                         review = Review.objects.get(user_id=order.seller, customer=order.user_id, cart_id=order.cart_id)
                         form_values['rating'] = review.rating
                         form_values['review'] = review.review
-                        form[str(order.cart_id.cart_id)] = form_values
+                        form[order.cart_id.cart_id] = form_values
                     except Exception as e:
+                        print("hsdsa")
                         print(e)
                 all_orders.append(individual_order)
-
+                print(form)
 
 
                 paginator = Paginator(all_orders, 5)  # Show 5 orders per page
