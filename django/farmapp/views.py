@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect
 from django.template.defaulttags import register
 from django.views.decorators.cache import cache_control
-from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_session, Order, Alert
+from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_session, Order, Alert,Review
 from graphos.renderers.morris import DonutChart, BarChart
 from graphos.sources.model import ModelDataSource
 from graphos.sources.simple import SimpleDataSource
@@ -893,6 +893,72 @@ def consumer_orders(request):
     except Exception as e:
         print(e)
         return HttpResponseRedirect('/')
+
+
+def consumer_delivered(request):
+    try:
+        if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+            orders = Order.objects.filter(user_id=request.user, status__iexact="delivered").order_by('-delivery_date')
+
+            if orders:
+                prev_order = orders[0].cart_id.cart_id
+                all_orders = []
+                individual_order = []
+                for order in orders:
+                    if order.cart_id.cart_id != prev_order:
+                        all_orders.append(individual_order)
+                        individual_order = []
+                        prev_order = order.cart_id.cart_id
+
+                    item_order = {}
+                    item_order['cart_id'] = order.cart_id
+                    item_order['crop_id'] = order.crop_id
+                    item_order['seller'] = order.seller
+                    item_order['buyer'] = order.user_id
+                    item_order['weight'] = order.weight
+                    item_order['time'] = order.time
+                    item_order['delivery_date'] = order.delivery_date
+                    item_order['status'] = order.status.upper()
+                    individual_order.append(item_order)
+                all_orders.append(individual_order)
+
+                paginator = Paginator(all_orders, 5)  # Show 5 orders per page
+
+                page = request.GET.get('page')
+                try:
+                    orders = paginator.page(page)
+                except PageNotAnInteger:
+                    # If page is not an integer, deliver first page.
+                    orders = paginator.page(1)
+                except EmptyPage:
+                    # If page is out of range (e.g. 9999), deliver last page of results.
+                    orders = paginator.page(paginator.num_pages)
+
+                pagelist = []
+                for i in range(1, orders.paginator.num_pages + 1):
+                    pagelist.append(i)
+                print(paginator.num_pages)
+                context = {'page': "deliveredorders", 'all_orders': orders, 'pagelist': pagelist}
+                return render(request, 'consumerDelivered.html', context)
+            else:
+                context = {'page': "deliveredorders"}
+                return render(request, 'consumerDelivered.html', context)
+        else:
+            return HttpResponseRedirect('/')
+    except:
+        return HttpResponseRedirect('/')
+
+def process_review(request,cart_id,seller):
+    if request.method == "POST":
+        cart = Cart.objects.get(cart_id = cart_id)
+        user = request.user
+        producer = User.objects.get(pk = seller)
+        order = Order.objects.get(cart_id = cart,seller = producer,user_id = user)
+        try:
+            review = Review.objects.get(user_id = producer , customer = user, cart_id = cart)
+            review.rating = request.POST.get()
+        except:
+            asd="asd"
 
 
 # The view for consumer to cancel a particular order

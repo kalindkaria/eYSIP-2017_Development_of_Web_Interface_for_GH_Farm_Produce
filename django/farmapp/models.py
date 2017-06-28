@@ -223,3 +223,11 @@ class Alert(models.Model):
 
     def __str__(self):
         return str(self.user_id.first_name)
+
+class Review(models.Model):
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='user_id')
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='customer')
+    cart_id = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField(default=0)
+    review = models.TextField()
+    timestamp = models.DateTimeField(default=django.utils.timezone.now)
