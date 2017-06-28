@@ -108,10 +108,10 @@ def storeData(data):
     lcd.string("Storing data...", LINE_1)
     lcd.string("Weight: "+str(data['weight']), LINE_2)
     lcd.string("CropID: "+str(data['crop_id']), LINE_3)
-    lcd.string("FarmID: "+str(data['troughid']), LINE_4)
+    lcd.string("FarmID: "+str(data['farmid']), LINE_4)
     f = open(data_offline,'a')
     t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    crops = {'weight':data['weight'],'crop_id':data['crop_id'],'time': t, 'imagename':data['imagename'], 'troughid':data['troughid']}
+    crops = {'weight':data['weight'],'crop_id':data['crop_id'],'time': t, 'imagename':data['imagename'], 'farmid':data['farmid']}
     crop_details = json.dumps(crops)
     f.write(crop_details +'\n')
     time.sleep(0.5)
@@ -308,7 +308,7 @@ def send_all_data(data):
     lcd.string("Sending data...", LINE_1)
     lcd.string("Weight: "+str(data['weight']), LINE_2)
     lcd.string("CropID: "+str(data['crop_id']), LINE_3)
-    lcd.string("FarmID: "+str(data['troughid']), LINE_4)
+    lcd.string("FarmID: "+str(data['farmid']), LINE_4)
     time.sleep(1)
     data['user_id']=USER_ID
     data['password']=PASSWORD
@@ -442,7 +442,7 @@ try :
                     break
             if stage==1:
                 print("Taking FarmID")
-                farmIDAccepted,data['troughid'] = acceptFarmID()
+                farmIDAccepted,data['farmid'] = acceptFarmID()
                 if(farmIDAccepted):
                     stage += 1 
                 else:
