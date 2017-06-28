@@ -1363,3 +1363,4 @@ def consumer_profile(request):
         context['page'] = "consumer_profile"
         return render(request, "consumer_profile.html", context)
     return  HttpResponseRedirect(request.session.get('page',"/"))
+
