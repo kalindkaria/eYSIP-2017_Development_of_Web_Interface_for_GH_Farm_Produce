@@ -2,19 +2,75 @@
 {% load static %}
 {% load bootstrap3 %}
 {% block content %}
- 
 <h2>Alerts:</h2>
 <hr>
 {% if alerts %}
-<table class="table table-inverse table-bordered">
-<tbody>
 {% for alert in alerts %}
-<tr>
-	<td style="text-align: left;">{{alert.message}}</td>
-</tr>
+{% if alert.type == 'ordered' %}
+<div class="alert alert-success mb-1" role="alert">
+  {{alert.message}}
+</div>
+{% else %}
+{% if alert.type == 'start' %}
+<div class="alert alert-info" role="alert">
+  {{alert.message}}
+</div>
+{% else %}
+{% if alert.type == 'cancelled' %}
+<div class="alert alert-danger" role="alert">
+  {{alert.message}}
+</div>
+{% else %}
+{% if alert.type == 'expiry' %}
+<div class="alert alert-warning" role="alert">
+  {{alert.message}}
+</div>
+{% else %}
+{% if alert.type == 'unknown' %}
+<div class="alert alert-warning" role="alert">
+  {{alert.message}}
+</div>
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
 {% endfor %}
-</tbody>
-</table>
+
+<nav aria-label="...">
+  <ul class="pagination justify-content-center">
+    {% if alerts.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ alerts.previous_page_number }}">Previous</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link">Previous</span>
+    </li>
+    {% endif %}
+    {% for page in pagelist %}
+    {% if page == alerts.number %}
+    <li class="page-item active">
+        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+        <span class="sr-only">(current)</span>
+    </li>
+    {% else %}
+    <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a></li>
+    {% endif %}
+    {% endfor %}
+
+    {% if alerts.has_next %}
+    <li class="page-item">
+      <a href="?page={{ alerts.next_page_number }}"><span class="page-link">Next</span></a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link">Next</span>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+
 {% else %}
 <h5>You have no alerts</h5>
 {% endif %}

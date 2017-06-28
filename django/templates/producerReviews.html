@@ -1,0 +1,57 @@
+{% extends "producer.html" %}
+{% load static %}
+{% block content %}
+
+{% if all_reviews %}
+<h2>Your Rating : {{rating}} <i class="fa fa-star" aria-hidden="true"></i></h2>
+<hr>
+{% for review in all_reviews %}
+<div class="card mb-3">
+  <div class="card-header">
+    {{review.customer.first_name}} {{review.customer.last_name}}
+  </div>
+  <div class="card-block ">
+    <h6 class="card-subtitle mb-2 text-muted">Rating : {{review.rating}} <i class="fa fa-star" aria-hidden="true"></i></h6>
+    <p class="card-text">{{review.review}}</p>
+   
+  </div>
+</div>
+{% endfor %}
+
+<nav aria-label="...">
+  <ul class="pagination justify-content-center">
+    {% if all_reviews.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ all_reviews.previous_page_number }}">Previous</a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link">Previous</span>
+    </li>
+    {% endif %}
+    {% for page in pagelist %}
+    {% if page == all_reviews.number %}
+    <li class="page-item active">
+        <a class="page-link" href="?page={{ page }}">{{ page }}</a>
+        <span class="sr-only">(current)</span>
+    </li>
+    {% else %}
+    <li class="page-item"><a class="page-link" href="?page={{ page }}">{{ page }}</a></li>
+    {% endif %}
+    {% endfor %}
+
+    {% if all_reviews.has_next %}
+    <li class="page-item">
+      <a href="?page={{ all_reviews.next_page_number }}"><span class="page-link">Next</span></a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link">Next</span>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% else %}
+<h5>You have received no reviews</h5>
+{% endif %}
+{% endblock content %}
