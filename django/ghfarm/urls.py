@@ -56,5 +56,6 @@ urlpatterns = [
     url(r'^producer/edit_produce/(?P<produce_pk>[0-9]+)/$', views.edit_produce, name='edit_produce'),
     url(r'^producer/profile/$', views.producer_profile, name='producer_profile'),
     url(r'^consumer/profile/$', views.consumer_profile, name='consumer_profile'),
-    url(r'^processreview/(?P<cart_id>[0-9]+)/(?P<seller>[0-9]+)$', views.process_review, name='process_review')
+    url(r'^processreview/(?P<cart_id>[0-9]+)/(?P<seller>[0-9]+)$', views.process_review, name='process_review'),
+    url(r'^producer/reviews/$', views.producer_reviews, name='producer_reviews')
 ]

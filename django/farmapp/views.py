@@ -130,9 +130,9 @@ def remove_expired_produce():
         produce.wasted += produce.weight - produce.sold
         inventory.wasted += produce.wasted
         produce_crop.availability -= produce.wasted
-        message ="Your produce of "+produce.crop_id.english_name+" of weight "+str(produce.weight)+" logged on "+str(produce.date_of_produce)+" has expired on "+str(produce.date_of_expiry)
+        message ="Your produce of "+produce.crop_id.english_name+" of weight "+str(produce.weight)+" logged on "+str(produce.date_of_produce.date())+" has expired on "+str(produce.date_of_expiry)
         with transaction.atomic():
-            Alert.objects.create(user_id = user,message = message)
+            Alert.objects.create(user_id = user,type="expiry",message = message)
             produce.save()
             inventory.save()
             produce_crop.save()
@@ -624,6 +624,14 @@ def order_summary(request):
             orders = Order.objects.filter(user_id=request.user, cart_id=cart)
 
             for order in orders:
+                consumer_message =\
+                "Your order for "+order.crop_id.english_name +" of quantity "+str(order.weight)+" g from producer "+order.seller.first_name+ " was successfully placed on "+str(order.time.date())
+
+                producer_message = \
+                    "You have received an order for " + order.crop_id.english_name + " of quantity " + str(order.weight) + " g from " + order.user_id.first_name+" on "+str(order.time.date())
+
+                Alert.objects.create(user_id=order.user_id,type = 'ordered',message = consumer_message )
+                Alert.objects.create(user_id=order.seller, type='ordered', message= producer_message)
                 try:
                     machines = Machine.objects.filter(user_id=order.seller.pk)
                     produce = Produce.objects.filter(machine_id__in=machines,
@@ -634,16 +642,17 @@ def order_summary(request):
                     quantity_left = order.weight
                     for entry in produce:
                         if quantity_left > 0:
-                            if entry.weight - entry.sold >= quantity_left:
+                            if entry.weight - entry.sold - entry.wasted >= quantity_left:
                                 entry.sold = entry.sold + quantity_left
                                 with transaction.atomic():
                                     entry.save()
                                 break
                             else:
-                                quantity_left = quantity_left - (entry.weight - entry.sold)
-                                entry.sold = entry.weight
+                                quantity_left = quantity_left - (entry.weight - entry.sold -entry.wasted)
+                                entry.sold = entry.weight - entry.wasted
                                 with transaction.atomic():
                                     entry.save()
+
                 except Exception as e:
                     print(e)
                     return HttpResponseRedirect('/crops')
@@ -932,9 +941,12 @@ def consumer_delivered(request):
                         form_values['rating'] = review.rating
                         form_values['review'] = review.review
                         form[order.cart_id.cart_id] = form_values
+                        form_values ={}
                     except Exception as e:
-                        print("hsdsa")
-                        print(e)
+                        form_values['rating'] = 0
+                        form_values['review'] = ""
+                        form[order.cart_id.cart_id] = form_values
+                        form_values = {}
                 all_orders.append(individual_order)
                 print(form)
 
@@ -964,8 +976,43 @@ def consumer_delivered(request):
                 return render(request, 'consumerDelivered.html', context)
         else:
             return HttpResponseRedirect('/')
-    except:
+    except Exception as e:
+        print(e)
         return HttpResponseRedirect('/')
+
+def producer_reviews(request):
+    try:
+        all_reviews = Review.objects.filter(user_id=request.user)
+        rating = float(Review.objects.filter(user_id=request.user).aggregate(Avg('rating'))['rating__avg'])
+        rating = "{:4.2f}".format(rating)
+
+
+        paginator = Paginator(all_reviews, 5)  # Show 5 orders per page
+
+        page = request.GET.get('page')
+        try:
+            reviews = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            reviews = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            reviews = paginator.page(paginator.num_pages)
+
+        pagelist = []
+        for i in range(1, reviews.paginator.num_pages + 1):
+            pagelist.append(i)
+        print(paginator.num_pages)
+
+        context = {'page': "reviews", 'all_reviews': reviews,'rating':rating, 'pagelist': pagelist}
+        return render(request, 'producerReviews.html', context)
+
+    except:
+        rating = 0
+        context = {'page': "reviews", 'rating': rating}
+        return render(request, 'producerReviews.html', context)
+
+
 
 def process_review(request,cart_id,seller):
     if request.method == "POST":
@@ -1004,7 +1051,7 @@ def consumer_order_cancel(request, cart_id, seller, crop_id):
             crop.availability = crop.availability + order.weight
             inventory = Inventory.objects.get(user_id=seller, crop_id=crop)
             inventory.sold = inventory.sold - order.weight
-            Alert.objects.create(user_id=seller, message=producer_message)
+            Alert.objects.create(user_id=seller,type = "cancelled", message=producer_message)
 
             with transaction.atomic():
                 order.save()
@@ -1054,7 +1101,7 @@ def producer_order_reject(request, cart_id, buyer, crop_id):
             producer_message = order.seller.first_name + " has rejected your order for " + str(order.weight) + " grams of " \
                                + order.crop_id.english_name + " placed on " + str(order.time.date())
 
-            Alert.objects.create(user_id=buyer, message=producer_message)
+            Alert.objects.create(user_id=buyer,type="cancelled" ,message=producer_message)
             crop.availability = crop.availability + order.weight
             inventory = Inventory.objects.get(user_id=request.user, crop_id=crop)
             inventory.sold = inventory.sold - order.weight
@@ -1127,11 +1174,27 @@ def producer_order_deliver(request, cart_id, buyer):
 
 # The view for the alerts page
 def alerts(request):
-    alerts = Alert.objects.filter(user_id=request.user).order_by('-timestamp')
+    all_alerts = Alert.objects.filter(user_id=request.user).order_by('-timestamp')
+
+    paginator = Paginator(all_alerts, 5)  # Show 5 orders per page
+
+    page = request.GET.get('page')
+    try:
+        alerts = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        alerts = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        alerts = paginator.page(paginator.num_pages)
+
+    pagelist = []
+    for i in range(1, alerts.paginator.num_pages + 1):
+        pagelist.append(i)
     if request.user.user_type.upper() == "PRODUCER":
-        return render(request, 'login/produceralert.html', {'alerts': alerts})
+        return render(request, 'login/produceralert.html', {'alerts': alerts , 'pagelist':pagelist})
     else:
-        return render(request, 'login/consumeralert.html', {'alerts': alerts})
+        return render(request, 'login/consumeralert.html', {'alerts': alerts , 'pagelist':pagelist})
 
 
 # Function to convert a given set of dict to a list.
