@@ -21,13 +21,13 @@
   <li>
     <strong>Contact</strong>: {{order.0.seller.contact}}
   </li>
-  {% if rating %}
+  {% if order.0.rating == 0 %}
   <li>
-    <strong>Rating</strong>: 
+    <strong>Rating</strong>: <em>Not yet rated</em>
   </li>
   {% else %}
   <li>
-    <strong>Rating</strong>: <em>Not yet rated</em>
+    <strong>Rating </strong>: {{order.0.rating}}<i class="fa fa-star" aria-hidden="true"></i>
   </li>
   {% endif %}
   </ul>
@@ -35,7 +35,10 @@
     <strong>Delivery Address</strong>: {{order.0.buyer.address_line1}} , {{order.0.buyer.address_line2}} , Pincode: {{order.0.buyer.pincode}}
   </li>
 </ul>
+
+
 <a href="#" data-toggle="modal" data-target="#{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}"><h5>Write a review</h5></a>
+
 
 <div class="modal fade hidden" id="{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -47,7 +50,9 @@
           </button>
         </div>
         <div class="modal-body">
+
           <form action="{% url 'process_review' order.0.cart_id.cart_id order.0.seller.pk %}" method="POST">
+          {% csrf_token %}
             <label>Rating :
               <div class="form-check">
                 <label class="form-check-label">

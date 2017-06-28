@@ -6,12 +6,12 @@ from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.models import F,Q
-from django.db.models import Sum
+from django.db.models import Sum,Avg
 from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect
 from django.template.defaulttags import register
 from django.views.decorators.cache import cache_control
-from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_session, Order, Alert,Review
+from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_session, Order, Alert, Review
 from graphos.renderers.morris import DonutChart, BarChart
 from graphos.sources.model import ModelDataSource
 from graphos.sources.simple import SimpleDataSource
@@ -904,6 +904,8 @@ def consumer_delivered(request):
                 prev_order = orders[0].cart_id.cart_id
                 all_orders = []
                 individual_order = []
+                form = {}
+                form_values ={}
                 for order in orders:
                     if order.cart_id.cart_id != prev_order:
                         all_orders.append(individual_order)
@@ -919,8 +921,22 @@ def consumer_delivered(request):
                     item_order['time'] = order.time
                     item_order['delivery_date'] = order.delivery_date
                     item_order['status'] = order.status.upper()
+                    try:
+                        rating = float(Review.objects.filter(user_id = order.seller).aggregate(Avg('rating'))['rating__avg'])
+                    except:
+                        rating = 0
+                    item_order['rating'] = rating
                     individual_order.append(item_order)
+                    try:
+                        review = Review.objects.get(user_id=order.seller, customer=order.user_id, cart_id=order.cart_id)
+                        form_values['rating'] = review.rating
+                        form_values['review'] = review.review
+                        form[str(order.cart_id.cart_id)] = form_values
+                    except Exception as e:
+                        print(e)
                 all_orders.append(individual_order)
+
+
 
                 paginator = Paginator(all_orders, 5)  # Show 5 orders per page
 
@@ -938,7 +954,9 @@ def consumer_delivered(request):
                 for i in range(1, orders.paginator.num_pages + 1):
                     pagelist.append(i)
                 print(paginator.num_pages)
-                context = {'page': "deliveredorders", 'all_orders': orders, 'pagelist': pagelist}
+
+
+                context = {'page': "deliveredorders", 'all_orders': orders, 'pagelist': pagelist ,'form':form}
                 return render(request, 'consumerDelivered.html', context)
             else:
                 context = {'page': "deliveredorders"}
@@ -953,13 +971,21 @@ def process_review(request,cart_id,seller):
         cart = Cart.objects.get(cart_id = cart_id)
         user = request.user
         producer = User.objects.get(pk = seller)
-        order = Order.objects.get(cart_id = cart,seller = producer,user_id = user)
+
         try:
             review = Review.objects.get(user_id = producer , customer = user, cart_id = cart)
-            review.rating = request.POST.get()
+            review.rating = request.POST.get('rating')
+            review.customer = request.user
+            review.user_id = producer
+            review.cart_id = cart
+            review.review = request.POST.get('review')
+            review.save()
+            return HttpResponseRedirect('/consumer/deliveredorders')
         except:
-            asd="asd"
-
+            Review.objects.create(rating = request.POST.get('rating'),customer = request.user,user_id = producer,cart_id = cart,review = request.POST.get('review'))
+            return HttpResponseRedirect('/consumer/deliveredorders')
+    else:
+        return HttpResponseRedirect('/')
 
 # The view for consumer to cancel a particular order
 def consumer_order_cancel(request, cart_id, seller, crop_id):
