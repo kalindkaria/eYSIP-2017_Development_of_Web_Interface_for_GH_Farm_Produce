@@ -2,6 +2,14 @@
 {% load static %}
 {% load bootstrap3 %}
 
+{% block head %}
+<link rel="stylesheet" type="text/css" href={% static "css/morris.css" %}>
+<!-- Scripts -->
+<link rel="stylesheet" type="text/css" href={% static "css/datepicker.css" %}>
+<script type="text/javascript" src={% static "js/moment.js" %}></script>
+<script type="text/javascript" src={% static "js/datepicker.js" %}></script>
+{% endblock head %}
+
 {% block content %}
 <h1>Edit Produce:</h1>
 	<table class="table table-bordered">
@@ -54,4 +62,27 @@
 	{% bootstrap_form form %}
 	<input type="submit" name="edit_produce" value="Save"  class="btn btn-primary">
 </form>
+<script type="text/javascript">
+$(function() {
+    $('#{{ form.date_of_expiry.auto_id }}').datetimepicker({
+        icons: {
+            time: "fa fa-clock-o",
+            date: "fa fa-calendar",
+            up: "fa fa-arrow-up",
+            down: "fa fa-arrow-down",
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-calendar-o',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        },
+        format: 'YYYY-MM-DD HH:mm:ss',
+        useCurrent: false,
+        collapse: false,
+        sideBySide: true,
+        showTodayButton: true,
+        keepInvalid: true
+    });
+});
+</script>
 {% endblock content %}
