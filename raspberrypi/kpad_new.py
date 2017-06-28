@@ -12,8 +12,8 @@ KEYPAD = [ ['1','2','3','A'],
 ROW=[29,31,33,35]
 COLUMN=[18,40, 38, 36]
 
-MAX = 100
-FRAC = 2
+MAX = 50
+FRAC = 3
 
 def get_key ():
 
@@ -39,7 +39,7 @@ def get_key ():
 
 		# Convert columns to input
 		for j in range(len(COLUMN)):
-			GPIO.setup(COLUMN[j], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+			GPIO.setup(COLUMN[j], GPIO.IN)
 		 
 		# Switch the i-th row found from scan to output
 		GPIO.setup(ROW[rowVal], GPIO.OUT)
@@ -58,13 +58,13 @@ def get_key ():
 		rowVal = row.index(rowMax)
 		colVal = col.index(colMax)
 
-	exit()
+	exit_cust()
 	if rowMax>(MAX/FRAC) and colMax>(MAX/FRAC):
 		print("KEY: "+KEYPAD[rowVal][colVal])
 		return KEYPAD[rowVal][colVal]
 	return "E"
 
-def exit():
+def exit_cust():
     # Reinitialize all rows and columns as input at exit
     for i in range(len(ROW)):
             GPIO.setup(ROW[i], GPIO.IN, pull_up_down=GPIO.PUD_UP) 
