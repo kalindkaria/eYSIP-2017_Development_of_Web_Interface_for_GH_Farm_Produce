@@ -64,6 +64,7 @@ class User(AbstractBaseUser):
     user_type = models.CharField(max_length=20, default="Consumer" )
     last_cart = models.ForeignKey(Cart, null=True, blank=True, on_delete=models.CASCADE)
     contact = models.CharField(max_length=15)
+    login_count = models.PositiveIntegerField(default=1)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 

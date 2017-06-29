@@ -50,6 +50,8 @@ def handle_login_signup(request):
                     print("User: ",user)
                     if user is not None:
                         login(request, user)
+                        request.user.login_count += 1
+                        request.user.save()
                         # storing the details into the session
                         request.session['logged_in'] = True
                         request.session['user_id'] = user.pk
