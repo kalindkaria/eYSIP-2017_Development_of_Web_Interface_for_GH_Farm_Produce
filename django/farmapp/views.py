@@ -17,6 +17,9 @@ from graphos.sources.model import ModelDataSource
 from graphos.sources.simple import SimpleDataSource
 from django.contrib.auth import authenticate, login, logout
 
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from .forms import LoginForm, SignUpForm, AnalyticsForm, CropAnalyticsForm, InventoryForm, ProduceForm, UserForm
 
 # Function to handle login and signup of user
@@ -1211,7 +1214,7 @@ def set_to_list(set_of_dict):
 def analytics(request):
     context = {}
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
-        inventory = Inventory.objects.filter(pk=request.session['email'])
+        inventory = Inventory.objects.filter(user_id=request.user)
         producer_crops = []
         crop_list = []
         for item in inventory:
@@ -1445,6 +1448,7 @@ def edit_produce(request, produce_pk):
     context = {}
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
         try:
+            remove_expired_produce()
             machines = Machine.objects.filter(user_id=request.user)
             produce = Produce.objects.get(pk=produce_pk, machine_id__in=machines)
             form = ProduceForm(instance=produce)
@@ -1519,4 +1523,25 @@ def consumer_profile(request):
         context['page'] = "consumer_profile"
         return render(request, "consumer_profile.html", context)
     return  HttpResponseRedirect(request.session.get('page',"/"))
+
+@cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
+def change_password(request):
+    if request.user.is_authenticated:
+        context = {}
+        if request.method == 'POST':
+            form = PasswordChangeForm(request.user, request.POST)
+            if form.is_valid():
+                user = form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, 'Your password was successfully updated!')
+                return HttpResponseRedirect(request.session.get('page',"/"))
+            else:
+                messages.error(request, 'Please correct the error below.')
+        else:
+            form = PasswordChangeForm(request.user)
+        context['form'] = form
+        if request.user.user_type.upper() == "PRODUCER":
+            return render(request, 'change_password.html', context)
+        return render(request,'consumer_change_password.html')
+
 

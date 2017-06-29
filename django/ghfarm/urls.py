@@ -57,5 +57,7 @@ urlpatterns = [
     url(r'^producer/profile/$', views.producer_profile, name='producer_profile'),
     url(r'^consumer/profile/$', views.consumer_profile, name='consumer_profile'),
     url(r'^processreview/(?P<cart_id>[0-9]+)/(?P<seller>[0-9]+)$', views.process_review, name='process_review'),
-    url(r'^producer/reviews/$', views.producer_reviews, name='producer_reviews')
+    url(r'^producer/reviews/$', views.producer_reviews, name='producer_reviews'),
+    url(r'^producer/change_password/$', views.change_password, name="producer_change_password"),
+    url(r'^consumer/change_password/$', views.change_password, name="consumer_change_password")
 ]
