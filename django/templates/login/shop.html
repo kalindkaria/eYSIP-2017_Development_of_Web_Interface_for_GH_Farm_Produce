@@ -8,13 +8,26 @@
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
-    <div class="jumbotron jumbotron-fluid">
 	  <div class="container">
-	    <h1 class="display-3">Hi {{ request.user.first_name }}</h1>
-	    <p class="lead">Welcome to our website</p>
-	    <p class="lead">Please update your profile and include a valid address to purchase products</p>
+	    <h1 class="display-3">Hi {{ request.user.first_name|capfirst }}!</h1>
+	    <hr class="my-4">
+	    <p class="lead">Welcome to our website.</p>
+	    {% if request.user.address_line1 %}
+		{% else %}
+	    <p class="lead">
+	    Please update your <a href="/profile/" class="alert-link">profile</a> and include a valid address to purchase products.
+	    </p>
+	    {% endif %}
+	    <p class="lead">
+	    	You can logout using the dropdown on the top left. You can also see your profile and latest alerts over there.
+	    </p>
+	    <p class="lead">
+	    	You can start buying crops from right here! Just add all the crops you need to your cart and proceed to buy. You will be asked about the quantity later on.
+	    </p>
+		<p class="lead">
+	    Happy Shopping!
+	    </p>
 	  </div>
-	</div>
 </div>
 {% else %}
 {% if request.user.address_line1 %}
@@ -22,7 +35,8 @@
 <div class="alert alert-info alert-dismissible fade show" role="alert">
   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
-  </button> Before placing an order please update your profile and include your address
+  </button> 
+  Before placing an order please update your <a href="/profile/" class="alert-link">profile</a> and include your address.
 </div>
 {% endif %}
 {% endif %}
@@ -109,7 +123,7 @@
 		  <div class="card-block">
 		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
 		    	<div class="text-right">
-		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart <span class="fa fa-cart-plus ml-2"></span></button></a>
+		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart<span class="fa fa-cart-plus ml-1"></span></button></a>
 		  		</div>
 		  </div>
 		</div>

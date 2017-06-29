@@ -21,7 +21,7 @@
   <li>
     <strong>Contact</strong>: {{order.0.seller.contact}}
   </li>
-  {% if order.0.rating == 0 %}
+  {% if order.0.rating == "0.00" %}
   <li>
     <strong>Rating</strong>: <em>Not yet rated</em>
   </li>
@@ -40,7 +40,7 @@
 </ul>
 
 {% if form|get_item:order.0.cart_id.cart_id|get_item:'rating' == 0 %}
-<div><a href="#" data-toggle="modal" data-target="#{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}"><h5>Write a review</h5></a></div>
+<div><h5><a href="#" data-toggle="modal" data-target="#{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}" style="text-decoration: none;">Write a review</a></h5></div>
 {% else %}
 <div><a href="#" data-toggle="modal" data-target="#{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}"><h5>Edit previous response</h5></a></div>
 {% endif %}

@@ -61,10 +61,11 @@ class User(AbstractBaseUser):
     state = models.CharField(max_length=100, null=True, blank=True, )
     country = models.CharField(max_length=100, null=True, blank=True, )
     pin_code = models.CharField(max_length=20, null=True, blank=True, )
-    user_type = models.CharField(max_length=20, default="Consumer" )
+    user_type = models.CharField(max_length=20, default="Consumer", choices=(('Producer','Producer'),('Consumer','Consumer')))
     last_cart = models.ForeignKey(Cart, null=True, blank=True, on_delete=models.CASCADE)
     contact = models.CharField(max_length=15)
     login_count = models.PositiveIntegerField(default=1)
+    last_login = models.DateTimeField(default=django.utils.timezone.now)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
@@ -124,7 +125,7 @@ class Crop(models.Model):
 
 class Machine(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
-    machine_id = models.AutoField(primary_key=True)
+    machine_id = models.IntegerField(primary_key=True)
     password = models.CharField(max_length=20)
     location = models.CharField(max_length=255)
     date_of_manufacture = models.DateTimeField()
@@ -132,7 +133,7 @@ class Machine(models.Model):
     last_login = models.DateTimeField()
 
     def __str__(self):
-        return str(self.machine_id)
+        return str(self.machine_id) + " - " + str(self.user_id)
 
     class Meta:
         verbose_name_plural = "machines"
@@ -212,7 +213,7 @@ class Alert(models.Model):
     timestamp = models.DateTimeField(default=django.utils.timezone.now)
 
     def __str__(self):
-        return str(self.user_id.first_name)
+        return str(self.user_id.first_name) + " - "+ str(self.type)
 
 class Review(models.Model):
     user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='user_id')

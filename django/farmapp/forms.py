@@ -26,6 +26,20 @@ class SignUpForm(forms.ModelForm):
         model = User
         fields = ('email', 'first_name', 'last_name', 'contact')
 
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+
+        # At least MIN_LENGTH long
+        if len(password1) < 8:
+            raise forms.ValidationError("The new password must be at least 8 characters long.")
+
+        # At least one letter and one non-letter
+        first_isalpha = password1[0].isalpha()
+        if all(c.isalpha() == first_isalpha for c in password1):
+            raise forms.ValidationError("The new password must contain at least one letter and at least one digit or"
+                                        " punctuation character.")
+        return password1
+
     def clean_password2(self):
         # Check that the two password entries match
         password1 = self.cleaned_data.get("password1")
