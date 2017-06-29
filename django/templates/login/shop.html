@@ -85,20 +85,10 @@
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
 			</a>
 		  <div class="card-block">
-		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availability <= 0.0 %}
-		    	<p class="card-text">Unavailable</p>
-		    {% else  %}
-		    {% if availability|get_item:crop.crop_id > 10 %}
 		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
 		    	<div class="text-right">
 		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart <span class="fa fa-cart-plus ml-2"></span></button></a>
 		  		</div>
-		    {% else %}
-		    	<p class="card-text">Exceeded Daily Limit</p>
-		    {% endif %}
-		    {% endif %}
-
 		  </div>
 		</div>
 	</div>
@@ -138,20 +128,7 @@
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
 			</a>
 		  <div class="card-block">
-		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availability <= 0.0 %}
-		    	<p class="card-text">Unavailable</p>
-		    {% else  %}
-		    {% if availability|get_item:crop.crop_id > 10 %}
-		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
-		    	<div class="text-right">
-		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart <span class="fa fa-cart-plus ml-2"></span></button></a>
-		  		</div>
-		    {% else %}
-		    	<p class="card-text">Exceeded Daily Limit</p>
-		    {% endif %}
-		    {% endif %}
-
+		    <p class="card-text">Exceeded Daily Limit</p>
 		  </div>
 		</div>
 	</div>
@@ -191,20 +168,7 @@
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
 			</a>
 		  <div class="card-block">
-		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availability <= 0.0 %}
-		    	<p class="card-text">Unavailable</p>
-		    {% else  %}
-		    {% if availability|get_item:crop.crop_id > 10 %}
-		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
-		    	<div class="text-right">
-		    		<a href="{% url 'add_to_cart' crop.crop_id %}"><button class="btn btn-success">Add to Cart <span class="fa fa-cart-plus ml-2"></span></button></a>
-		  		</div>
-		    {% else %}
-		    	<p class="card-text">Exceeded Daily Limit</p>
-		    {% endif %}
-		    {% endif %}
-
+		    <p class="card-text">Unavailable</p>
 		  </div>
 		</div>
 	</div>

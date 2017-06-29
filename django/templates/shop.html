@@ -33,8 +33,7 @@
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
 			</a>
 		  <div class="card-block">
-		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availability <= 0 %}
+		    {% if crop.availability <= 10 %}
 		    	<p class="card-text">Unavailable</p>
 		    {% else  %}
 		    	<div class="text-right">
@@ -82,7 +81,7 @@
 			</a>
 		  <div class="card-block">
 		    <!-- <h4 class="card-title">Special title treatment</h4> -->
-		    {% if crop.availability <= 0.0 %}
+		    {% if crop.availability <= 10 %}
 		    	<p class="card-text">Unavailable</p>
 		    {% else %}
 		    
