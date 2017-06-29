@@ -13,11 +13,9 @@ from django.template.defaulttags import register
 from django.views.decorators.cache import cache_control
 from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_session, Order, Alert, Review
 from graphos.renderers.morris import DonutChart, BarChart
-from graphos.sources.model import ModelDataSource
 from graphos.sources.simple import SimpleDataSource
 from django.contrib.auth import authenticate, login, logout
 
-from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from .forms import LoginForm, SignUpForm, AnalyticsForm, CropAnalyticsForm, InventoryForm, ProduceForm, UserForm
@@ -87,36 +85,31 @@ def handle_login_signup(request):
             signupform = SignUpForm(request.POST)
             if signupform.is_valid():
                 print(signupform.cleaned_data)
-                data = signupform.cleaned_data
-                if data['password'] == data['repass']:
-                    # Creating New user
-                    user = User.objects.create_user(email=data['email'], first_name=data['firstname'],
-                                               last_name=data['lastname'],
-                                               contact=data['contact'], password=data['password'])
-                    user.save()
-                    request.session['logged_in'] = True
-                    request.session['user_id'] = user.pk
-                    request.session['email'] = user.email
-                    request.session['user_type'] = user.user_type
-                    login(request, user)
-                    message = "Hi "+str(user.first_name)+"! Please Update your Address Details to let the producers \
-                               know where to deliver your orders."
-                    Alert.objects.create(user_id=user, message=message, type="start_message")
-                    print("A Consumer Logged In")
-                    # trying to restore last cart session
-                    try:
-                        cart = Cart.objects.get(cart_id=user.last_cart.cart_id)
-                        print(user.last_cart.cart_id)
-                        if request.session.get('cart_id', False):
-                            user.last_cart = cart
-                            user.save()
-                        else:
-                            request.session['cart_id'] = cart.cart_id
-                    except:
-                        return None, loginform, signupform
-                else:
-                    signupform.add_error(None, "The Passwords do not match!")
-                return HttpResponseRedirect('/home/'), loginform, signupform
+                # Creating New user
+                user = signupform.save()
+                request.session['logged_in'] = True
+                request.session['user_id'] = user.pk
+                request.session['email'] = user.email
+                request.session['user_type'] = user.user_type
+                login(request, user)
+                message = "Hi "+str(user.first_name)+"! Please Update your Address Details to let the producers \
+                           know where to deliver your orders."
+                Alert.objects.create(user_id=user, message=message, type="start_message")
+                print("A Consumer Logged In")
+                # trying to restore last cart session
+                try:
+                    cart = Cart.objects.get(cart_id=user.last_cart.cart_id)
+                    print(user.last_cart.cart_id)
+                    if request.session.get('cart_id', False):
+                        user.last_cart = cart
+                        user.save()
+                    else:
+                        request.session['cart_id'] = cart.cart_id
+                except:
+                    return None, loginform, signupform
+            else:
+                signupform.add_error(None, "The Passwords do not match!")
+            return HttpResponseRedirect('/home/'), loginform, signupform
 
     return None, loginform, signupform
 
@@ -1502,6 +1495,10 @@ def producer_profile(request):
                 print("DATA\n", form.cleaned_data)
                 o = UserForm(request.POST, instance=request.user)
                 o.save()
+                try:
+                    Alert.objects.get(user_id=request.user, type="start_message").delete()
+                except:
+                    pass
         context['form'] = form
         context['page'] = "producer_profile"
         return render(request, "producer_profile.html", context)
@@ -1519,6 +1516,10 @@ def consumer_profile(request):
                 print("DATA\n", form.cleaned_data)
                 o = UserForm(request.POST, instance=request.user)
                 o.save()
+                try:
+                    Alert.objects.get(user_id=request.user, type="start_message").delete()
+                except:
+                    pass
         context['form'] = form
         context['page'] = "consumer_profile"
         return render(request, "consumer_profile.html", context)
@@ -1533,15 +1534,11 @@ def change_password(request):
             if form.is_valid():
                 user = form.save()
                 update_session_auth_hash(request, user)
-                messages.success(request, 'Your password was successfully updated!')
                 return HttpResponseRedirect(request.session.get('page',"/"))
-            else:
-                messages.error(request, 'Please correct the error below.')
+            print(form)
         else:
             form = PasswordChangeForm(request.user)
         context['form'] = form
         if request.user.user_type.upper() == "PRODUCER":
             return render(request, 'change_password.html', context)
-        return render(request,'consumer_change_password.html')
-
-
+        return render(request,'consumer_change_password.html', context)
