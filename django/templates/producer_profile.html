@@ -5,11 +5,13 @@
 {% block content %}
 <h1>Profile</h1>
 
-<hr>
-
 <div class="form-group"><label class="control-label" for="email">Email</label><input type="text" name="email" value="{{ user.email }}" disabled class="form-control disabled" id="email" /></div>
 
 <div class="form-group"><label class="control-label" for="Name">Name</label><input type="text" name="email" value="{{ user.first_name }} {{ user.last_name }}" disabled class="form-control disabled" id="name" /></div>
+
+<div class="form-group"><label class="control-label" for="Password">Password</label><input type="text" name="password" value="*********" disabled class="form-control disabled" id="name" />
+<p>You can change your password <a href="/change_password">here.</a></p>
+</div>
 
 <form action="" method="POST">
 	{% csrf_token %}
