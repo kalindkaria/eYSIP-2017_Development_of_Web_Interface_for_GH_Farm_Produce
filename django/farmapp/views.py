@@ -1152,7 +1152,7 @@ def producer_order_deliver(request, cart_id, buyer):
                     order.weight) + " grams of " \
                                    + order.crop_id.english_name + " placed on " + str(order.time.date())
 
-                Alert.objects.create(user_id=buyer, message=producer_message)
+                Alert.objects.create(user_id=buyer, type = 'delivered',message=producer_message)
 
                 with transaction.atomic():
                     order.save()
