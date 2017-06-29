@@ -980,31 +980,33 @@ def consumer_delivered(request):
 
 def producer_reviews(request):
     try:
-        all_reviews = Review.objects.filter(user_id=request.user)
-        rating = float(Review.objects.filter(user_id=request.user).aggregate(Avg('rating'))['rating__avg'])
-        rating = "{:4.2f}".format(rating)
+        if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
+            all_reviews = Review.objects.filter(user_id=request.user)
+            rating = float(Review.objects.filter(user_id=request.user).aggregate(Avg('rating'))['rating__avg'])
+            rating = "{:4.2f}".format(rating)
 
 
-        paginator = Paginator(all_reviews, 5)  # Show 5 orders per page
+            paginator = Paginator(all_reviews, 5)  # Show 5 orders per page
 
-        page = request.GET.get('page')
-        try:
-            reviews = paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer, deliver first page.
-            reviews = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            reviews = paginator.page(paginator.num_pages)
+            page = request.GET.get('page')
+            try:
+                reviews = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                reviews = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                reviews = paginator.page(paginator.num_pages)
 
-        pagelist = []
-        for i in range(1, reviews.paginator.num_pages + 1):
-            pagelist.append(i)
-        print(paginator.num_pages)
+            pagelist = []
+            for i in range(1, reviews.paginator.num_pages + 1):
+                pagelist.append(i)
+            print(paginator.num_pages)
 
-        context = {'page': "reviews", 'all_reviews': reviews,'rating':rating, 'pagelist': pagelist}
-        return render(request, 'producerReviews.html', context)
-
+            context = {'page': "reviews", 'all_reviews': reviews,'rating':rating, 'pagelist': pagelist}
+            return render(request, 'producerReviews.html', context)
+        else:
+            return HttpResponseRedirect('/')
     except:
         rating = 0
         context = {'page': "reviews", 'rating': rating}
@@ -1013,24 +1015,27 @@ def producer_reviews(request):
 
 
 def process_review(request,cart_id,seller):
-    if request.method == "POST":
-        cart = Cart.objects.get(cart_id = cart_id)
-        user = request.user
-        producer = User.objects.get(pk = seller)
+    try:
+        if request.method == "POST":
+            cart = Cart.objects.get(cart_id = cart_id)
+            user = request.user
+            producer = User.objects.get(pk = seller)
 
-        try:
-            review = Review.objects.get(user_id = producer , customer = user, cart_id = cart)
-            review.rating = request.POST.get('rating')
-            review.customer = request.user
-            review.user_id = producer
-            review.cart_id = cart
-            review.review = request.POST.get('review')
-            review.save()
-            return HttpResponseRedirect('/consumer/deliveredorders')
-        except:
-            Review.objects.create(rating = request.POST.get('rating'),customer = request.user,user_id = producer,cart_id = cart,review = request.POST.get('review'))
-            return HttpResponseRedirect('/consumer/deliveredorders')
-    else:
+            try:
+                review = Review.objects.get(user_id = producer , customer = user, cart_id = cart)
+                review.rating = request.POST.get('rating')
+                review.customer = request.user
+                review.user_id = producer
+                review.cart_id = cart
+                review.review = request.POST.get('review')
+                review.save()
+                return HttpResponseRedirect('/consumer/deliveredorders')
+            except:
+                Review.objects.create(rating = request.POST.get('rating'),customer = request.user,user_id = producer,cart_id = cart,review = request.POST.get('review'))
+                return HttpResponseRedirect('/consumer/deliveredorders')
+        else:
+            return HttpResponseRedirect('/')
+    except:
         return HttpResponseRedirect('/')
 
 # The view for consumer to cancel a particular order
@@ -1172,27 +1177,33 @@ def producer_order_deliver(request, cart_id, buyer):
 
 # The view for the alerts page
 def alerts(request):
-    all_alerts = Alert.objects.filter(user_id=request.user).order_by('-timestamp')
-
-    paginator = Paginator(all_alerts, 5)  # Show 5 orders per page
-
-    page = request.GET.get('page')
     try:
-        alerts = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        alerts = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        alerts = paginator.page(paginator.num_pages)
+        if request.user.is_authenticated:
+            all_alerts = Alert.objects.filter(user_id=request.user).order_by('-timestamp')
 
-    pagelist = []
-    for i in range(1, alerts.paginator.num_pages + 1):
-        pagelist.append(i)
-    if request.user.user_type.upper() == "PRODUCER":
-        return render(request, 'login/produceralert.html', {'alerts': alerts , 'pagelist':pagelist})
-    else:
-        return render(request, 'login/consumeralert.html', {'alerts': alerts , 'pagelist':pagelist})
+            paginator = Paginator(all_alerts, 5)  # Show 5 orders per page
+
+            page = request.GET.get('page')
+            try:
+                alerts = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                alerts = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                alerts = paginator.page(paginator.num_pages)
+
+            pagelist = []
+            for i in range(1, alerts.paginator.num_pages + 1):
+                pagelist.append(i)
+            if request.user.user_type.upper() == "PRODUCER":
+                return render(request, 'login/produceralert.html', {'alerts': alerts , 'pagelist':pagelist})
+            else:
+                return render(request, 'login/consumeralert.html', {'alerts': alerts , 'pagelist':pagelist})
+        else:
+            return HttpResponseRedirect('/')
+    except:
+        return HttpResponseRedirect('/')
 
 
 # Function to convert a given set of dict to a list.
