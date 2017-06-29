@@ -473,7 +473,7 @@ def view_cart(request):
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def checkout(request):
     remove_expired_produce()
-    if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+    if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER" and request.user.address_line1:
         outerlist = {}
         errors = {}
         error_flag = 0

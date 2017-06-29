@@ -3,6 +3,14 @@
 
 {% block content%}
 <div class="container-fluid">
+{% if request.user.address_line1 %}
+{% else %}
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button> Before placing an order please update your profile and include your address
+</div>
+{% endif %}
   {% for error in errors %}
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -36,16 +44,17 @@
       <div  class="col-md-2 mr-3">
         <a href="/crops"><button class="btn btn-info"><span class="fa fa-arrow-left mr-2"></span>Continue Shopping</button></a>
       </div>
-      {% if request.session.logged_in %}
+      
+      {% if request.user.address_line1 %}
       <div  class="col-md-3 col-xs-3">
         <a href="/checkout"><button class="btn btn-warning">Proceed to Checkout <span class="fa fa-arrow-right ml-2"></span></button></a>
       </div>
       {% else %}
       <div  class="col-md-3 col-xs-3">
-        <button class="btn btn-warning" data-toggle="modal" data-target="#login">Proceed to Checkout <span class="fa fa-shopping-cart ml-2"></span></button>
+        <a href="/checkout"><button class="btn btn-warning" disabled="true">Proceed to Checkout <span class="fa fa-arrow-right ml-2"></span></button></a>
       </div>
-
       {% endif %}
+      
     </div>
 </div>
 {% endblock content%}

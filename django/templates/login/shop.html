@@ -3,7 +3,7 @@
 
 {% block content%}
 
-{% if request.user.first_name %}
+{% if request.user.login_count == 1 %}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
@@ -12,9 +12,19 @@
 	  <div class="container">
 	    <h1 class="display-3">Hi {{ request.user.first_name }}</h1>
 	    <p class="lead">Welcome to our website</p>
+	    <p class="lead">Please update your profile and include a valid address to purchase products</p>
 	  </div>
 	</div>
- </div>
+</div>
+{% else %}
+{% if request.user.address_line1 %}
+{% else %}
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button> Before placing an order please update your profile and include your address
+</div>
+{% endif %}
 {% endif %}
 
 <div class="row justify-content-end">
@@ -22,9 +32,15 @@
 		<h2>Our Crops:</h2>
 	</div>
 	{% if request.session.cart_count %}
+	{% if request.user.address_line1 %}
 	<div  class="col-md-2">
 		<a href="/checkout"><button class="btn btn-warning">Buy Now <span class="fa fa-arrow-right ml-2"></span></button></a>
 	</div>
+	{% else %}
+	<div  class="col-md-2">
+		<a href="/checkout"><button class="btn btn-warning" disabled="true">Buy Now <span class="fa fa-arrow-right ml-2"></span></button></a>
+	</div>
+	{% endif %}
 	{% endif %}
 </div>
 <hr>
@@ -48,18 +64,10 @@
 					<img src="{% static crop.imagepath %}" class="img-thumbnail card-image-top">
 			</a>
 		  <div class="card-block">
-		    {% if crop.availability <= 0.0 %}
-		    	<p class="card-text">Unavailable</p>
-		    {% else  %}
-		    {% if availability|get_item:crop.crop_id > 10 %}
 		    	<p class="card-text">Available: {{ availability|get_item:crop.crop_id }} g</p>
 		    	<div class="text-right">
 		    		<a href="{% url 'remove_from_cart' crop.crop_id %}"><button class="btn btn-danger">Remove <span class="fa fa-times ml-2"></span></button></a>
 		  		</div>
-		    {% else %}
-		    	<p class="card-text">Exceeded Daily Limit</p>
-		    {% endif %}
-		    {% endif %}
 		  </div>
 		</div>
 	</div>
