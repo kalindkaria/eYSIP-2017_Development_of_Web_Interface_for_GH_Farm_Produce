@@ -40,7 +40,6 @@
       <th>#</th>
       <th>Buyer</th>
       <th>Weight</th>
-      <th>Order Date</th>
       <th>Status</th>
       <th></th>
       <!-- <th>Date of Delivery</th> -->
@@ -49,14 +48,27 @@
   </thead>
   <tbody>
   {% for entry in all_orders|get_item:order %}
+    {% if entry.status == "PENDING" %}
     <tr>
+    {% else %}
+    {% if entry.status == "CANCELLED" %}
+    <tr class="table-danger">
+    {% else %}
+    {% if entry.status == "REJECTED" %}
+    <tr class="table-danger">
+    {% else %}
+    {% if entry.status == "DELIVERED" %}
+    <tr class="table-success">
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% endif %}
       <td>{{forloop.counter}}</td>
       <td>{{entry.user_id.first_name}}</td>
       <td>{{entry.weight}}g</td>
-      <td>{{entry.time}}</td>
       <td>{{entry.status}}</td>
       {% if entry.status == "PENDING" %}
-      <td><a href="{% url 'producer_order_reject' entry.cart_id entry.user_id.pk entry.crop_id.crop_id %}"><button class="btn btn-danger">Reject Order <span class="fa fa-trash ml-2"></span></button></a></td>
+      <td><a href="{% url 'producer_order_reject' entry.cart_id entry.user_id.pk entry.crop_id.crop_id %}"><button class="btn btn-danger btn-sm">Reject<span class="fa fa-trash ml-2"></span></button></a></td>
       {% else %}
       <td></td>
       {% endif %}

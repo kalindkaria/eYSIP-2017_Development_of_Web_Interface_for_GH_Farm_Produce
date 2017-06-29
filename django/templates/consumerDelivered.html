@@ -34,12 +34,15 @@
   <li>
     <strong>Delivery Address</strong>: {{order.0.buyer.address_line1}} , {{order.0.buyer.address_line2}} , Pincode: {{order.0.buyer.pincode}}
   </li>
+  <li>
+    <strong>Delivery Date</strong>: {{order.0.delivery_date}} 
+  </li>
 </ul>
 
 {% if form|get_item:order.0.cart_id.cart_id|get_item:'rating' == 0 %}
-<a href="#" data-toggle="modal" data-target="#{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}"><h5>Write a review</h5></a>
+<div><a href="#" data-toggle="modal" data-target="#{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}"><h5>Write a review</h5></a></div>
 {% else %}
-<a href="#" data-toggle="modal" data-target="#{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}"><h5>Edit previous response</h5></a>
+<div><a href="#" data-toggle="modal" data-target="#{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}"><h5>Edit previous response</h5></a></div>
 {% endif %}
 
 <div class="modal fade hidden" id="{{order.0.buyer.first_name}}{{order.0.seller.first_name}}{{order.0.cart_id.cart_id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -109,13 +112,13 @@
       </div>
     </div>
   </div>
-<table class="table table-striped table-bordered mb-3">
+<div class="container">
+<table class="table table-striped table-bordered mb-3 mr-auto ml-auto " style="width: 85%">
   <thead class="thead-inverse">
     <tr>
       <th>#</th>
       <th>Crop</th>
       <th>Weight</th>
-      <th>Delivery Date</th>
       <!-- <th>Date of Delivery</th> -->
       <!-- <th>Image</th> -->
     </tr>
@@ -125,8 +128,7 @@
     <tr>
       <td>{{forloop.counter}}</td>
       <td>{{entry.crop_id}}</td>
-      <td>{{entry.weight}}g</td>
-      <td>{{entry.delivery_date}}</td>
+      <td>{{entry.weight}} g</td>
     </tr>
   {% endfor %}
   </tbody>
@@ -138,8 +140,10 @@
     </a>
   </div>
 </div>
+</div>
 <br>
 <hr>
+
 {% endfor %}
 
 <nav aria-label="...">

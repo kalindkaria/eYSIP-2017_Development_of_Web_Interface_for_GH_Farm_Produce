@@ -14,7 +14,6 @@
       <th>Crop</th>
       <th>Seller</th>
       <th>Weight</th>
-      <th>Order Date</th>
       <th>Status</th>
       <th></th>
       <!-- <th>Date of Delivery</th> -->
@@ -23,15 +22,28 @@
   </thead>
   <tbody>
   {% for entry in order %}
+    {% if entry.status == "PENDING" %}
     <tr>
+    {% else %}
+    {% if entry.status == "CANCELLED" %}
+    <tr class="table-danger">
+    {% else %}
+    {% if entry.status == "REJECTED" %}
+    <tr class="table-danger">
+    {% else %}
+    {% if entry.status == "DELIVERED" %}
+    <tr class="table-success">
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% endif %}
       <td>{{forloop.counter}}</td>
       <td>{{entry.crop_id}}</td>
       <td>{{entry.seller.first_name}}</td>
       <td>{{entry.weight}}g</td>
-      <td>{{entry.time}}</td>
       <td>{{entry.status}}</td>
       {% if entry.status == "PENDING" %}
-      <td><a href="{% url 'consumer_order_cancel' entry.cart_id.cart_id entry.seller.pk entry.crop_id.crop_id %}"><button class="btn btn-danger">Cancel Order <span class="fa fa-trash ml-2"></span></button></a></td>
+      <td><a href="{% url 'consumer_order_cancel' entry.cart_id.cart_id entry.seller.pk entry.crop_id.crop_id %}"><button class="btn btn-danger btn-sm">Cancel<span class="fa fa-trash ml-2"></span></button></a></td>
       {% else %}
       <td></td>
       {% endif %}
@@ -45,7 +57,8 @@
   <ul class="pagination justify-content-center">
     {% if all_orders.has_previous %}
     <li class="page-item">
-      <a class="page-link" href="?page={{ all_orders.previous_page_number }}">Previous</a>
+      <a class="page-link" href="?page={{ all_orders.previous_page_number }}"><i class="fa fa-arrow-left" aria-hidden="true"></i>
+</a>
     </li>
     {% else %}
     <li class="page-item disabled">
@@ -65,11 +78,11 @@
 
     {% if all_orders.has_next %}
     <li class="page-item">
-      <a href="?page={{ all_orders.next_page_number }}"><span class="page-link">Next</span></a>
+      <a href="?page={{ all_orders.next_page_number }}"><span class="page-link"><i class="fa fa-arrow-right" aria-hidden="true"></i></span></a>
     </li>
     {% else %}
     <li class="page-item disabled">
-      <span class="page-link">Next</span>
+      <span class="page-link"><i class="fa fa-arrow-right" aria-hidden="true"></i></span>
     </li>
     {% endif %}
   </ul>

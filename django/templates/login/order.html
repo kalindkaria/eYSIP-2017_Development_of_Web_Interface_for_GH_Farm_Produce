@@ -2,8 +2,31 @@
 {% load static %}
 {% block content %}
 
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button> Your order was successfully placed!
+</div>
 <h2>Order Summary:</h2>
 <hr>
+<ul>
+  <h4>Your Details:</h4>
+  <li>
+    <strong>Name</strong>: {{orders.0.user_id.first_name}} {{orders.0.user_id.last_name}} 
+  </li>
+  <li>
+    <strong>Email</strong>: {{orders.0.user_id.email}}
+  </li>
+  <li>
+    <strong>Contact</strong>: {{orders.0.user_id.contact}}
+  </li>
+  <li>
+    <strong>Address</strong>: {{ orders.0.user_id.address_line1 }}, {{ orders.0.user_id.address_line2 }}, Pincode: {{ orders.0.user_id.pin_code }}
+  </li>
+  <li>
+    <strong>Order Date</strong>: {{ orders.0.time }}
+  </li>
+</ul>
 <table class="table table-striped table-bordered">
   <thead class="thead-inverse">
     <tr>
@@ -11,7 +34,6 @@
       <th>Crop</th>
       <th>Seller</th>
       <th>Weight</th>
-      <th>Order Date</th>
       <!-- <th>Date of Delivery</th> -->
       <!-- <th>Image</th> -->
     </tr>
@@ -23,7 +45,6 @@
       <td>{{entry.crop_id}}</td>
       <td>{{entry.seller.first_name}}</td>
       <td>{{entry.weight}}g</td>
-      <td>{{entry.time}}</td>
     {%endfor%}
   </tbody>
 </table>

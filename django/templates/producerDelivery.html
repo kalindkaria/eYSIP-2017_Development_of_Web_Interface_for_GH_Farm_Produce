@@ -28,9 +28,7 @@
     <tr>
       <th>#</th>
       <th>Crop</th>
-      <th>Buyer</th>
       <th>Weight</th>
-      <th>Order Date</th>
       <!-- <th>Date of Delivery</th> -->
       <!-- <th>Image</th> -->
     </tr>
@@ -40,9 +38,7 @@
     <tr>
       <td>{{forloop.counter}}</td>
       <td>{{entry.crop_id}}</td>
-      <td>{{entry.buyer.first_name}}</td>
       <td>{{entry.weight}}g</td>
-      <td>{{entry.time}}</td>
     </tr>
   {% endfor %}
   </tbody>
