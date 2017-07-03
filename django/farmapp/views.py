@@ -6,14 +6,13 @@ from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.models import F,Q
-from django.db.models import Sum,Avg,Min
+from django.db.models import Sum,Avg
 from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect
-from django.contrib import messages
 from django.template.defaulttags import register
 from django.views.decorators.cache import cache_control
 from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_session, Order, Alert, Review
-from graphos.renderers.morris import BarChart
+from graphos.renderers.morris import DonutChart, BarChart
 from graphos.sources.simple import SimpleDataSource
 from django.contrib.auth import authenticate, login, logout
 
@@ -168,10 +167,6 @@ def index(request):
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
         return HttpResponseRedirect("/producer/home/")
 
-    try:
-        min_available = Inventory.objects.aggregate(Min('minimum'))['minimum__min']
-    except:
-        min_available = 50
     # If the user is a consumer.
     if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
         availability = {}
@@ -185,7 +180,7 @@ def index(request):
             cart_items = Cart_session.objects.filter(cart_id=cart)
             # Extracting details about the crops present in the cart
             for crop in cart_items:
-                if (crop.crop_id.availability > min_available):
+                if (crop.crop_id.availability > 10):
                     producers = Inventory.objects.filter(crop_id=crop.crop_id)
                     maximum_sum = 0
                     for producer in producers:
@@ -193,12 +188,13 @@ def index(request):
                     print("maximum sum:  ", maximum_sum)
                     try:
                         order_sum = \
-                            Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered")\
-                                ,user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today(),delivery_date__date=F('time__date'))\
+                            Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
+                                user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today())\
                                 .aggregate(Sum('weight'))['weight__sum']
                         order_sum = int(order_sum)
                         print("order sum:  ", order_sum)
-                    except:
+                    except Exception as e:
+                        print(e)
                         order_sum = 0
                     availability[crop.crop_id.crop_id] = maximum_sum - order_sum
                     print("Availability  ", availability[crop.crop_id.crop_id])
@@ -225,19 +221,19 @@ def index(request):
         crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
 
         for crop in crops:
-            if crop.availability > min_available:
+            if crop.availability >10:
                 producers = Inventory.objects.filter(crop_id=crop)
                 maximum_sum = 0
                 for producer in producers:
                     maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold - producer.wasted)))
 
                 try:
-                    order_sum = Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),\
-                                            user_id=request.user, crop_id=crop, time__date=datetime.date.today(), \
-                                            delivery_date__date = F('time__date')).\
+                    order_sum = Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
+                                            user_id=request.user, crop_id=crop, time__date=datetime.date.today()).\
                                             aggregate(Sum('weight'))['weight__sum']
                     order_sum = int(order_sum)
-                except:
+                except Exception as e:
+                    print(e)
                     order_sum = 0
                 availability[crop.crop_id] = maximum_sum - order_sum
                 if availability[crop.crop_id] <10:
@@ -250,7 +246,7 @@ def index(request):
         id = id + exceeded_id + unavailable_id
         crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
 
-        context = {'page': 'home', 'min_available':min_available,'crops': crops, 'added_crops': added_crops ,'unavailable_crops':unavailable_crops, 'exceeded_crops':exceeded_crops, 'errors': errors,
+        context = {'page': 'home','crops': crops, 'added_crops': added_crops ,'unavailable_crops':unavailable_crops, 'exceeded_crops':exceeded_crops, 'errors': errors,
                    'availability': availability}
 
         return render(request, 'login/shop.html', context)
@@ -263,7 +259,7 @@ def index(request):
 
             id = []
             for crop in cart_items:
-                if (crop.crop_id.availability > min_available):
+                if (crop.crop_id.availability > 10):
                     id.append(crop.crop_id.crop_id)
                 else:
                     message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
@@ -278,7 +274,7 @@ def index(request):
             crops = Crop.objects.all().order_by('-availability')
             added_crops = []
 
-        context = {'loginform': loginform,'min_available':min_available, 'signupform': signupform, 'page': 'crops', 'crops': crops,
+        context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,
                    'added_crops': added_crops, 'errors': errors}
         return render(request, 'shop.html', context)
 
@@ -363,13 +359,9 @@ def crops(request):
 def add_to_cart(request, crop_id):
     remove_expired_produce()
     try:
-        min_available = Inventory.objects.aggregate(Min('minimum'))['minimum__min']
-    except:
-        min_available = 50
-    try:
         input_crop = Crop.objects.get(crop_id=crop_id)
         cart_session = Cart_session()
-        if input_crop.availability > min_available:
+        if input_crop.availability > 0:
             if request.session.get('cart_id', False):
                 try:
                     cart = Cart.objects.get(cart_id=request.session['cart_id'])
@@ -417,11 +409,6 @@ def view_cart(request):
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
         return HttpResponseRedirect("/producer/home/")
 
-    try:
-        min_available = Inventory.objects.aggregate(Min('minimum'))['minimum__min']
-    except:
-        min_available = 50
-
     if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
         try:
             availability = {}
@@ -431,7 +418,7 @@ def view_cart(request):
 
                 id = []
                 for crop in cart_items:
-                    if (crop.crop_id.availability > min_available):
+                    if (crop.crop_id.availability > 10):
                         producers = Inventory.objects.filter(crop_id=crop.crop_id)
                         maximum_sum = 0
                         for producer in producers:
@@ -439,10 +426,9 @@ def view_cart(request):
                         print("maximum sum:  ", maximum_sum)
                         try:
                             order_sum = \
-                                Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),\
-                                        user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today()\
-                                                     ,delivery_date__date=F('time__date')) \
-                                                     .aggregate(Sum('weight'))['weight__sum']
+                            Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
+                                                 user_id=request.user, crop_id=crop, time__date=datetime.date.today()). \
+                                                 aggregate(Sum('weight'))['weight__sum']
                             order_sum = int(order_sum)
                             print("order sum:  ", order_sum)
                         except:
@@ -485,7 +471,7 @@ def view_cart(request):
 
             id = []
             for crop in cart_session:
-                if (crop.crop_id.availability > min_available):
+                if (crop.crop_id.availability > 0):
                     id.append(crop.crop_id.crop_id)
                 else:
                     message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
@@ -611,10 +597,9 @@ def checkout(request):
                         order_sum = 0
                         try:
                             order_sum = \
-                                Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),\
-                                                     user_id=request.user, crop_id=producer.crop_id,
-                                                     time__date=datetime.date.today(),delivery_date__date=F('time__date')) \
-                                                     .aggregate(Sum('weight'))['weight__sum']
+                            Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
+                                                 user_id=request.user, crop_id=item.crop_id, time__date=datetime.date.today()). \
+                                                 aggregate(Sum('weight'))['weight__sum']
                             order_sum = int(order_sum)
                             print(order_sum)
                         except:
@@ -787,7 +772,7 @@ def producer_delivery(request):
     try:
         if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
             request.session['page'] = "/producer/delivery"
-            orders = Order.objects.filter(seller=request.user, status="pending").order_by('cart_id')
+            orders = Order.objects.filter(seller=request.user, status="pending").order_by('-cart_id')
 
             if orders:
                 prev_order = orders[0].cart_id.cart_id
@@ -1072,11 +1057,9 @@ def process_review(request,cart_id,seller):
                 review.cart_id = cart
                 review.review = request.POST.get('review')
                 review.save()
-                messages.success(request, "Your Review was Successfully Updated!", fail_silently=True)
                 return HttpResponseRedirect('/consumer/deliveredorders')
             except:
                 Review.objects.create(rating = request.POST.get('rating'),customer = request.user,user_id = producer,cart_id = cart,review = request.POST.get('review'))
-                messages.success(request, "Your Review was Successfully Submitted!", fail_silently=True)
                 return HttpResponseRedirect('/consumer/deliveredorders')
         else:
             return HttpResponseRedirect('/')
@@ -1483,7 +1466,6 @@ def edit_inventory(request, crop_id):
                     print("DATA\n", form.cleaned_data)
                     o = InventoryForm(request.POST, instance=inventory)
                     o.save()
-                    messages.success(request,"Your Inventory was Successfully Updated!",fail_silently=True)
             context['inventory'] = inventory
             context['form'] = form
             context['page'] = "edit_inventory"
@@ -1520,7 +1502,6 @@ def edit_produce(request, produce_pk):
                         inventory.save()
                         crop.save()
                     remove_expired_produce()
-                    messages.success(request,"Your Produce was Successfully Updated!",fail_silently=True)
 
             context['produce'] = produce
             context['form'] = form
@@ -1594,7 +1575,6 @@ def change_password(request):
             if form.is_valid():
                 user = form.save()
                 update_session_auth_hash(request, user)
-                messages.success(request, "Your Password was Successfully Updated!", fail_silently=True)
                 return HttpResponseRedirect(request.session.get('page',"/"))
             print(form)
         else:
