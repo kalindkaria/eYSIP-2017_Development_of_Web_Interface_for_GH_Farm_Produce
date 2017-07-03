@@ -1,3 +1,7 @@
+# Send Json data stored in details.txt via Socket server to the Server
+# It reads the details stored in details.txt, and tries to send the data along with
+# the image(currently hardcoded to 'sent.png') to the server.
+
 import socket
 import json
 import math
