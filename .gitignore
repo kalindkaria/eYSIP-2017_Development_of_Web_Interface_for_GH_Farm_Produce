@@ -117,3 +117,6 @@ django/inception/
 #media
 django/media/*
 
+#autotrain
+django/autotrain/*
+

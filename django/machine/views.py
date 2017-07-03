@@ -9,19 +9,17 @@ from django.views.decorators.csrf import csrf_exempt
 from farmapp.models import Produce, Machine, Crop, Inventory
 from machine import *
 
-TRAIN_URL = 'http://10.129.11.17:1111'
-TRAIN_SECRET_KEY = 'El-Psy-Kongroo'
+AUTOTRAIN_DIRECTORY = os.getcwd() + "/autotrain/"
 
 
 # Function to check if the machine trying to log exists.
 def auth_user(machine_data):
     try:
         machine = Machine.objects.get(machine_id=machine_data['user_id'], password=machine_data['password'])
-        print(machine)
-        return 1
+        return machine
     except Exception as e:
-        print(e)
-        return 0
+        print("Error: ",e)
+        return None
 
 
 # Update the inventory when the produce is logged.
@@ -49,16 +47,26 @@ def update_inventory(entry):
             print(e + "Hello")
 
 
-def send_data_for_training(training_data):
+def store_data_for_training(training_data):
     lock = Lock()
     try:
-        r = requests.post(TRAIN_URL, data=json.dumps(training_data).encode('utf-8'), timeout=10)
+        # Create folder to store image if it does not exist
+        class_folder = os.path.join(AUTOTRAIN_DIRECTORY, training_data['label'])
+        if not os.path.exists(class_folder):
+            os.makedirs(class_folder)
+
+        # Write image to folder
+        image_path = os.path.join(class_folder, training_data['image_name'])
+        with open(image_path, 'wb') as img_file:
+            img_file.write(bytes(training_data['image'], 'latin-1'))
+
+        # Acquiring Lock to print.
         lock.acquire()
-        print("Data sent for training!")
-        lock.relase()
+        print("Successfully written image at location: " + image_path)
+        lock.release()
     except Exception as e:
         lock.acquire()
-        print("Couldn't send data for training because of ", e)
+        print("Couldn't save data for training because of ", e)
         lock.release()
 
 
@@ -69,7 +77,7 @@ def data_entry(request):
     if request.method == 'POST':
         crop = json.loads(request.body.decode('utf-8'))
         auth = auth_user(crop)
-        if auth == 1:
+        if auth:
             imagepath = os.getcwd() + "/images/"
             time = datetime.datetime.strptime(crop['time'], '%Y-%m-%d %H:%M:%S')
             imagepath = imagepath + crop['imagename']
@@ -80,14 +88,8 @@ def data_entry(request):
             with open(imagepath, 'wb') as img_file:
                 byte_str = crop['image']
                 img_file.write(bytes(byte_str, 'latin-1'))
-
-            print(crop['user_id'])
-            print(crop['crop_id'])
-            print(crop['farmid'])
-            print(crop['imagename'])
-            print(crop['weight'])
-            print(time)
-            print(0)
+            print("Recieved Data from Machine "+str(auth.machine_id)+":")
+            print(crop['user_id'],crop['crop_id'],crop['farmid'],crop['imagename'],crop['weight'],time)
             try:
                 entry = Produce(machine_id=Machine.objects.get(pk=crop['user_id']),
                                 crop_id=Crop.objects.get(pk=crop['crop_id']),
@@ -97,19 +99,17 @@ def data_entry(request):
                                 date_of_produce=time,
                                 timestamp=datetime.datetime.now()
                                 )
-                input_crop = Crop.objects.get(crop_id=crop['crop_id'])
                 update_inventory(entry)
 
                 training_image_name = entry.image
                 training_label = entry.crop_id.short_name
 
-                # Json Payload to send for training along with secret-key
-                training_data = {'secret': TRAIN_SECRET_KEY,
-                                 'label': training_label, 'image': training_image,
+                # Data to save for training
+                training_data = {'label': training_label, 'image': training_image,
                                  'image_name': training_image_name}
 
-                # Try to send training_data to train server.
-                thread = Thread(target=send_data_for_training, args=(training_data,))
+                # Try to save training_data for the train server.
+                thread = Thread(target=store_data_for_training, args=(training_data,))
                 thread.daemon = True
                 thread.start()
 
@@ -120,4 +120,4 @@ def data_entry(request):
                 return HttpResponse("Error")
         elif auth == 0:
             return HttpResponse("Invalid")
-    return HttpResponse("ALive")
+    return HttpResponse("Alive")

@@ -1,8 +1,16 @@
+# Start a socket Server to recieve data from client and store the image into the images
+# folder.
+
 import socketserver
 import threading
 import json
+import os
 import MySQLdb
 from datetime import datetime
+
+imagepath = os.getcwd()+"/images/"
+if not os.path.exists(imagepath):
+    os.makedirs(imagepath)
 
 db = MySQLdb.connect("localhost","root","12345","Farm" )
 cursor = db.cursor()
@@ -28,7 +36,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 				
 				received_len = 0
 
-				fp = open("received.png",'wb')
+				fp = open(imagepath + crop['imagename'], 'wb')
 				while received_len != file_size:
 					print(received_len)
 					strng = self.request.recv(1024)
@@ -45,6 +53,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 					loop = str(self.request.recv(1024), "utf-8")
 					print(loop)					
 					if loop == "break":
+						self.request.sendall(bytes("send", "utf-8"))
 						break
 					elif loop == "continue":
 						self.request.sendall(bytes("send", "utf-8"))
@@ -80,7 +89,7 @@ def auth_user(data):
 
 if __name__ == "__main__":
     # Port 0 means to select an arbitrary unused port
-    HOST, PORT = "localhost", 1152
+    HOST, PORT = "0.0.0.0", 1152
 
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     ip, port = server.server_address

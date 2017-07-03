@@ -1,3 +1,5 @@
+# Create and Store Fake DATA into the details.txt File.
+
 import json
 import datetime
 
