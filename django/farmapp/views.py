@@ -188,8 +188,9 @@ def index(request):
                     print("maximum sum:  ", maximum_sum)
                     try:
                         order_sum = \
-                            Order.objects.filter(user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today(),
-                                                 status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                            Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"), \
+                                user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today())\
+                                .aggregate(Sum('weight'))['weight__sum']
                         order_sum = int(order_sum)
                         print("order sum:  ", order_sum)
                     except:
@@ -226,8 +227,9 @@ def index(request):
                     maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold - producer.wasted)))
 
                 try:
-                    order_sum = Order.objects.filter(user_id=request.user, crop_id=crop, time__date=datetime.date.today(),
-                                                     status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                    order_sum = Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),\
+                                            user_id=request.user, crop_id=crop, time__date=datetime.date.today(),).\
+                                            aggregate(Sum('weight'))['weight__sum']
                     order_sum = int(order_sum)
                 except:
                     order_sum = 0
@@ -422,8 +424,9 @@ def view_cart(request):
                         print("maximum sum:  ", maximum_sum)
                         try:
                             order_sum = \
-                                Order.objects.filter(user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today(),
-                                                     status__iexact="pending").aggregate(Sum('weight'))['weight__sum']
+                                Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),\
+                                        user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today()) \
+                                                     .aggregate(Sum('weight'))['weight__sum']
                             order_sum = int(order_sum)
                             print("order sum:  ", order_sum)
                         except:
@@ -592,8 +595,9 @@ def checkout(request):
                         order_sum = 0
                         try:
                             order_sum = \
-                                Order.objects.filter(user_id=request.user, crop_id=producer.crop_id,
-                                                     time__date=datetime.date.today(),status__iexact="pending") \
+                                Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),\
+                                                     user_id=request.user, crop_id=producer.crop_id,
+                                                     time__date=datetime.date.today()) \
                                                      .aggregate(Sum('weight'))['weight__sum']
                             order_sum = int(order_sum)
                             print(order_sum)
