@@ -425,7 +425,7 @@ def view_cart(request):
                         try:
                             order_sum = \
                                 Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),\
-                                        user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today()) \
+                                        user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today(),delivery_date__date=F('time__date')) \
                                                      .aggregate(Sum('weight'))['weight__sum']
                             order_sum = int(order_sum)
                             print("order sum:  ", order_sum)
@@ -597,7 +597,7 @@ def checkout(request):
                             order_sum = \
                                 Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),\
                                                      user_id=request.user, crop_id=producer.crop_id,
-                                                     time__date=datetime.date.today()) \
+                                                     time__date=datetime.date.today(),delivery_date__date=F('time__date')) \
                                                      .aggregate(Sum('weight'))['weight__sum']
                             order_sum = int(order_sum)
                             print(order_sum)
