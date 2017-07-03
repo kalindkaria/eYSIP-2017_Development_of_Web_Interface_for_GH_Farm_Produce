@@ -9,10 +9,11 @@ from django.db.models import F,Q
 from django.db.models import Sum,Avg
 from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect
+from django.contrib import messages
 from django.template.defaulttags import register
 from django.views.decorators.cache import cache_control
 from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_session, Order, Alert, Review
-from graphos.renderers.morris import DonutChart, BarChart
+from graphos.renderers.morris import BarChart
 from graphos.sources.simple import SimpleDataSource
 from django.contrib.auth import authenticate, login, logout
 
@@ -1056,9 +1057,11 @@ def process_review(request,cart_id,seller):
                 review.cart_id = cart
                 review.review = request.POST.get('review')
                 review.save()
+                messages.success(request, "Your Review was Successfully Updated!", fail_silently=True)
                 return HttpResponseRedirect('/consumer/deliveredorders')
             except:
                 Review.objects.create(rating = request.POST.get('rating'),customer = request.user,user_id = producer,cart_id = cart,review = request.POST.get('review'))
+                messages.success(request, "Your Review was Successfully Submitted!", fail_silently=True)
                 return HttpResponseRedirect('/consumer/deliveredorders')
         else:
             return HttpResponseRedirect('/')
@@ -1465,6 +1468,7 @@ def edit_inventory(request, crop_id):
                     print("DATA\n", form.cleaned_data)
                     o = InventoryForm(request.POST, instance=inventory)
                     o.save()
+                    messages.success(request,"Your Inventory was Successfully Updated!",fail_silently=True)
             context['inventory'] = inventory
             context['form'] = form
             context['page'] = "edit_inventory"
@@ -1501,6 +1505,7 @@ def edit_produce(request, produce_pk):
                         inventory.save()
                         crop.save()
                     remove_expired_produce()
+                    messages.success(request,"Your Produce was Successfully Updated!",fail_silently=True)
 
             context['produce'] = produce
             context['form'] = form
@@ -1574,6 +1579,7 @@ def change_password(request):
             if form.is_valid():
                 user = form.save()
                 update_session_auth_hash(request, user)
+                messages.success(request, "Your Password was Successfully Updated!", fail_silently=True)
                 return HttpResponseRedirect(request.session.get('page',"/"))
             print(form)
         else:
