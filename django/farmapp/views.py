@@ -68,13 +68,22 @@ def handle_login_signup(request):
                         print("A Consumer Logged In")
                         # trying to restore last cart session
                         try:
-                            cart = Cart.objects.get(cart_id=request.user.last_cart.cart_id)
-                            print(request.user.last_cart.cart_id)
-                            if not request.user.last_cart:
-                                request.user.last_cart = cart
-                                request.user.save()
+                            if request.session.get('cart_id',False):
+                                cart = Cart.objects.get(cart_id = request.session['cart_id'])
+                                if request.session['cart_count']!=0 :
+                                    request.user.last_cart = cart
+                                    request.user.save()
+                                else:
+                                    request.session['cart_id'] = request.user.last_cart.cart_id
                             else:
-                                request.user.last_cart = cart.cart_id
+                                cart = Cart.objects.get(cart_id=request.user.last_cart.cart_id)
+                                request.session['cart_id'] = cart.cart_id
+                                print(request.user.last_cart.cart_id)
+                                if not request.user.last_cart:
+                                    request.user.last_cart = cart
+                                    request.user.save()
+                                else:
+                                    request.user.last_cart = cart.cart_id
 
                             return None, loginform, signupform
                         except:
