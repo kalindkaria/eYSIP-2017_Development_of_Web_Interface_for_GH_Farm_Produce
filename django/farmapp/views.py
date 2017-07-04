@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.models import F,Q
-from django.db.models import Sum,Avg
+from django.db.models import Sum,Avg,Min
 from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect
 from django.template.defaulttags import register
@@ -180,29 +180,44 @@ def index(request):
             cart_items = Cart_session.objects.filter(cart_id=cart)
             # Extracting details about the crops present in the cart
             for crop in cart_items:
-                if (crop.crop_id.availability > 10):
+                try:
+                    min_available = Inventory.objects.filter(crop_id = crop.crop_id).aggregate(Min('minimum'))['minimum__min']
+                    min_available = int(min_available)
+                except:
+                    min_available = 50
+                if (crop.crop_id.availability >= min_available):
                     producers = Inventory.objects.filter(crop_id=crop.crop_id)
                     maximum_sum = 0
                     for producer in producers:
-                        maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold - producer.wasted)))
-                    print("maximum sum:  ", maximum_sum)
-                    try:
-                        order_sum = \
-                            Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
-                                user_id=request.user, crop_id=crop.crop_id, time__date=datetime.date.today())\
-                                .aggregate(Sum('weight'))['weight__sum']
-                        order_sum = int(order_sum)
-                        print("order sum:  ", order_sum)
-                    except Exception as e:
-                        print(e)
-                        order_sum = 0
-                    availability[crop.crop_id.crop_id] = maximum_sum - order_sum
-                    print("Availability  ", availability[crop.crop_id.crop_id])
-                    if availability[crop.crop_id.crop_id] > 10:
-                        id.append(crop.crop_id.crop_id)
+                        if producer.weight - producer.sold - producer.wasted > producer.minimum:
+                            try:
+                                order_sum = \
+                                Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
+                                                     user_id=request.user,seller = producer.user_id, crop_id=crop.crop_id,
+                                                     time__date=datetime.date.today()). \
+                                                     aggregate(Sum('weight'))['weight__sum']
+                                order_sum = int(order_sum)
+                            except:
+                                order_sum = 0
+                            print(order_sum)
+                            maximum_sum += int(
+                                min(producer.maximum - order_sum, (producer.weight - producer.sold - producer.wasted)))
+
+                    availability[crop.crop_id.crop_id] = maximum_sum
+                    print("availablity- " + crop.crop_id.english_name + "---> " + str(availability[crop.crop_id.crop_id]))
+
+                    if availability[crop.crop_id.crop_id] >= 0:
+                        if availability[crop.crop_id.crop_id] >= min_available:
+                            id.append(crop.crop_id.crop_id)
+                        else:
+                            exceeded_id.append(crop.crop_id.crop_id)
+                            message = "Sorry you have reached your daily limit for purchasing " + crop.crop_id.english_name
+                            errors.append(message)
+                            print(errors)
+                            crop.delete()
                     else:
-                        exceeded_id.append(crop.crop_id.crop_id)
-                        message = "Sorry you have exceeded your daily limit for purchasing " + crop.crop_id.english_name
+                        unavailable_id.append(crop.crop_id.crop_id)
+                        message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
                         errors.append(message)
                         print(errors)
                         crop.delete()
@@ -221,23 +236,35 @@ def index(request):
         crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
 
         for crop in crops:
-            if crop.availability >10:
+            try:
+                min_available = Inventory.objects.filter(crop_id=crop).aggregate(Min('minimum'))['minimum__min']
+                min_available = int(min_available)
+            except Exception as e:
+                min_available = 50
+
+            if crop.availability >= min_available:
                 producers = Inventory.objects.filter(crop_id=crop)
                 maximum_sum = 0
                 for producer in producers:
-                    maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold - producer.wasted)))
+                    if producer.weight - producer.sold - producer.wasted > producer.minimum:
+                        try:
+                            order_sum = Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
+                                                             user_id=request.user,seller = producer.user_id, crop_id=crop,
+                                                             time__date=datetime.date.today()). \
+                                                             aggregate(Sum('weight'))['weight__sum']
+                            order_sum = int(order_sum)
+                        except:
+                            order_sum = 0
+                        print("max-order  :"+str(producer.maximum - order_sum))
+                        maximum_sum += int(min((producer.maximum - order_sum), (producer.weight - producer.sold - producer.wasted)))
 
-                try:
-                    order_sum = Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
-                                            user_id=request.user, crop_id=crop, time__date=datetime.date.today()).\
-                                            aggregate(Sum('weight'))['weight__sum']
-                    order_sum = int(order_sum)
-                except Exception as e:
-                    print(e)
-                    order_sum = 0
-                availability[crop.crop_id] = maximum_sum - order_sum
-                if availability[crop.crop_id] <10:
-                    exceeded_id.append(crop.crop_id)
+                availability[crop.crop_id] = maximum_sum
+                print("availablity- "+crop.english_name+"--- "+str(availability[crop.crop_id]))
+                if availability[crop.crop_id] >= 0:
+                    if availability[crop.crop_id] < min_available:
+                        exceeded_id.append(crop.crop_id)
+                else:
+                    unavailable_id.append(crop.crop_id)
             else:
                 unavailable_id.append(crop.crop_id)
 
@@ -252,6 +279,7 @@ def index(request):
         return render(request, 'login/shop.html', context)
     # The user is not logged in.
     else:
+        availability = {}
         # If user cart exists
         if request.session.get('cart_id', False):
             cart = Cart.objects.get(cart_id=request.session['cart_id'])
@@ -259,7 +287,12 @@ def index(request):
 
             id = []
             for crop in cart_items:
-                if (crop.crop_id.availability > 10):
+                try:
+                    min_available = Inventory.objects.filter(crop_id = crop.crop_id).aggregate(Min('minimum'))['minimum__min']
+                    min_available = int(min_available)
+                except:
+                    min_available = 50
+                if (crop.crop_id.availability >= min_available):
                     id.append(crop.crop_id.crop_id)
                 else:
                     message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
@@ -274,8 +307,19 @@ def index(request):
             crops = Crop.objects.all().order_by('-availability')
             added_crops = []
 
+        for crop in crops:
+            try:
+                min_available = Inventory.objects.filter(crop_id=crop).aggregate(Min('minimum'))['minimum__min']
+                min_available = int(min_available)
+            except Exception as e:
+                min_available = 50
+            if crop.availability >= min_available:
+                availability[crop.crop_id] = 1
+            else:
+                availability[crop.crop_id] = 0
+
         context = {'loginform': loginform, 'signupform': signupform, 'page': 'crops', 'crops': crops,
-                   'added_crops': added_crops, 'errors': errors}
+                   'added_crops': added_crops, 'errors': errors , 'availability':availability}
         return render(request, 'shop.html', context)
 
 # The view for consumer home. The page has been removed and redirected to 'crops/' i.e. the store
@@ -361,7 +405,12 @@ def add_to_cart(request, crop_id):
     try:
         input_crop = Crop.objects.get(crop_id=crop_id)
         cart_session = Cart_session()
-        if input_crop.availability > 0:
+        try:
+            min_available = Inventory.objects.filter(crop_id = input_crop).aggregate(Min('minimum'))['minimum__min']
+            min_available = int(min_available)
+        except:
+            min_available = 50
+        if input_crop.availability > min_available:
             if request.session.get('cart_id', False):
                 try:
                     cart = Cart.objects.get(cart_id=request.session['cart_id'])
@@ -396,7 +445,7 @@ def remove_from_cart(request, crop_id):
         if request.session.get('page', False):
             return HttpResponseRedirect(request.session['page'])
         else:
-            return HttpResponseRedirect(request.session['page'])
+            return HttpResponseRedirect('/')
 
 
 # The view for the cart page. Shows information anout the items present in the cart.
@@ -411,34 +460,55 @@ def view_cart(request):
 
     if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
         try:
+            print("arrrrgh")
             availability = {}
             if request.session.get('cart_id', False):
                 cart = Cart.objects.get(cart_id=request.session['cart_id'])
                 cart_items = Cart_session.objects.filter(cart_id=cart)
 
                 id = []
+                print("arrrrgh-2")
                 for crop in cart_items:
-                    if (crop.crop_id.availability > 10):
+                    try:
+                        min_available = Inventory.objects.filter(crop_id=crop.crop_id).aggregate(Min('minimum'))[
+                            'minimum__min']
+                        min_available = int(min_available)
+                    except:
+                        min_available = 50
+                    print("arrrrgh-3")
+                    if (crop.crop_id.availability >= min_available):
                         producers = Inventory.objects.filter(crop_id=crop.crop_id)
                         maximum_sum = 0
                         for producer in producers:
-                            maximum_sum += int(min(producer.maximum, (producer.weight - producer.sold - producer.wasted)))
-                        print("maximum sum:  ", maximum_sum)
-                        try:
-                            order_sum = \
-                            Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
-                                                 user_id=request.user, crop_id=crop, time__date=datetime.date.today()). \
-                                                 aggregate(Sum('weight'))['weight__sum']
-                            order_sum = int(order_sum)
-                            print("order sum:  ", order_sum)
-                        except:
-                            order_sum = 0
-                        availability[crop.crop_id.crop_id] = maximum_sum - order_sum
-                        print("Availability  ", availability[crop.crop_id.crop_id])
-                        if availability[crop.crop_id.crop_id] > 10:
-                            id.append(crop.crop_id.crop_id)
+                            if producer.weight - producer.sold - producer.wasted >= producer.minimum:
+                                try:
+                                    order_sum = \
+                                        Order.objects.filter(
+                                            Q(status__iexact="pending") | Q(status__iexact="delivered"),
+                                            user_id=request.user, seller=producer.user_id, crop_id=crop.crop_id,
+                                            time__date=datetime.date.today()). \
+                                            aggregate(Sum('weight'))['weight__sum']
+                                    order_sum = int(order_sum)
+                                except:
+                                    order_sum = 0
+                                print(order_sum)
+                                maximum_sum += int(
+                                    min((producer.maximum - order_sum),
+                                        (producer.weight - producer.sold - producer.wasted)))
+                        print("arrgh 4")
+                        availability[crop.crop_id.crop_id] = maximum_sum
+                        print("availablity- " + crop.crop_id.english_name + "--- " + str(availability[crop.crop_id.crop_id]))
+
+                        if availability[crop.crop_id.crop_id] >= 0:
+                            if availability[crop.crop_id.crop_id] >= min_available:
+                                id.append(crop.crop_id.crop_id)
+                            else:
+                                message = "Sorry you have reached your daily limit for purchasing " + crop.crop_id.english_name
+                                errors.append(message)
+                                print(errors)
+                                crop.delete()
                         else:
-                            message = "Sorry you have exceeded your daily limit for purchasing " + crop.crop_id.english_name
+                            message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
                             errors.append(message)
                             print(errors)
                             crop.delete()
@@ -447,6 +517,7 @@ def view_cart(request):
                         errors.append(message)
                         print(errors)
                         crop.delete()
+                print("arrgh 5")
                 added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
                 request.session['cart_count'] = added_crops.count()
                 if request.session['cart_count'] == 0:
@@ -458,7 +529,8 @@ def view_cart(request):
 
             else:
                 return HttpResponseRedirect('/')
-        except:
+        except Exception as e:
+            print(e)
             return HttpResponseRedirect('/')
 
     else:
@@ -471,7 +543,12 @@ def view_cart(request):
 
             id = []
             for crop in cart_session:
-                if (crop.crop_id.availability > 0):
+                try:
+                    min_available = Inventory.objects.filter(crop_id = crop.crop_id).aggregate(Min('minimum'))['minimum__min']
+                    min_available = int(min_available)
+                except:
+                    min_available = 50
+                if (crop.crop_id.availability >= min_available):
                     id.append(crop.crop_id.crop_id)
                 else:
                     message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
@@ -598,19 +675,14 @@ def checkout(request):
                         try:
                             order_sum = \
                             Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
-                                                 user_id=request.user, crop_id=item.crop_id, time__date=datetime.date.today()). \
+                                                 user_id=request.user,seller = producer.user_id, crop_id=item.crop_id, time__date=datetime.date.today()). \
                                                  aggregate(Sum('weight'))['weight__sum']
                             order_sum = int(order_sum)
                             print(order_sum)
                         except:
                             order_sum = 0
                         finally:
-                            max = min(int(producer.maximum), int(producer.weight - producer.sold - producer.wasted))
-                            print(max)
-                            if max - order_sum > 0:
-                                max = max - order_sum
-                            else:
-                                max = 0
+                            max = min(int(producer.maximum - order_sum), int(producer.weight - producer.sold - producer.wasted))
                             print(max)
                             if i <= max:
                                 while i <= max:
