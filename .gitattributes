@@ -1,5 +1,4 @@
 django/static/* linguist-vendored
-progress-presentation/* linguist-documentation
 django/templates/admin/* linguist-vendored
-report_eYSIP/* linguist-documentation
-Poster/* linguist-documentation
+Reports/* linguist-documentation
+
