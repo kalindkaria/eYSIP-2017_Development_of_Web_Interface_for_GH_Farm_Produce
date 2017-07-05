@@ -126,8 +126,10 @@ def handle_login_signup(request):
     return None, loginform, signupform
 
 
+# Function to transfer expired produce to wasted section
 def remove_expired_produce():
     try:
+        # Query to obtain all produce rows which have expired
         expired_produce = Produce.objects.filter(Q(date_of_expiry__lt = datetime.datetime.now())) \
                           .exclude(Q(wasted =F('weight')-F('sold')))
 
@@ -137,11 +139,16 @@ def remove_expired_produce():
             crop = produce.crop_id
             inventory = Inventory.objects.get(user_id = user , crop_id = crop)
             produce_crop  = Crop.objects.get(crop_id = crop.crop_id)
+            # Updating produce entry
             produce.wasted += produce.weight - produce.sold
+            # Updating producer inventory
             inventory.wasted += produce.wasted
+            # Updating overall crop availability
             produce_crop.availability -= produce.wasted
             message ="Your produce of "+produce.crop_id.english_name+" of weight "+str(produce.weight)+" logged on "+str(produce.date_of_produce.date())+" has expired on "+str(produce.date_of_expiry)
+            # Transaction to save changes made to produce inventory and crop availability
             with transaction.atomic():
+                # Creating Alert for informing about produce expiration
                 Alert.objects.create(user_id = user,type="expiry",message = message)
                 produce.save()
                 inventory.save()
@@ -165,6 +172,7 @@ def get_list_item(list, key):
 # The view for the homepage.
 @cache_control(max_age=0, no_cache=True, no_store=True, must_revalidate=True)
 def index(request):
+    # Removing expired produce
     remove_expired_produce()
     errors = []
     request.session['page'] = "/crops"
@@ -178,10 +186,14 @@ def index(request):
 
     # If the user is a consumer.
     if request.user.is_authenticated and request.user.user_type.upper() == "CONSUMER":
+        # A dictionary that will be passed to the template containing the maximum quantity that can be purchased
+        # by consumer for each particular crop
         availability = {}
-
+        # For storing crop_id of crops added to cart
         id = []
+        # For storing crop_id of crops whose maximum purchase limit has exceeded
         exceeded_id = []
+        # For storing crop_id of crops currently unavailable
         unavailable_id = []
         # If a user cart exists
         if request.session.get('cart_id', False):
@@ -189,17 +201,22 @@ def index(request):
             cart_items = Cart_session.objects.filter(cart_id=cart)
             # Extracting details about the crops present in the cart
             for crop in cart_items:
+                # Finding Minimum quantity of weight necessary for placing an order for given crop
                 try:
                     min_available = Inventory.objects.filter(crop_id = crop.crop_id).aggregate(Min('minimum'))['minimum__min']
                     min_available = int(min_available)
                 except:
                     min_available = 50
-                if (crop.crop_id.availability >= min_available):
+
+                # Comparing overall crop availability with minimum quantity required for placing order
+                if crop.crop_id.availability >= min_available:
+                    # Query to obtain all producers selling the given crop
                     producers = Inventory.objects.filter(crop_id=crop.crop_id)
                     maximum_sum = 0
                     for producer in producers:
                         if producer.weight - producer.sold - producer.wasted > producer.minimum:
                             try:
+                                # Query to obtain sum of weight(quantity) of given crop ordered today by the consumer
                                 order_sum = \
                                 Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
                                                      user_id=request.user,seller = producer.user_id, crop_id=crop.crop_id,
@@ -208,55 +225,64 @@ def index(request):
                                 order_sum = int(order_sum)
                             except:
                                 order_sum = 0
-                            print(order_sum)
+
+                            # maximum_sum is the maximum possible quantity for the given crop that a
+                            # particular consumer can purchase
                             maximum_sum += int(
                                 min(producer.maximum - order_sum, (producer.weight - producer.sold - producer.wasted)))
 
                     availability[crop.crop_id.crop_id] = maximum_sum
-                    print("availablity- " + crop.crop_id.english_name + "---> " + str(availability[crop.crop_id.crop_id]))
-
+                    # if crop is available
                     if availability[crop.crop_id.crop_id] >= 0:
+                        # if availability is greater than min_available
                         if availability[crop.crop_id.crop_id] >= min_available:
                             id.append(crop.crop_id.crop_id)
                         else:
                             exceeded_id.append(crop.crop_id.crop_id)
+                            # Create error message
                             message = "Sorry you have reached your daily limit for purchasing " + crop.crop_id.english_name
                             errors.append(message)
-                            print(errors)
+                            # Remove crop from cart
                             crop.delete()
                     else:
                         unavailable_id.append(crop.crop_id.crop_id)
+                        # Create error message
                         message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
                         errors.append(message)
-                        print(errors)
+                        # Remove crop from cart
                         crop.delete()
                 else:
                     unavailable_id.append(crop.crop_id.crop_id)
                     message = "Sorry " + crop.crop_id.english_name + " is no longer available!"
                     errors.append(message)
-                    print(errors)
+                    # Remove crop from cart
                     crop.delete()
 
+        # Query to obtain crops currently added in cart after validation
         added_crops = Crop.objects.filter(crop_id__in=id).order_by('-availability')
-        print(added_crops)
+        # Updating number of items in cart
         request.session['cart_count'] = added_crops.count()
 
         id = id + exceeded_id + unavailable_id
+        # Query to obtain crops available for purchase
         crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
 
         for crop in crops:
+            # Finding Minimum quantity of weight necessary for placing an order for given crop
             try:
                 min_available = Inventory.objects.filter(crop_id=crop).aggregate(Min('minimum'))['minimum__min']
                 min_available = int(min_available)
             except Exception as e:
                 min_available = 50
-
+            # Comparing overall crop availability with minimum quantity required for placing order
             if crop.availability >= min_available:
+                # Query to obtain all producers selling the given crop
                 producers = Inventory.objects.filter(crop_id=crop)
                 maximum_sum = 0
                 for producer in producers:
                     if producer.weight - producer.sold - producer.wasted > producer.minimum:
                         try:
+                            # Query to obtain sum of weight(quantity) of given crop ordered today by the consumer
                             order_sum = Order.objects.filter(Q(status__iexact="pending") | Q(status__iexact="delivered"),
                                                              user_id=request.user,seller = producer.user_id, crop_id=crop,
                                                              time__date=datetime.date.today()). \
@@ -264,12 +290,14 @@ def index(request):
                             order_sum = int(order_sum)
                         except:
                             order_sum = 0
-                        print("max-order  :"+str(producer.maximum - order_sum))
+                        # maximum_sum is the maximum possible quantity for the given crop that a
+                        # particular consumer can purchase
                         maximum_sum += int(min((producer.maximum - order_sum), (producer.weight - producer.sold - producer.wasted)))
 
                 availability[crop.crop_id] = maximum_sum
-                print("availablity- "+crop.english_name+"--- "+str(availability[crop.crop_id]))
+                # if crop is available
                 if availability[crop.crop_id] >= 0:
+                    # if availability is less than minimum quantity
                     if availability[crop.crop_id] < min_available:
                         exceeded_id.append(crop.crop_id)
                 else:
@@ -277,7 +305,9 @@ def index(request):
             else:
                 unavailable_id.append(crop.crop_id)
 
+        # Query to obtain unavailable crops
         unavailable_crops = Crop.objects.filter(crop_id__in=unavailable_id).order_by('-availability')
+        # Query to obtain crops whose purchase limit has exceeded
         exceeded_crops = Crop.objects.filter(crop_id__in=exceeded_id).order_by('-availability')
         id = id + exceeded_id + unavailable_id
         crops = Crop.objects.exclude(crop_id__in=id).order_by('-availability')
@@ -296,6 +326,7 @@ def index(request):
 
             id = []
             for crop in cart_items:
+                # Finding Minimum quantity of weight necessary for placing an order for given crop
                 try:
                     min_available = Inventory.objects.filter(crop_id = crop.crop_id).aggregate(Min('minimum'))['minimum__min']
                     min_available = int(min_available)
