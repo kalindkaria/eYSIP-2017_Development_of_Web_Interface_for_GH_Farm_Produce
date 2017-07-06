@@ -7,12 +7,13 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import transaction
 from django.db.models import F,Q
 from django.db.models import Sum,Avg,Min
+from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import render, HttpResponseRedirect
 from django.template.defaulttags import register
 from django.views.decorators.cache import cache_control
 from farmapp.models import User, Produce, Machine, Inventory, Crop, Cart, Cart_session, Order, Alert, Review
-from graphos.renderers.morris import DonutChart, BarChart
+from graphos.renderers.morris import BarChart
 from graphos.sources.simple import SimpleDataSource
 from django.contrib.auth import authenticate, login, logout
 
@@ -50,6 +51,20 @@ def handle_login_signup(request):
                     print("User: ",user)
                     if user is not None:
                         login(request, user)
+                        # Message for unseen Alerts
+                        try:
+                            # If User has unseen alerts
+                            if Alert.objects.filter(user_id=request.user, timestamp__gt=request.user.last_login):
+                                # If user is producer
+                                if request.user.user_type.upper()=="PRODUCER":
+                                    messages.success(request, "You may have some Unseen <a class=\"alert-link\" \
+                                        href=\"/producer/alerts/\"Alerts</a>", fail_silently=True)
+                                # If user is consumer
+                                else:
+                                    messages.success(request, "You may have some Unseen <a class=\"alert-link\" \
+                                                    href=\"/consumer/alerts/\"</a>", fail_silently=True)
+                        except:
+                            pass
                         request.user.login_count += 1
                         request.user.last_login = datetime.datetime.now()
                         request.user.save()
@@ -105,7 +120,7 @@ def handle_login_signup(request):
                 request.session['user_type'] = user.user_type
                 login(request, user)
                 message = "Hi "+str(user.first_name)+"! Please Update your Address Details to let the producers \
-                           know where to deliver your orders. You can update the your profile <a href=\"../profile\">here</a>"
+                           know where to deliver your orders. You can update the your profile <a href=\"./profile\">here</a>"
                 Alert.objects.create(user_id=user, message=message, type="start_message")
                 print("A Consumer Logged In")
                 # trying to restore last cart session
@@ -1169,9 +1184,11 @@ def process_review(request,cart_id,seller):
                 review.cart_id = cart
                 review.review = request.POST.get('review')
                 review.save()
+                messages.success(request, "Your Review was Successfully Updated!", fail_silently=True)
                 return HttpResponseRedirect('/consumer/deliveredorders')
             except:
                 Review.objects.create(rating = request.POST.get('rating'),customer = request.user,user_id = producer,cart_id = cart,review = request.POST.get('review'))
+                messages.success(request, "Your Review was Successfully Submitted!", fail_silently=True)
                 return HttpResponseRedirect('/consumer/deliveredorders')
         else:
             return HttpResponseRedirect('/')
@@ -1578,6 +1595,7 @@ def edit_inventory(request, crop_id):
                     print("DATA\n", form.cleaned_data)
                     o = InventoryForm(request.POST, instance=inventory)
                     o.save()
+                    messages.success(request, "Your Inventory was Successfully Updated!", fail_silently=True)
             context['inventory'] = inventory
             context['form'] = form
             context['page'] = "edit_inventory"
@@ -1614,7 +1632,7 @@ def edit_produce(request, produce_pk):
                         inventory.save()
                         crop.save()
                     remove_expired_produce()
-
+                    messages.success(request, "Your Produce was Successfully Updated!", fail_silently=True)
             context['produce'] = produce
             context['form'] = form
             context['page'] = "edit_produce"
@@ -1687,6 +1705,7 @@ def change_password(request):
             if form.is_valid():
                 user = form.save()
                 update_session_auth_hash(request, user)
+                messages.success(request, "Your Password was Successfully Updated!", fail_silently=True)
                 return HttpResponseRedirect(request.session.get('page',"/"))
             print(form)
         else:
