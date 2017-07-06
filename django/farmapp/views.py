@@ -50,21 +50,26 @@ def handle_login_signup(request):
                     user = authenticate(request, email=loginform.cleaned_data['email'], password=loginform.cleaned_data['password'])
                     print("User: ",user)
                     if user is not None:
-                        login(request, user)
                         # Message for unseen Alerts
                         try:
                             # If User has unseen alerts
-                            if Alert.objects.filter(user_id=request.user, timestamp__gt=request.user.last_login):
+                            print("Trying to check for alerts")
+                            print(user.last_login)
+                            print(datetime.datetime.now())
+                            print(Alert.objects.filter(user_id=user, timestamp__gt=user.last_login))
+                            if Alert.objects.filter(user_id=user, timestamp__gt=user.last_login):
                                 # If user is producer
-                                if request.user.user_type.upper()=="PRODUCER":
+                                if user.user_type.upper()=="PRODUCER":
                                     messages.success(request, "You may have some Unseen <a class=\"alert-link\" \
-                                        href=\"/producer/alerts/\"Alerts</a>", fail_silently=True)
+                                        href=\"/producer/alerts/\">Alerts</a>", fail_silently=True)
                                 # If user is consumer
                                 else:
                                     messages.success(request, "You may have some Unseen <a class=\"alert-link\" \
-                                                    href=\"/consumer/alerts/\"</a>", fail_silently=True)
-                        except:
+                                                    href=\"/consumer/alerts/\">Alerts</a>", fail_silently=True)
+                        except Exception as e:
+                            print(e)
                             pass
+                        login(request, user)
                         request.user.login_count += 1
                         request.user.last_login = datetime.datetime.now()
                         request.user.save()
@@ -940,7 +945,7 @@ def producer_delivery(request):
                 context = {'page': "delivery", 'all_orders': orders, 'pagelist': pagelist}
                 return render(request, 'producerDelivery.html', context)
             else:
-                context = {'page': "orders"}
+                context = {'page': "delivery"}
                 return render(request, 'producerDelivery.html', context)
         else:
             return HttpResponseRedirect('/')
@@ -1336,9 +1341,10 @@ def producer_order_deliver(request, cart_id, buyer):
 def alerts(request):
     try:
         if request.user.is_authenticated:
-            all_alerts = Alert.objects.filter(user_id=request.user).order_by('-timestamp')
+            # Get last 40 requests
+            all_alerts = Alert.objects.filter(user_id=request.user).order_by('-timestamp')[:40]
 
-            paginator = Paginator(all_alerts, 5)  # Show 5 orders per page
+            paginator = Paginator(all_alerts, 8)  # Show 8 orders per page
 
             page = request.GET.get('page')
             try:
@@ -1359,7 +1365,8 @@ def alerts(request):
                 return render(request, 'login/consumeralert.html', {'alerts': alerts , 'pagelist':pagelist})
         else:
             return HttpResponseRedirect('/')
-    except:
+    except Exception as e:
+        print(e)
         return HttpResponseRedirect('/')
 
 
