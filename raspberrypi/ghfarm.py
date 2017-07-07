@@ -280,7 +280,7 @@ def predict(data):
     lcd.string("       Asking", LINE_2)
     lcd.string("    Nostradamus", LINE_3)
     lcd.string("   Please wait...", LINE_4)
-    data['user_id']=constants.USER_ID
+    data['user_id']=constants.MACHINE_ID
     data['password']=constants.PASSWORD
     with open(constants.imagepath + data['imagename'], 'rb') as img:
         image = img.read()
@@ -306,7 +306,7 @@ def send_all_data(data):
     lcd.string("CropID: "+str(data['crop_id']), LINE_3)
     lcd.string("FarmID: "+str(data['farmid']), LINE_4)
     time.sleep(1)
-    data['user_id']=constants.USER_ID
+    data['user_id']=constants.MACHINE_ID
     data['password']=constants.PASSWORD
     data['time']= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     with open(constants.imagepath + data['imagename'], 'rb') as img:
@@ -423,6 +423,7 @@ def show_prediction(names, percentages,primary_keys):
                     return show_prediction(names,percentages,primary_keys)
         key = kpad.get_key()
 
+# Intialization Function
 def init():
     print("Initialization")
     global baseValue
@@ -491,7 +492,7 @@ try :
                     print("Sending Data")
                     send_all_data(data)
                 else:
-                    print("Storing DAta")
+                    print("Storing Data")
                     storeData(data)
                 stage = 0
                 break
