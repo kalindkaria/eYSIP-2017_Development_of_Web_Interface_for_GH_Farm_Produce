@@ -122,7 +122,7 @@
       <td>{{ entry.date_of_expiry }}</td>
       <td>{{ entry.sold }} g</td>
       <td>{{ entry.wasted }} g</td>
-      <td><a href="#" data-toggle="modal" data-target="#{{forloop.counter}}"><img src="{% static entry.image %}"  width=28 height=28></a></td>
+      <td><a href="#" data-toggle="modal" data-target="#{{forloop.counter}}"><img src="/images/{{ entry.image }}"  width=28 height=28></a></td>
       <td><a href="/producer/edit_produce/{{ entry.pk }}/">Edit</a></td>
     </tr> 
     {% endfor %}
@@ -140,7 +140,7 @@
         </button>
       </div>
       <div class="modal-body">
-       	<img src="{% static entry.image %}" style="height: inherit; width: 100%">
+       	<img src="/images/{{ entry.image }}" style="height: inherit; width: 100%">
       </div>
 
     </div>

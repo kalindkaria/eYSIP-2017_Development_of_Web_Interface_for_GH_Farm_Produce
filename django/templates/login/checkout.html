@@ -38,7 +38,7 @@
 		      <tbody>
 		      {% for p in outerlist|get_item:item.crop_id.crop_id %}
 		        <tr class="border-top-0 border-left-0 border-right-0">
-		          <td><a href="#" data-toggle="modal" data-target="#{{p.0.first_name}}{{p.1.crop_id}}"><img src="{% static p.5 %}" class="img-thumbnail"  width=65 height=65></a></td>
+		          <td><a href="#" data-toggle="modal" data-target="#{{p.0.first_name}}{{p.1.crop_id}}"><img src="/images/{{ p.5 }}" class="img-thumbnail"  width=65 height=65></a></td>
 		          <td>{{p.0.first_name}}</td>
 		          <td>{{p.4}} g</td>
 		          <td>{{p.8}} g</td>
@@ -84,7 +84,7 @@
 				        </button>
 				      </div>
 				      <div class="modal-body">
-				       	<img src="{% static p.5 %}" style="height: inherit; width: 100%">
+				       	<img src="/images/{{ p.5 }}" style="height: inherit; width: 100%">
 				      </div>
 
 				    </div>
