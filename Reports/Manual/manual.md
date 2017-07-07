@@ -364,7 +364,7 @@ You will be prompted to type in the details, after that the superuser should be 
 
 Some points to be noted:
 
-* The Producer First Name and last name should be a single word without spaces as it is used html as div id
+* The Producer First Name and last name should be a single word without spaces as it is used in html as div id
 
 * Do not change the owner of a machine after alloting it. If you have to do it try changing the user account or
 else you will have to manually update all entries in inventory with the previous user to the new user.   
