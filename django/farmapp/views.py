@@ -448,11 +448,12 @@ def producer_inventory(request):
     remove_expired_produce()
     if request.user.is_authenticated and request.user.user_type.upper() == "PRODUCER":
         # Fetch all information about the producer inventory
+        inventory = []
         try:
             # Query to obtain producer and his inventory
-            user = User.objects.get(pk=request.session['user_id'])
-            inventory = Inventory.objects.filter(user_id=user)
-        except:
+            inventory = Inventory.objects.filter(user_id=request.user)
+        except Exception as e:
+            print(e)
             pass
         return render(request, 'producer_inventory.html', {'page': "inventory", 'inventory': inventory})
     return HttpResponseRedirect('/')
