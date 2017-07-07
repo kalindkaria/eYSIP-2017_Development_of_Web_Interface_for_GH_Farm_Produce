@@ -152,27 +152,33 @@ sudo chown www-data:www-data django/
 sudo vi /etc/apache2/sites-enabled/000-default.conf
 ```
 Then add the following lines to the file:
-(Replace `/path/to/repo/` with path to directory where you unzipped this repo.)
+(Replace `/var/www/Ghfarm/` with path to directory where you unzipped this repo.)
 ```
-WSGIDaemonProcess ghfarm python-path=/path/to/repo/django/
+  DocumentRoot /var/www/Ghfarm/django/
+	WSGIDaemonProcess example.com python-path=/var/www/Ghfarm/django/
 	WSGIApplicationGroup %{GLOBAL}
-	WSGIProcessGroup ghfarm
+	WSGIProcessGroup example.com
 
-	Alias /favicon.ico /path/to/repo/django/static/favicon.ico  
+	Alias /favicon.ico /var/www/Ghfarm/django/static/favicon.ico  
 
-	Alias /media/ /path/to/repo/django/media/
-	Alias /static/ /path/to/repo/django/static/
+	Alias /media/ /var/www/Ghfarm/django/media/
+	Alias /static/ /var/www/Ghfarm/django/static/
+	Alias /images/ /var/www/Ghfarm/django/images/
 
-	<Directory /path/to/repo/django/static>
+	<Directory /var/www/Ghfarm/django/static>
 	Require all granted
 	</Directory>
 
-	<Directory /path/to/repo/django/media>
+	<Directory /var/www/Ghfarm/django/images>
 	Require all granted
 	</Directory>
 
-	WSGIScriptAlias / /path/to/repo/django/ghfarm/wsgi.py process-group=ghfarm
-	<Directory /path/to/repo/django/ghfarm/>
+	<Directory /var/www/Ghfarm/django/media>
+	Require all granted
+	</Directory>
+
+	WSGIScriptAlias / /var/www/Ghfarm/django/ghfarm/wsgi.py process-group=example.com
+	<Directory /var/www/Ghfarm/django/ghfarm/>
 	<Files wsgi.py>
 	Require all granted
 	</Files>
@@ -345,5 +351,22 @@ The current system is writtern with help `Bootstrap v4 (alpha)`. Since at the ti
 
 Only the admin can add new crop into the system. The admin can add new crop using the admin interface. The Admin has to enter the required details and default values for price and shelf_life for crop. The short_name must be of '14' characters so as to be visible on the machine. Also the crop can be added for prediction into the system as described [here](https://github.com/eYSIP-2017/eYSIP-2017_Vegetable-Identification-Using-Transfer-Learning/wiki/Adding-new-crops-to-the-system) by the [Identification project](https://github.com/eYSIP-2017/eYSIP-2017_Vegetable-Identification-Using-Transfer-Learning)
 
+### 7.5 Create Admin
+
+To create a admin type the following command in cmd.
+
+```
+python3 manage.py createsuperuser
+```
+You will be prompted to type in the details, after that the superuser should be created.
+
+## 8) Notes
+
+Some points to be noted:
+
+* The Producer First Name and last name should be a single word without spaces as it is used html as div id
+
+* Do not change the owner of a machine after alloting it. If you have to do it try changing the user account or
+else you will have to manually update all entries in inventory with the previous user to the new user.   
 
 ---
