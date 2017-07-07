@@ -57,7 +57,7 @@ def handle_login_signup(request):
                             print(user.last_login)
                             print(datetime.datetime.now())
                             print(Alert.objects.filter(user_id=user, timestamp__gt=user.last_login))
-                            if Alert.objects.filter(user_id=user, timestamp__gt=user.last_login):
+                            if Alert.objects.filter(user_id=user,read=False):
                                 # If user is producer
                                 if user.user_type.upper()=="PRODUCER":
                                     messages.success(request, "You may have some Unseen <a class=\"alert-link\" \
@@ -408,8 +408,16 @@ def log_out(request):
                 # Save user cart
                 request.user.last_cart = Cart.objects.get(cart_id=request.session['cart_id'])
                 request.user.save()
+
             except:
                 pass
+        try:
+            all_alerts = Alert.objects.filter(user_id=request.user,read = False)
+            for alert in all_alerts:
+                alert.read = True
+                alert.save()
+        except:
+            pass
         logout(request)
         request.session.flush()
         return HttpResponseRedirect('/')
@@ -1452,7 +1460,6 @@ def alerts(request):
         if request.user.is_authenticated:
             # Get last 40 requests
             all_alerts = Alert.objects.filter(user_id=request.user).order_by('-timestamp')[:40]
-
             paginator = Paginator(all_alerts, 8)  # Show 8 orders per page
 
             page = request.GET.get('page')

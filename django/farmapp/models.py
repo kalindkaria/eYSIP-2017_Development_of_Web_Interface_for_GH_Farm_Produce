@@ -211,7 +211,7 @@ class Alert(models.Model):
     message = models.TextField()
     type = models.CharField(max_length=20,default="unknown")
     timestamp = models.DateTimeField(default=django.utils.timezone.now)
-
+    read = models.BooleanField(default=False)
     def __str__(self):
         return str(self.user_id.first_name) + " - "+ str(self.type)
 
