@@ -1,4 +1,3 @@
-#!/bin/sh/
 echo 'Copying this folder to /home/pi/ghfarm/'
 cp -R -f . /home/pi/ghfarm/
 echo 'Done Copying'

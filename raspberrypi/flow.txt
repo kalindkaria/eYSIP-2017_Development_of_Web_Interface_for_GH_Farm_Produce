@@ -1,3 +1,7 @@
+********************************
+*The workflow of the ghfarm.py:*
+********************************
+
 Take weight
 Take Picture
 Take troughid

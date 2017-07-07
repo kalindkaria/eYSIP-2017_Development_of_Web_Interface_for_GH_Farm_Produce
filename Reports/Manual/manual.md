@@ -320,9 +320,15 @@ The basic worflow of the entire system can be summarized by the following chart:
 
 ### 7.1 Adding Producer into the System
 
+![ADD_PRODUCER](producer.png)
+
+
 Only the Admin can add a new producer into the System. The admin should ask the Producer to signup as a normal customer. Once the Producer has created an account the Admin must login into the admin interface. Then in the user section find the producer via his email id and then change the user_type to 'Producer'.
 
 ### 7.2 Adding and Setting Up Machine for Producer
+
+![ADD_MACHINE](add_machine.png)
+
 Only the admin can add a new machine for a Producer. Each producer can have multiple machines alloted to him.
 * To add a machine, login into the admin panel. Here select add in the machine section. Now fill in the details for the machine and allot the user id to that of a Producer.
 * Set the machine_id and password to some random value.
@@ -334,6 +340,8 @@ The UI of the system is based on the templates located in the `django/templates/
 The current system is writtern with help `Bootstrap v4 (alpha)`. Since at the time of making the system Bootstrap was in alpha the system has some bugs which mostly would be fixed as bootstrap4 is released. The graphing was done with the help of the `django-graphos` which made use of `morris.js`.
 
 ### 7.4 Adding New Crop into the system
+
+![add_crop](add_crop.png)
 
 Only the admin can add new crop into the system. The admin can add new crop using the admin interface. The Admin has to enter the required details and default values for price and shelf_life for crop. The short_name must be of '14' characters so as to be visible on the machine. Also the crop can be added for prediction into the system as described [here](https://github.com/eYSIP-2017/eYSIP-2017_Vegetable-Identification-Using-Transfer-Learning/wiki/Adding-new-crops-to-the-system) by the [Identification project](https://github.com/eYSIP-2017/eYSIP-2017_Vegetable-Identification-Using-Transfer-Learning)
 
