@@ -1,7 +1,5 @@
 # Development of Web Interface for GH Farm Produce
 
----
-
 This Project aims to help automate the logging of farm produce. This project provides with an web interface for the entire Logging and Monitoring of the farm produce as well as an e-commerce website to sell it.
 
 At the time of writing this, the project was hosted over [here](store.k-yanta.org)

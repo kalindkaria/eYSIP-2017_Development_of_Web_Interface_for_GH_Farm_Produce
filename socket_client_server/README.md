@@ -1,4 +1,6 @@
-### Client Server Communication via Sockets
+# Client Server Communication via Sockets
+
+### This module was not used in final project.
 
 The files in this folder were used to create a client and server communicaion between the raspberry pi and the server using sockets. The `client/` was copied onto the raspberry pi and then the json data stored into the `details.txt` by the pi using another script.(For trial we used the `manage.py`)
 

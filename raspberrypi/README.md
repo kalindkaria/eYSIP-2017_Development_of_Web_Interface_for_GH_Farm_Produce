@@ -1,6 +1,4 @@
-## Raspberry Pi
-
----
+# Raspberry Pi
 
 This folder contains the various files required to setup the raspberry pi.
 
@@ -25,7 +23,8 @@ For the initial system the user name and password was `pi` and `farmproduce`
 The cron task is started in a tmux session so that we can attach to it later on.
 To attach to existing session, after ssh type,
 ```
-tmux attach
+tmux attach ghfarm
+# only `tmux att` might work
 ```
 To kill the script type `ctrl+c` and to detach press `ctrl+b` and then `d`
 

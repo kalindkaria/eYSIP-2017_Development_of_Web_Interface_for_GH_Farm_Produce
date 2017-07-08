@@ -1,6 +1,5 @@
 # Django
 
----
 
 This folder contains the entire project. The various sub-folders and files are explained below:
 
@@ -70,11 +69,11 @@ This is the folder that contains all the static files used for rendering the HTM
 
 This folder contains the files for download. The analytics files for download are created and stored here.
 
-> images (in gitignore, needs to created)
+> images (in gitignore, needs to be created)
 
 This folder contains all the images recieved from the smart weighing machine for different produce.
 
-> autotrain (in gitignore, needs to created)
+> autotrain (in gitignore, needs to be created)
 
 This folder seperates all the images into seperate folders as per crop shortnames for retraining of the prediction model.
 
