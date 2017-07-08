@@ -10,11 +10,11 @@ This is the Manual for the project `Development of Web interface for GH Farm Pro
 ## 2) System Summary:
 This section describes the basic working of the entire system in brief.
 
-2.1. ___Smart Weighing Machine:___
+__2.1.__ ___Smart Weighing Machine:___
 
   The smart weighing machine consists of a Raspberry Pi, LCD display, keypad, load cell and a camera. To log the produce the producer places the produce from the GH farm on the weighing machine. The weighing machine with the help of the the load cell displays the weight on the LCD screen. So the machine can be used as a normal weighing machine. It also has standard weighing machine features like tare. Now the producer can log the produce by pressing `*` on the keypad. The Raspberry Pi then takes a picture of the produce and sends it to a prediction server to guess the type of the crop. The producer is then shown the possible crops as predicted by the `Vegetable Identification using Transfer Learning` project. If the crop predicted is correct the producer the continue or else he can change the crop by selecting one from a list of crops shown sorted according to the confidence of the predicting system or by inputting in the crop_id. Once he enters the crop_id the enter data is sent to the server for Logging. The data is logged and also made available for selling on the e-commerce website. The data is sent via HTTP requests making use of the modern REST API.
 
-2.2. ___Web Interface:___
+__2.2.__ ___Web Interface:___
 
   The web interface for this project was writtern in Python using Django. The UI is writtern in HTML with help of Bootstrap v4 to make the website responsive. The web interface has mainly three applications, they are:
   * __FarmApp:__
@@ -34,13 +34,13 @@ This section describes the basic working of the entire system in brief.
 ## 3) Users
 There are three main users of this system. They are:
 
-3.1. __Admin:__
+__3.1.__ __Admin:__
     Admin has control over the entire database and make modifications to the data as and when required. It is his responsibility to add new Producers or Crops into the database.
 
-3.2. __Producer:__
+__3.2.__ __Producer:__
     Producers are the users who own the smart weighing machine and use them to add their produce to the system for monitoring and also to sell them. Each producer can have multiple machines allotted to him and all produce by this machines is logged into his account.
 
-3.3. __Consumer:__
+__3.3.__ __Consumer:__
     Consumers are the end users of the entire system. They can register onto the system and can buy the produce from the system and also rate the producers.
 
 ---
@@ -67,14 +67,17 @@ There are three main users of this system. They are:
      ```
      sudo ./setup.sh
      ```
-     This should install all the required packages and setup the GH Farm Client for raspberrypi.
-
-     (You may be asked to enter password if the shell does not have root privileges)
+     This will do the following:
+     * Copy the contents of this folder to `/home/pi/ghfarm/`.
+     * Install all the necessary files for raspberry pi.
+     * Setup crontask to run the `ghfarm.py` on reboot in a new tmux session with the name 'ghfarm'.
+     * Setup crontask to run `client.py` every 5 minutes.
 
      **Notes:**
         * Before running the `setup.sh` make sure to change the `MACHINE_ID` and `PASSWORD` of the machine in the `constants.py` file.
+        * You may be asked to enter password if the shell does not have root privileges
 
-  * _Completion_
+  * __Completion__
 
     * Connect the Raspberry Pi to the smart weighing machine and restore all the connections.
          (Please refer last year's [repo](https://github.com/Ankurrpanwar26/eYSIP-2016-Farm-Produce-Logging-and-Monitoring/blob/master/Final%20Report/EYSIP_final.pdf) to get more details about the weighing machine and connections)
@@ -130,14 +133,14 @@ $ python3 manage.py migrate --fake
 
 ### 4.3 Deploy Server on Apache.
 
-4.3.1. Setup the development server as shown in `4.2`.
+#### 4.3.1. Setup the development server as shown in `4.2`.
 
-4.3.2. *Install Apache*
+#### 4.3.2. *Install Apache*
 ```
 sudo apt-get install apache2 libapache2-mod-wsgi-py3
 ```
 
-4.3.3. *Testing Installation*
+#### 4.3.3. *Testing Installation*
 
 Open a terminal and type
 ```
@@ -145,7 +148,7 @@ sudo service apache2 start
 ```
 Then open a browser and visit `localhost`. The Apache default home page should appear.
 
-4.3.4. *Configure Apache*
+#### 4.3.4. *Configure Apache*
 ```
 # Open the terminal in directory where you unziped this repo.
 sudo chown www-data:www-data django/
@@ -185,7 +188,7 @@ Then add the following lines to the file:
 	</Directory>
 ```
 
-4.3.5 _Restart Apache_
+#### 4.3.5 _Restart Apache_
 
 Type into the terminal
 ```

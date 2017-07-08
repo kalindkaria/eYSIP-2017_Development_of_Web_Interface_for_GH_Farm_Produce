@@ -1,3 +1,21 @@
+## Raspberry Pi
+
+---
+
+This folder contains the various files required to setup the raspberry pi.
+
+### Setting Up raspbery pi
+
+Copy this entire folder and open a terminal in the folders location and type
+```
+sudo ./setup.sh
+```
+This will do the following:
+* Copy the contents of this folder to `/home/pi/ghfarm/`.
+* Install all the necessary files for raspberry pi.
+* Setup crontask to run the `ghfarm.py` on reboot in a new tmux session with the name 'ghfarm'.
+* Setup crontask to run `client.py` every 5 minutes.
+
 ### Connecting to raspberry pi
 
 You can connect to the raspberry Pi via ssh.
