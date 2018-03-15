@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'farmapp',
     'machine',
-    'predict',
     'bootstrap3',
     'graphos'
 ]
